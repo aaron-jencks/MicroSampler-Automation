@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 
 ext = Extension(
-    "bearssl.v2",
+    "v2",
     sources=[
         "python-module.c",
         "../../../apps/bearssl-0.6/src/codec/ccopy.c",
