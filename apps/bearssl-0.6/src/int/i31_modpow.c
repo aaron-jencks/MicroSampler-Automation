@@ -66,6 +66,8 @@ br_i31_modpow(uint32_t *x,
 	}
 }
 
+#ifndef LOCAL_X86_BUILD
+
 
 void
 br_i31_modpow_fence(uint32_t *x,
@@ -96,6 +98,8 @@ br_i31_modpow_fence(uint32_t *x,
         }
 }
 
+#endif
+
 void
 br_i31_modpow_v1(uint32_t *x,
         const unsigned char *e, size_t elen,
@@ -122,6 +126,8 @@ br_i31_modpow_v1(uint32_t *x,
                 memcpy(t1, t2, mlen);
         }
 }
+
+#ifndef LOCAL_X86_BUILD
 
 void
 br_i31_modpow_v1_fence(uint32_t *x,
@@ -152,6 +158,8 @@ br_i31_modpow_v1_fence(uint32_t *x,
         }
 }
 
+#endif
+
 void
 br_i31_modpow_v2(uint32_t *x, uint32_t *r,
         const unsigned char *e, size_t elen,
@@ -178,6 +186,8 @@ br_i31_modpow_v2(uint32_t *x, uint32_t *r,
                 memcpy(t1, t2, mlen);
         }
 }
+
+#ifndef LOCAL_X86_BUILD
 
 void
 br_i31_modpow_v2_fence(uint32_t *x, uint32_t *r, 
@@ -207,3 +217,5 @@ br_i31_modpow_v2_fence(uint32_t *x, uint32_t *r,
                 memcpy(t1, t2, mlen);
         }
 }
+
+#endif
