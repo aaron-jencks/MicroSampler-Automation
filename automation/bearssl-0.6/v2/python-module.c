@@ -48,7 +48,7 @@ static struct PyModuleDef keywdarg_module = {
 };
 
 PyMODINIT_FUNC
-PyInit_keywdarg(void)
+PyInit_v2(void)
 {
     return PyModuleDef_Init(&keywdarg_module);
 }
