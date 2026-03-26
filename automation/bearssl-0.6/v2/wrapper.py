@@ -2,7 +2,19 @@ import argparse
 import pathlib
 import timeit
 
+from openai import OpenAI
+
 from v2 import v2
+
+def get_timing_information(key: str, iters: int, loops: int = 1000) -> float:
+    return timeit.timeit(
+        lambda: v2(key, iters=iters),
+        number=loops,
+    )
+
+
+def 
+
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -18,8 +30,4 @@ if __name__ == "__main__":
     with open(args.key_path / f'{args.key}.key', 'r') as fp:
         key_value = fp.read()
 
-    time = timeit.timeit(
-        lambda: v2(key_value, iters=args.iters),
-        number=1000,
-    )
-    print(time)
+    
