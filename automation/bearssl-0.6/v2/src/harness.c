@@ -2,6 +2,9 @@
 #include "skeleton.h"
 #include "wrapper.h"
 
+#include "utils.h"
+#include "inner.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,8 +45,8 @@ void destroy_trial_context(trial_context_t ctx) {
 }
 
 void generate_json_output(global_context_t ctx, uint64_t* durations, char** keys) {
-    printf("{\n\t\"class\": %d,\n\t\"iterations\": %zd,\n\t\"durations\": [");
-    for(size_t i = 0; i < ctx.iterations; i++) printf("\n\t\t{\"iteration\": %zu, \"duration\": %lld, \"key\": \"%s\"}", i, durations[i], keys[i]);
+    printf("{\n\t\"class\": %d,\n\t\"iterations\": %zd,\n\t\"durations\": [", ctx.class, ctx.iterations);
+    for(size_t i = 0; i < ctx.iterations; i++) printf("\n\t\t{\"iteration\": %zu, \"duration\": %ld, \"key\": \"%s\"}", i, durations[i], keys[i]);
     printf("\n\t]\n}\n");
 }
 
