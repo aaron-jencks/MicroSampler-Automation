@@ -2,38 +2,12 @@
 #include "skeleton.h"
 #include "wrapper.h"
 
-#include "utils.h"
-#include "inner.h"
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define CALL_ITERS 100
 #define MAX_KEY_LEN 1024
-
-trial_context_t create_default_trial_context(char* key, size_t iters) {
-    trial_context_t ctx = {
-        .x = (uint32_t*)malloc(sizeof(uint32_t) * 35),
-        .r = (uint32_t*)malloc(sizeof(uint32_t) * 35),
-        .e = (unsigned char*)malloc(sizeof(unsigned char) * 128),
-        .elen = (iters + 7) >> 3,
-        .m = (uint32_t*)malloc(sizeof(uint32_t) * 35),
-        .t1 = (uint32_t*)malloc(sizeof(uint32_t) * 35),
-        .t2 = (uint32_t*)malloc(sizeof(uint32_t) * 35)
-    };
-
-    for(int i = 0; i < 35; i++) {
-        int temp = i + 1;
-        ctx.x[i] = temp;
-        ctx.m[i] = temp;
-    }
-
-    ctx.m0i = br_i31_ninv31(ctx.m[1]);
-    str2hex(key, ctx.e, 128);
-
-    return ctx;
-}
 
 void destroy_trial_context(trial_context_t ctx) {
     free(ctx.x);
@@ -63,7 +37,7 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Running class %d for %zd iterations\n", class, iterations);
 
     global_context_t global_context = create_global_context(class, iterations);
-    if(iterations > 1) global_setup(&global_context);
+    global_setup(&global_context);
 
     for(size_t i = 0; i < iterations; i++) {
         iteration_keys[i] = malloc(sizeof(char) * MAX_KEY_LEN);
@@ -80,7 +54,7 @@ int main(int argc, char** argv) {
         destroy_trial_context(trial_context);
     }
 
-    if(iterations > 1) global_teardown(&global_context);
+    global_teardown(&global_context);
 
     generate_json_output(global_context, iteration_durations, iteration_keys);
 }
