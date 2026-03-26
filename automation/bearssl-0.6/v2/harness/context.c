@@ -27,10 +27,12 @@ trial_context_t create_default_trial_context(char* key, size_t iters) {
     return ctx;
 }
 
-global_context_t create_global_context(const int class, const size_t iterations) {
+global_context_t create_global_context(const int class, const size_t iterations, const char* const * const keys, const size_t key_count) {
     global_context_t result = {
         .class = class,
         .iterations = iterations,
+        .keys = keys,
+        .key_count = key_count,
         .state = NULL
     };
     return result;
