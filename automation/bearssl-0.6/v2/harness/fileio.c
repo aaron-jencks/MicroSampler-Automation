@@ -19,7 +19,7 @@ char** read_key_file(char* fname, size_t* output_count, size_t max_length) {
         }
         if(*output_count >= output_capacity) {
             output_capacity <<= 1;
-            realloc(output_buffers, sizeof(char*) * output_capacity);
+            output_buffers = realloc(output_buffers, sizeof(char*) * output_capacity);
         }
         output_buffers[*output_count++] = buff;
     }
