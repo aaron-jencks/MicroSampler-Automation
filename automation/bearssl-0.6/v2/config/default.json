@@ -1,0 +1,14 @@
+{
+    "harness": {
+        "prefix": "harness",
+        "executable": "harness",
+        "target": "attack.c",
+        "key_file": "keys.txt",
+        "deployment_prefix": "deploy",
+        "timeout": 60
+    },
+    "llm": {
+        "input_template": "input-prompt.txt",
+        "output_template": "output-prompt.txt"
+    }
+}
