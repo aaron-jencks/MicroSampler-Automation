@@ -145,7 +145,7 @@ def prompt_model(ctx: Dict, template_name: str, conversation: List[Dict[str, str
     )
 
     conversation.append({
-        "role": "model",
+        "role": "assistant",
         "content": response.output_text
     })
 
