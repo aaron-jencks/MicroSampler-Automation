@@ -316,7 +316,10 @@ if __name__ == "__main__":
     args = ap.parse_args()
 
     cfg = load_configs(args.config, args.default_config)
-    cfg["llm"]["client"] = OpenAI(api_key=cfg["llm"]["api_key"])
+    if cfg["llm"]["api_key"] != "":
+        cfg["llm"]["client"] = OpenAI(api_key=cfg["llm"]["api_key"])
+    else:
+        cfg["llm"]["client"] = OpenAI()
 
     main(cfg)
     
