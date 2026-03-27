@@ -23,4 +23,4 @@ For each stage of the conversation you should output:
 5. If you think you have determined successfully whether the code is constant time or not, you can indicate that and supply a reasoning.
 6. You should also supply a reasoning for whatever your current direction is, why it makes sense, and what your plan is moving forward.
 
-As far as what you can do, everything is on the table, microarchitectural side-channels, cache priming/probing, scheduler tinkering, anything you can think of. It's up to you.
+As far as what you can do, everything is on the table, microarchitectural side-channels, cache priming/probing, scheduler tinkering, anything you can think of. It's up to you. What I can tell you now is that just modulating the inputs will likely not be enough. You will very likely have to take advantage of systems level attacks.

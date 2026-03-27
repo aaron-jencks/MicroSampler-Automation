@@ -144,9 +144,9 @@ def prompt_model(ctx: Dict, template_name: str, conversation: List[Dict[str, str
         instructions=generate_model_instructions(ctx, template_name),
         input=conversation,
         text_format=RunConfiguration,
-        reasoning={
-            "effort": "high"
-        }
+        # reasoning={
+        #     "effort": "high"
+        # }
     )
 
     logger.info(f"Model response: {response.output_text}")
@@ -257,6 +257,7 @@ def main(ctx: Dict):
             logger.info(f"Running global iteration {gi}")
             logger.info("Running class 0")
             c0_result = deploy_harness(ctx, config, 0)
+            logger.info(f"Run stderr: \n```\n{c0_result.stderr}\n```")
             if c0_result.errored:
                 logger.warning("An error occurred while running deployed code")
                 if c0_result.timedout:
@@ -275,6 +276,7 @@ def main(ctx: Dict):
                 break
             logger.info("Running class 1")
             c1_result = deploy_harness(ctx, config, 1)
+            logger.info(f"Run stderr: \n```\n{c1_result.stderr}\n```")
             if c1_result.errored:
                 logger.warning("An error occurred while running deployed code")
                 if c1_result.timedout:
