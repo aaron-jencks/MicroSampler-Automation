@@ -149,6 +149,8 @@ def prompt_model(ctx: Dict, template_name: str, conversation: List[Dict[str, str
         }
     )
 
+    logger.info(f"Model response: {response.output_text}")
+
     conversation.append({
         "role": "assistant",
         "content": response.output_text
@@ -156,9 +158,10 @@ def prompt_model(ctx: Dict, template_name: str, conversation: List[Dict[str, str
 
     # Check for refusal
     for item in response.output:
-        for content in item.content:
-            if content.type == "refusal":
-                raise RuntimeError(f"Model refused: {content.refusal}")
+        if item.count is not None:
+            for content in item.content:
+                if content.type == "refusal":
+                    raise RuntimeError(f"Model refused: {content.refusal}")
 
     # Safe to parse
     if response.output_parsed is None:
