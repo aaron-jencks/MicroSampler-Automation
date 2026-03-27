@@ -195,8 +195,9 @@ def handle_code_generation(ctx: Dict, history: List[Dict[str, str]], previous_co
             return model_response  # if the model has come to a conclusion then who cares if the rest of the data is malformed
 
         # if we have code, see if it compiles
-        compiles = False
+        compiles = True  # We have to handle if the code doesn't change from last time
         if model_response.attack_source is not None:
+            compiles = False
             with open(Path(ctx["harness"]["prefix"]) / ctx["harness"]["target"], 'w+') as f:
                 f.write(model_response.attack_source)
             build_output = build_harness(ctx)
