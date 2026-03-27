@@ -24,3 +24,16 @@ For each stage of the conversation you should output:
 6. You should also supply a reasoning for whatever your current direction is, why it makes sense, and what your plan is moving forward.
 
 As far as what you can do, everything is on the table, microarchitectural side-channels, cache priming/probing, scheduler tinkering, anything you can think of. It's up to you. What I can tell you now is that just modulating the inputs will likely not be enough. You will very likely have to take advantage of systems level attacks.
+
+Here is information on how to structure your output:
+```
+class RunConfiguration(BaseModel):
+    reasoning: str                  # This is your current train of thought and justification for your actions
+    attack_source: Optional[str]    # This is the text content of the attack file interface you are creating, if left null it will reuse the old code if it exists
+    key_cases: Optional[List[str]]  # The list of key text that you'd like to pass into your code, this is optional, you can hardcode them into your source if you wish
+    global_iterations: int          # The number of whole runs to do for the deployments, this should reset microarchitectural state between runs
+    inner_iterations: int           # The number of times to run trials, this allows microarchitectural state to build between trials
+    have_conclusion: bool           # Set to true if you are confident that you have an answer and then put your justification in reasoning
+    constant_time_passed: bool      # Indicates whether you think that the algorithm is constant time or not, only used if have_conclusion is true
+```
+Your output should be in json format, this is the Python class it will be cast into.
