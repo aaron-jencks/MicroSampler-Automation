@@ -94,7 +94,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
             str(configuration.inner_iterations),
         ]
         if configuration.key_cases is not None:
-            commands.append(str(deploy_path / ctx["harness"]["key_file"]))
+            commands.append(ctx["harness"]["key_file"])
         logger.info(f"Running: {' '.join(commands)}")
         run_output = sp.run(
             commands,
@@ -253,7 +253,7 @@ def main(ctx: Dict):
         logger.info(f"Doing {config.inner_iterations} inner iterations")
         logger.info(f"The current model reasoning is: {config.reasoning}")
 
-        gi_responses = "The code has finished running, here are the results:\n\n"
+        gi_responses = "The code has finished running, here are the results:"
         errored = False
         for gi in range(config.global_iterations):
             logger.info(f"Running global iteration {gi}")
@@ -296,7 +296,7 @@ def main(ctx: Dict):
                 errored = True
                 break
             logger.info("Both deployments finished, collecting data")
-            gi_responses += (f"Iteration {gi} results:\n\n"
+            gi_responses += (f"\n\nIteration {gi} results:\n\n"
                             f"Class 0:\n```\n{c0_result.stdout}\n```\n\n"
                             f"Class 1:\n```\n{c1_result.stdout}\n```")
 
