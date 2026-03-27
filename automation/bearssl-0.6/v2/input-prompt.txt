@@ -21,3 +21,6 @@ For each stage of the conversation you should output:
 3. The number of times you'd like to run the simulation in its entirety (this is the `global_iterations`), the minimum value is 1.
 4. The number of times you'd like to repeat the loop described in `skeleton.h` (this is the `inner_iterations`), the minimum value is 1.
 5. If you think you have determined successfully whether the code is constant time or not, you can indicate that and supply a reasoning.
+6. You should also supply a reasoning for whatever your current direction is, why it makes sense, and what your plan is moving forward.
+
+As far as what you can do, everything is on the table, microarchitectural side-channels, cache priming/probing, scheduler tinkering, anything you can think of. It's up to you.
