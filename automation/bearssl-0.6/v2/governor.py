@@ -158,7 +158,7 @@ def prompt_model(ctx: Dict, template_name: str, conversation: List[Dict[str, str
 
     # Check for refusal
     for item in response.output:
-        if item.count is not None:
+        if item.content is not None:
             for content in item.content:
                 if content.type == "refusal":
                     raise RuntimeError(f"Model refused: {content.refusal}")
@@ -223,7 +223,6 @@ def handle_code_generation(ctx: Dict, history: List[Dict[str, str]], previous_co
 
 
 def main(ctx: Dict):
-
     logger.info(f"Using instruction prompt:\n\n{generate_model_instructions(ctx)}")
 
     iteration = 1
