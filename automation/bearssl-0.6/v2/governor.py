@@ -95,6 +95,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
         ]
         if configuration.key_cases is not None:
             commands.append(str(deploy_path / ctx["harness"]["key_file"]))
+        logger.info(f"Running: {' '.join(commands)}")
         run_output = sp.run(
             commands,
             cwd=deploy_path,
