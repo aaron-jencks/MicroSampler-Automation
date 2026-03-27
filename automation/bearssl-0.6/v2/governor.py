@@ -137,11 +137,16 @@ def generate_model_instructions(ctx: Dict, template_name: str = 'input') -> str:
 
 
 def prompt_model(ctx: Dict, template_name: str, conversation: List[Dict[str, str]]) -> RunConfiguration:
+    logger.info(f"Current message to the model is: {conversation[-1]['content']}")
+
     response = ctx["llm"]["client"].responses.parse(
         model=ctx["llm"]["model"],
         instructions=generate_model_instructions(ctx, template_name),
         input=conversation,
         text_format=RunConfiguration,
+        reasoning={
+            "effort": "high"
+        }
     )
 
     conversation.append({
@@ -219,7 +224,10 @@ def main(ctx: Dict):
     logger.info(f"Using instruction prompt:\n\n{generate_model_instructions(ctx)}")
 
     iteration = 1
-    context = []
+    context = [{
+        "role": "developer",
+        "content": "Let's get started, you'll need to generate code, test cases, everything on this first pass here."
+    }]
     previous_config = None
     while True:
         logger.info(f"Starting iteration: {iteration}")
