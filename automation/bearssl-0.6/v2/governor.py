@@ -1,30 +1,22 @@
 import argparse
 from dataclasses import dataclass
+from enum import Enum
 import logging
 import os
 from pathlib import Path
-import re
 import shutil
 import subprocess as sp
 from typing import List, Dict, Optional
 
 from cascade_config import CascadeConfig
 from openai import OpenAI
-from pydantic import BaseModel
+
+from prompting.client import OpenAIClient
+import tools
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-class RunConfiguration(BaseModel):
-    reasoning: str
-    attack_source: Optional[str]
-    key_cases: Optional[List[str]]
-    global_iterations: int
-    inner_iterations: int
-    have_conclusion: bool
-    constant_time_passed: bool
 
 
 def load_configs(cfgs: List[Path], default: Path) -> Dict:
@@ -35,193 +27,20 @@ def load_configs(cfgs: List[Path], default: Path) -> Dict:
     return conf.parse()
 
 
-@dataclass
-class RunResult:
-    stderr: Optional[str]
-    stdout: Optional[str]
-    errored: bool
-    timedout: bool
-    return_code: int
-
-
-@dataclass
-class BuildResult:
-    stdout: Optional[str]
-    stderr: Optional[str]
-    return_code: int
-
-
-def build_harness(ctx: Dict) -> BuildResult:
-    make_output = sp.run(
-        ["make", "clean", "harness"],
-        capture_output=True,
-        cwd=ctx["harness"]["prefix"]
-    )
-    return BuildResult(
-        stdout=make_output.stdout.decode(),
-        stderr=make_output.stderr.decode(),
-        return_code=make_output.returncode,
-    )
-
-
-def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunResult:
-    logger.info("Building harness...")
-    build_output = build_harness(ctx)
-    if build_output.return_code != 0:
-        logger.error(f"Build harness failed with code {build_output.return_code}:\nstderr: {build_output.stderr}\nstdout: {build_output.stdout}")
-        return RunResult(
-            stderr=build_output.stderr,
-            stdout=build_output.stdout,
-            errored=True,
-            timedout=False,
-            return_code=build_output.return_code,
-        )
-    logger.info("Staging Deployment...")
-    deploy_path = Path(ctx["harness"]["deployment_prefix"])
-    os.makedirs(deploy_path, exist_ok=True)
-    shutil.copy(Path(ctx["harness"]["prefix"]) / ctx["harness"]["executable"], deploy_path)
-    if configuration.key_cases is not None:
-        logger.info("Generating Key File...")
-        with open(deploy_path / ctx["harness"]["key_file"], 'w+') as f:
-            contents = '\n'.join(configuration.key_cases)
-            f.write(contents)
-    logger.info("Running UUT...")
-    result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0)
-    try:
-        commands = [
-            f"./{ctx['harness']['executable']}",
-            str(cls),
-            str(configuration.inner_iterations),
-        ]
-        if configuration.key_cases is not None:
-            commands.append(ctx["harness"]["key_file"])
-        logger.info(f"Running: {' '.join(commands)}")
-        run_output = sp.run(
-            commands,
-            cwd=deploy_path,
-            capture_output=True,
-            timeout=ctx["harness"]["timeout"],
-            shell=True
-        )
-        result.stderr = run_output.stderr.decode()
-        result.stdout = run_output.stdout.decode()
-        result.return_code = run_output.returncode
-        result.errored = run_output.returncode != 0
-        logger.info("UUT finished.")
-    except sp.TimeoutExpired:
-        logger.info("UUT timed out.")
-        result.timedout = True
-        result.errored = True
-    return result
-
-
-def generate_model_instructions(ctx: Dict, template_name: str = 'input') -> str:
-    with open(ctx["llm"]["templates"][template_name], 'r') as f:
-        template = f.read()
-
-    def replace_source_code(m: re.Match) -> str:
-        fname = m.group('filename')
-
-        with open(Path(ctx["harness"]["prefix"]) / fname, 'r') as f:
-            source_data = f.read()
-
-        return f"{fname}\n```\n{source_data}\n```"
-
-    processed_template = re.sub(
-        r'\[\[(?P<filename>.*?)]]',
-        replace_source_code,
-        template,
-        flags=re.MULTILINE | re.UNICODE
-    )
-
-    return processed_template
-
-
-def prompt_model(ctx: Dict, template_name: str, conversation: List[Dict[str, str]]) -> RunConfiguration:
-    logger.info(f"Current message to the model is: {conversation[-1]['content']}")
-
-    response = ctx["llm"]["client"].responses.parse(
-        model=ctx["llm"]["model"],
-        instructions=generate_model_instructions(ctx, template_name),
-        input=conversation,
-        text_format=RunConfiguration,
-        # reasoning={
-        #     "effort": "high"
-        # }
-    )
-
-    logger.info(f"Model response: {response.output_text}")
-
-    conversation.append({
-        "role": "assistant",
-        "content": response.output_text
-    })
-
-    # Check for refusal
-    for item in response.output:
-        if item.content is not None:
-            for content in item.content:
-                if content.type == "refusal":
-                    raise RuntimeError(f"Model refused: {content.refusal}")
-
-    # Safe to parse
-    if response.output_parsed is None:
-        raise RuntimeError("No parsed output (possibly malformed response)")
-
-    return response.output_parsed
-
-
-def handle_code_generation(ctx: Dict, history: List[Dict[str, str]], previous_config: Optional[RunConfiguration]) -> RunConfiguration:
-    while True:
-        model_response = prompt_model(ctx, 'input', history)
-
-        errors = []
-
-        # check static configuration errors
-        if model_response.attack_source is None:
-            if previous_config is not None and previous_config.attack_source is None:
-                errors.append("There is no previous source code written, you must write source code.")
-            # we don't have to assign the previous to this because the file already exists, we don't have to write it again.
-        if model_response.key_cases is None:
-            if previous_config is not None and previous_config.key_cases is not None:
-                model_response.key_cases = previous_config.key_cases
-        if model_response.global_iterations < 1:
-            errors.append("There must be at least one global iteration.")
-        if model_response.inner_iterations < 1:
-            errors.append("There must be at least one inner iteration.")
-        if model_response.reasoning == "":
-            errors.append("No reasoning. Please show your work and provide reasoning and justification.")
-
-        if model_response.have_conclusion and model_response.reasoning != "":
-            return model_response  # if the model has come to a conclusion then who cares if the rest of the data is malformed
-
-        # if we have code, see if it compiles
-        compiles = True  # We have to handle if the code doesn't change from last time
-        if model_response.attack_source is not None:
-            compiles = False
-            with open(Path(ctx["harness"]["prefix"]) / ctx["harness"]["target"], 'w+') as f:
-                f.write(model_response.attack_source)
-            build_output = build_harness(ctx)
-            if build_output.return_code != 0:
-                be_string = (f"The source code build failed with exit code {build_output.return_code}:\n\n"
-                             f"stdout:\n```\n{build_output.stdout}\n```\n\n"
-                             f"stderr:\n```\n{build_output.stderr}\n```")
-                errors.append(be_string)
-            else:
-                compiles = True
-
-        if len(errors) > 0:
-            e_string = "There were errors found in your response, please correct the following:\n"
-            for ei, error in enumerate(errors):
-                e_string += f"\n{ei + 1}. {error}"
-            history.append({
-                "role": "user",
-                "content": e_string,
-            })
-            continue
-
-        if compiles:
-            return model_response
+def setup_model_client(ctx: Dict) -> OpenAIClient:
+    if ctx["llm"]["api_key"] != "":
+        inner_client = OpenAI(api_key=ctx["llm"]["api_key"])
+    else:
+        inner_client = OpenAI()
+    client = OpenAIClient(inner_client, "input")
+    client.create_action(tools.WorkbenchFileCreate(ctx))
+    client.create_action(tools.WorkbenchReadFile(ctx))
+    client.create_action(tools.WorkbenchDeleteFile(ctx))
+    client.create_action(tools.WorkbenchListFiles(ctx))
+    client.create_action(tools.WorkbenchRun(ctx))
+    client.create_action(tools.AttackFileCreate(ctx))
+    client.create_action(tools.RunSimulation(ctx))
+    return client
 
 
 def main(ctx: Dict):

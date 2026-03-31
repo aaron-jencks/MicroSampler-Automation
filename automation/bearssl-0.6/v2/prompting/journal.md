@@ -5,3 +5,6 @@ How can I make a system that allows the agent to execute actions like codex? May
 3. We supply them as tools to the llm
 4. Add additional syntax to the template so that we can handle various types of prefixes during parsing.
 
+3/31/2026
+
+I'm almost done getting the actions integrated into the governor, I just need to update the client to actually allow the use of the template tools and then get the prompt reconfigured and then re-do the loop in the governor main loop. Shouldn't take more than a few hours.

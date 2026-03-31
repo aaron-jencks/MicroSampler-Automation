@@ -68,7 +68,7 @@ class OpenAIClient:
             conversation=self.conversation,
             instructions=self._load_model_template(ctx),
             tools=[
-                t.generate_openai_argument() for t in self.tools.values()
+                t.gene-rate_openai_argument() for t in self.tools.values()
             ],
             input=msg,
         )
