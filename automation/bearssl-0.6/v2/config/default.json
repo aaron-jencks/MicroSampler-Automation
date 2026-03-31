@@ -7,6 +7,11 @@
         "deployment_prefix": "deploy",
         "timeout": 60
     },
+    "workbench": {
+        "prefix": "workbench",
+        "script": "workbench.sh",
+        "data_directory": "data"
+    },
     "llm": {
         "model": "gpt-5.3-codex",
         "templates": {
