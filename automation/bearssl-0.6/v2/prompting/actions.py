@@ -12,12 +12,19 @@ class LLMActionError:
 
 
 @dataclass
+class LLMConclusion:
+    constant_time: bool
+    reasoning: str
+
+
+@dataclass
 class LLMActionResponse:
     response_message: Optional[str]
     error: Optional[LLMActionError]
+    conclusion: Optional[LLMConclusion]
 
 
-default_action_response = LLMActionResponse(None, None)
+default_action_response = LLMActionResponse(None, None, None)
 
 
 LLMActionCallback = Callable[[Dict, Type[BaseModel]], LLMActionResponse]
