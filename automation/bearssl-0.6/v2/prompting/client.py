@@ -55,7 +55,7 @@ class OpenAIClient:
 
         return processed_content
 
-    def _load_model_template(self, ctx: Dict) -> str:
+    def load_model_template(self, ctx: Dict) -> str:
         with open(ctx["llm"]["templates"][self.template], 'r') as f:
             template = f.read()
 
@@ -72,7 +72,7 @@ class OpenAIClient:
         response = self.client.responses.create(
             model=ctx["llm"]["model"],
             conversation=self.conversation,
-            instructions=self._load_model_template(ctx),
+            instructions=self.load_model_template(ctx),
             tools=[
                 t.generate_openai_argument() for t in self.tools.values()
             ],
