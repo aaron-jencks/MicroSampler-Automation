@@ -38,10 +38,7 @@ class OpenAIClient:
     def clear_conversation(self):
         self.conversation = None
 
-    def load_model_template(self, ctx: Dict) -> str:
-        with open(ctx["llm"]["templates"][self.template], 'r') as f:
-            template = f.read()
-
+    def generate_preprocessed_template(self, ctx: Dict, content: str) -> str:
         def replace_tags(m: re.Match) -> str:
             tag_name = m.group('tag')
             if tag_name not in self.template_tools:
@@ -49,14 +46,20 @@ class OpenAIClient:
             arguments = m.group('arguments')
             return self.template_tools[tag_name](ctx, tag_name, arguments[1:].split(':'))
 
-        processed_template = re.sub(
+        processed_content = re.sub(
             r'\[\[(?P<tag>[^\]:]+)(?P<arguments>(:[^\]:]+)*)]]',
             replace_tags,
-            template,
+            content,
             flags=re.MULTILINE | re.UNICODE
         )
 
-        return processed_template
+        return processed_content
+
+    def _load_model_template(self, ctx: Dict) -> str:
+        with open(ctx["llm"]["templates"][self.template], 'r') as f:
+            template = f.read()
+
+        return self.generate_preprocessed_template(ctx, template)
 
     def prompt_model(self, ctx: Dict, msg: str) -> List[LLMActionResponse]:
         if self.conversation is None:
@@ -71,7 +74,7 @@ class OpenAIClient:
             conversation=self.conversation,
             instructions=self._load_model_template(ctx),
             tools=[
-                t.gene-rate_openai_argument() for t in self.tools.values()
+                t.generate_openai_argument() for t in self.tools.values()
             ],
             input=msg,
         )
