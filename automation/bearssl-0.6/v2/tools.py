@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError
+from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
 from building import build_harness, deploy_harness, RunConfiguration, RunResult
 
@@ -311,6 +311,32 @@ class RunSimulation(LLMAction):
         return result
 
 
+class ConclusionArgs(ToolBaseArgs):
+    constant_time: bool = Field(
+        description="True if you think the algorithm is constant time, False otherwise, support for this conclusion must be in your reasoning",
+    )
+
+
+class MakeConclusion(LLMAction):
+    def __init__(self, ctx: Dict):
+        super().__init__(
+            "make_conclusion",
+            "indicates that all analysis is done and that this is your final conclusion",
+            ConclusionArgs
+        )
+
+    def execute(self, ctx: Dict, kwargs: ConclusionArgs) -> LLMActionResponse:
+        create_log_statement_for_tool_use(
+            kwargs,
+            "the LLM has come to a conclusion that the model {} constant-time",
+            "is" if kwargs.constant_time is True else "is NOT",
+        )
+        return LLMActionResponse(None, None, LLMConclusion(
+            kwargs.constant_time,
+            kwargs.reasoning
+        ))
+
+
 def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
     client.create_action(WorkbenchFileCreate(ctx))
     client.create_action(WorkbenchReadFile(ctx))
@@ -319,3 +345,4 @@ def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
     client.create_action(WorkbenchRun(ctx))
     client.create_action(AttackFileCreate(ctx))
     client.create_action(RunSimulation(ctx))
+    client.create_action(MakeConclusion(ctx))
