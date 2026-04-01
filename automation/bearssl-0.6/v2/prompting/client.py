@@ -1,8 +1,10 @@
 import json
 import logging
 import re
+import time
 from typing import Any, Dict, List, Optional, Callable, Union
 
+import openai
 from openai import OpenAI
 
 from .actions import LLMAction, LLMActionResponse
@@ -83,15 +85,22 @@ class OpenAIClient:
             logger.info("dry run requested, skipping actual prompting")
             return []
 
-        response = self.client.responses.create(
-            model=ctx["llm"]["model"],
-            conversation=self.conversation,
-            instructions=self.load_model_template(ctx),
-            tools=[
-                t.generate_openai_argument() for t in self.tools.values()
-            ],
-            input=msg,
-        )
+        while True:
+            try:
+                response = self.client.responses.create(
+                    model=ctx["llm"]["model"],
+                    conversation=self.conversation,
+                    instructions=self.load_model_template(ctx),
+                    tools=[
+                        t.generate_openai_argument() for t in self.tools.values()
+                    ],
+                    input=msg,
+                )
+                break
+            except openai.RateLimitError as e:
+                sleep_time = float(re.match(r"Please try again in (?P<time>\d+(\.\d+)?)", e.message).group('time')) + 1
+                logger.info(f"rate limit exceeded waiting for {sleep_time} seconds")
+                time.sleep(sleep_time)
 
         responses = []
 
