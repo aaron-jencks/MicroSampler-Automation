@@ -87,7 +87,7 @@ def list_workbench_files(ctx: Dict) -> List[str]:
     return files
 
 
-def run_workbench(ctx: Dict, args: List[str]) -> Tuple[Optional[sp.CompletedProcess[bytes]], bool]:
+def run_workbench(ctx: Dict, args: List[str]) -> sp.CompletedProcess[bytes]:
     prefix = get_workbench_path(ctx)
     if not prefix.exists():
         reset_workbench(ctx)
@@ -96,8 +96,8 @@ def run_workbench(ctx: Dict, args: List[str]) -> Tuple[Optional[sp.CompletedProc
         raise FileNotFoundError(script_path)
     response = sp.run(
         ["bash", str(script_path), *args],
-        cwd=Path(ctx['workbench']['workbench']).absolute(),
+        cwd=Path(ctx['workbench']['prefix']).absolute(),
         capture_output=True,
         timeout=300
     )
-    return response, False
+    return response

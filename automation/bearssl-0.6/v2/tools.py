@@ -134,7 +134,7 @@ class WorkbenchRun(LLMAction):
         super().__init__(
             "workbench_run",
             f"runs the workbench script: {self.script_path}, must finish within 5 minutes",
-            ToolBaseArgs
+            WorkbenchRunArgs
         )
 
     def execute(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> LLMActionResponse:
@@ -273,6 +273,7 @@ class RunSimulation(LLMAction):
         log_prefix.mkdir(parents=True, exist_ok=True)
 
         logger.info("logging stderr")
+        result.response_message = ""
         if args.stderr_file is not None and output.stderr is not None:
             err_file = log_prefix / args.stderr_file
             with open(err_file, mode='w+') as fp:

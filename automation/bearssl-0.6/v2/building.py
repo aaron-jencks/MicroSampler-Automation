@@ -72,7 +72,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
     os.makedirs(deploy_path, exist_ok=True)
     shutil.copy(Path(ctx["harness"]["prefix"]) / ctx["harness"]["executable"], deploy_path)
     logger.info("Running UUT...")
-    result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0)
+    result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0, output_files=[])
     try:
         commands = [
             f"./{ctx['harness']['executable']}",
@@ -93,7 +93,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
         result.errored = run_output.returncode != 0
         if not result.errored:
             result.output_files = [
-                store_output_data(ctx, configuration.run_name, cls)
+                str(store_output_data(ctx, configuration.run_name, result.stdout, cls))
             ]
         logger.info("UUT finished.")
     except sp.TimeoutExpired:
