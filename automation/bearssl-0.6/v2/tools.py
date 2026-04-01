@@ -1,14 +1,14 @@
 import logging
-import os
 from pathlib import Path
 import subprocess as sp
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
 from pydantic import BaseModel, Field
 
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
 from building import build_harness, deploy_harness, RunConfiguration, RunResult
+from workbench import reset_workbench, create_workbench_file, delete_workbench_file, run_workbench, read_workbench_file, list_workbench_files
 
 logger = logging.getLogger(__name__)
 
@@ -42,15 +42,13 @@ class WorkbenchFileCreate(LLMAction):
         )
 
     def execute(self, ctx: Dict, kwargs: FileCreateArgs) -> LLMActionResponse:
-        prefix = Path(ctx['workbench']['prefix'])
-        file_path = prefix / kwargs.file_name
+        file_path = Path(ctx['workbench']['prefix']) / kwargs.file_name
         create_log_statement_for_tool_use(
             kwargs,
             "creating file: {} with contents:\n```\n{}\n```",
             file_path.absolute(), kwargs.file_contents
         )
-        with open(file_path, mode='w+') as fp:
-            fp.write(kwargs.file_contents)
+        create_workbench_file(ctx, kwargs.file_name, kwargs.file_contents)
         return default_action_response
 
 
@@ -70,14 +68,14 @@ class WorkbenchReadFile(LLMAction):
             "reading file: {}",
             file_path.absolute()
         )
-        if not file_path.exists():
+        try:
+            data = read_workbench_file(ctx, kwargs.file_name)
+            return LLMActionResponse(data, None, None)
+        except FileNotFoundError:
             return LLMActionResponse(None, LLMActionError(
                 "file not found",
                 f"{kwargs.file_name}"
             ), None)
-        with open(file_path, mode='r') as fp:
-            data = fp.read()
-        return LLMActionResponse(data, None, None)
 
 
 class WorkbenchDeleteFile(LLMAction):
@@ -96,13 +94,14 @@ class WorkbenchDeleteFile(LLMAction):
             "deleting file: {}",
             file_path.absolute()
         )
-        if not file_path.exists():
+        try:
+            delete_workbench_file(ctx, kwargs.file_name)
+            return default_action_response
+        except FileNotFoundError:
             return LLMActionResponse(None, LLMActionError(
                 "file not found",
                 f"{kwargs.file_name}"
             ), None)
-        os.remove(file_path)
-        return default_action_response
 
 
 class WorkbenchListFiles(LLMAction):
@@ -118,11 +117,7 @@ class WorkbenchListFiles(LLMAction):
             kwargs,
             "listing workbench files"
         )
-        prefix = Path(ctx['workbench']['prefix'])
-        result = []
-        for dirpath, dirnames, filenames in os.walk(prefix):
-            for filename in filenames:
-                result.append(str(Path(dirpath) / filename))
+        result = list_workbench_files(ctx)
         return LLMActionResponse('\n'.join(result), None, None)
 
 
@@ -146,30 +141,50 @@ class WorkbenchRun(LLMAction):
             kwargs,
             "running workbench script"
         )
-        if not self.script_path.exists():
+        try:
+            response = run_workbench(ctx, kwargs.args)
+            return LLMActionResponse(
+                (
+                    f"stdout:\n```\n{response.stdout.decode()}\n```\n"
+                    f"stderr:\n```\n{response.stderr.decode()}\n```"
+                ),
+                None, None
+            )
+        except FileNotFoundError:
             return LLMActionResponse(None, LLMActionError(
                 "file not found",
                 str(self.script_path)
             ), None)
-        try:
-            response = sp.run(
-                [str(self.script_path), *kwargs.args],
-                cwd=Path(ctx['workbench']['workbench']).absolute(),
-                capture_output=True,
-                timeout=300
-            )
         except sp.TimeoutExpired:
             return LLMActionResponse(None, LLMActionError(
                 "timeout",
                 "the script call exceeded 5 minutes"
             ), None)
-        return LLMActionResponse(
-            (
-                f"stdout:\n```\n{response.stdout.decode()}\n```\n"
-                f"stderr:\n```\n{response.stderr.decode()}\n```"
-            ),
-            None, None
+
+
+class ResetWorkbenchArgs(ToolBaseArgs):
+    flush_data: bool = Field(
+        description="whether to delete the cached simulation run data or not"
+    )
+
+
+class WorkbenchReset(LLMAction):
+    def __init__(self):
+        super().__init__(
+            "workbench_reset",
+            "resets the workbench to its original state, "
+            "removing all files and resetting all imported sources.",
+            ResetWorkbenchArgs
         )
+
+    def execute(self, ctx: Dict, kwargs: ResetWorkbenchArgs) -> LLMActionResponse:
+        create_log_statement_for_tool_use(
+            kwargs,
+            "resetting workbench files {} the data files",
+            "including" if kwargs.flush_data else "excluding"
+        )
+        reset_workbench(ctx, data=kwargs.flush_data)
+        return default_action_response
 
 
 class AttackSourceArgs(ToolBaseArgs):
@@ -346,6 +361,7 @@ def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
     client.create_action(WorkbenchDeleteFile())
     client.create_action(WorkbenchListFiles())
     client.create_action(WorkbenchRun(ctx))
+    client.create_action(WorkbenchReset())
     client.create_action(AttackFileCreate())
     client.create_action(RunSimulation(ctx))
     client.create_action(MakeConclusion())

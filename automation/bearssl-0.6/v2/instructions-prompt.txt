@@ -20,7 +20,7 @@ The main tools you need to create and run the simulation:
 
 I've also constructed a workbench area for you to work in to do analysis it has basic file operations:
 
-[[schema:workbench_create_file:workbench_read_file:workbench_delete_file:workbench_list_files:workbench_run]]
+[[schema:workbench_create_file:workbench_read_file:workbench_delete_file:workbench_list_files:workbench_run:workbench_reset]]
 
 Notes:
 * You must supply a reasoning justification to every single tool call that you make. You cannot just call tools willy nilly.

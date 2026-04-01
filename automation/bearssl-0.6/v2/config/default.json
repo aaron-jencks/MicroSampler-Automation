@@ -14,7 +14,7 @@
         "source": {
             "prefix": "source",
             "contents": {
-                "bearssl": "../../../apps/bearssl-0.6/src/*"
+                "bearssl": "../../../apps/bearssl-0.6/src"
             }
         }
     },
