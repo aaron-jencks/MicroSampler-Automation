@@ -53,7 +53,29 @@ def template_insert_schema(ctx: Dict, client: OpenAIClient, tag_name: str, args:
     return "\n\n".join(entries)
 
 
+def template_insert_template(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
+    if len(args) < 1:
+        raise RuntimeError(f"Expected at least one argument, got {len(args)}")
+    file_path = Path(args[0])
+    if not file_path.exists():
+        raise FileNotFoundError(file_path)
+    with open(file_path, "r") as file:
+        data = file.read()
+    processed_template = client.generate_preprocessed_template(ctx, data)
+    return processed_template
+
+
+def template_insert_config_value(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
+    if len(args) < 1:
+        raise RuntimeError(f"Expected at least one argument, got {len(args)}")
+    current = ctx
+    for key in args:
+        current = current[key]
+    return current
+
 
 def add_default_template_tools_to_client(ctx: Dict, client: OpenAIClient):
     client.create_template_tool("source", template_insert_file)
     client.create_template_tool("schema", template_insert_schema)
+    client.create_template_tool("template", template_insert_template)
+    client.create_template_tool("config", template_insert_config_value)
