@@ -38,7 +38,7 @@ class OpenAIClient:
     def clear_conversation(self):
         self.conversation = None
 
-    def _load_model_template(self, ctx: Dict) -> str:
+    def load_model_template(self, ctx: Dict) -> str:
         with open(ctx["llm"]["templates"][self.template], 'r') as f:
             template = f.read()
 
