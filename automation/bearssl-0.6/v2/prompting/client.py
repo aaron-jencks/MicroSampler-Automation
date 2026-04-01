@@ -53,7 +53,7 @@ class OpenAIClient:
             if tag_name not in self.template_tools:
                 raise RuntimeError(f"Unrecognized tag name: {tag_name}")
             arguments = m.group('arguments')
-            return self.template_tools[tag_name](ctx, self, tag_name, arguments[1:].split(':'))
+            return self.template_tools[tag_name](ctx, self, tag_name, arguments[1:].split(':') if len(arguments) > 1 else [])
 
         processed_content = re.sub(
             r'\[\[(?P<tag>[^\]:]+)(?P<arguments>(:[^\]:]+)*)]]',

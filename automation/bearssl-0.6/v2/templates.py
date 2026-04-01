@@ -1,9 +1,13 @@
+import logging
 from pathlib import Path
 from typing import Dict, List, Type
 
 from pydantic import BaseModel
 
 from prompting.client import OpenAIClient
+
+
+logger = logging.getLogger(__name__)
 
 
 def template_insert_file(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
@@ -17,12 +21,12 @@ def template_insert_file(ctx: Dict, client: OpenAIClient, tag_name: str, args: L
     return f"{file_path.name if len(args) == 2 and args[1] else str(file_path)}\n```\n{data}\n```"
 
 
-def model_to_readable_doc(model: Type[BaseModel]) -> str:
+def model_to_readable_doc(tag_name: str, model: Type[BaseModel]) -> str:
     schema = model.model_json_schema()
     props = schema.get("properties", {})
     required = set(schema.get("required", []))
 
-    lines = [f"{model.__name__}:"]
+    lines = [f"{tag_name}:"]
 
     for name, field in props.items():
         field_type = field.get("type", "any")
@@ -35,15 +39,16 @@ def model_to_readable_doc(model: Type[BaseModel]) -> str:
 
 
 def template_insert_schema(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
+    logger.debug(f"creating schema documentation for {tag_name} with arguments {args}")
     entries = []
     if len(args) > 0:
         for action in args:
             if action not in client.tools:
                 raise RuntimeError(f"Action {action} not found in client tools")
-            entries.append(model_to_readable_doc(client.tools[action].schema))
+            entries.append(model_to_readable_doc(action, client.tools[action].schema))
     else:
         for action in client.tools.keys():
-            entries.append(model_to_readable_doc(client.tools[action].schema))
+            entries.append(model_to_readable_doc(action, client.tools[action].schema))
 
     return "\n\n".join(entries)
 
