@@ -10,7 +10,13 @@
     "workbench": {
         "prefix": "workbench",
         "script": "workbench.sh",
-        "data_directory": "data"
+        "data_directory": "data",
+        "source": {
+            "prefix": "source",
+            "contents": {
+                "bearssl": "../../../apps/bearssl-0.6/src/*"
+            }
+        }
     },
     "llm": {
         "model": "gpt-5.3-codex",

@@ -12,28 +12,22 @@ This defines the data structures that will be passed into your functions. You ca
 
 You do not have to implement every function if you don't want, but they do all have to have bodies. You can just leave the bodies empty if you wish.
 
-This conversation may take several turns and you may not always need to modify your source code, if that is the case you may leave it null.
+There are several tools included in your toolbox that you can use for coming to your conclusion:
 
-For each stage of the conversation you should output:
+The main tools you need to create and run the simulation:
 
-1. The source code you'd like to use (or null if you'd like to keep using the previous code)
-2. An optional list of keys to be written to a file and then read in to the program at runtime, these may be referenced by the code you write and will be stored in the global context (see above)
-3. The number of times you'd like to run the simulation in its entirety (this is the `global_iterations`), the minimum value is 1.
-4. The number of times you'd like to repeat the loop described in `skeleton.h` (this is the `inner_iterations`), the minimum value is 1.
-5. If you think you have determined successfully whether the code is constant time or not, you can indicate that and supply a reasoning.
-6. You should also supply a reasoning for whatever your current direction is, why it makes sense, and what your plan is moving forward.
+[[schema:create_attack_file:run_simulation]]
 
-As far as what you can do, everything is on the table, microarchitectural side-channels, cache priming/probing, scheduler tinkering, anything you can think of. It's up to you. What I can tell you now is that just modulating the inputs will likely not be enough. You will very likely have to take advantage of systems level attacks.
+I've also constructed a workbench area for you to work in to do analysis it has basic file operations:
 
-Here is information on how to structure your output:
-```
-class RunConfiguration(BaseModel):
-    reasoning: str                  # This is your current train of thought and justification for your actions
-    attack_source: Optional[str]    # This is the text content of the attack file interface you are creating, if left null it will reuse the old code if it exists
-    key_cases: Optional[List[str]]  # The list of key text that you'd like to pass into your code, this is optional, you can hardcode them into your source if you wish
-    global_iterations: int          # The number of whole runs to do for the deployments, this should reset microarchitectural state between runs
-    inner_iterations: int           # The number of times to run trials, this allows microarchitectural state to build between trials
-    have_conclusion: bool           # Set to true if you are confident that you have an answer and then put your justification in reasoning
-    constant_time_passed: bool      # Indicates whether you think that the algorithm is constant time or not, only used if have_conclusion is true
-```
-Your output should be in json format, this is the Python class it will be cast into.
+[[schema:workbench_create_file:workbench_read_file:workbench_delete_file:workbench_list_files:workbench_run]]
+
+Notes:
+* You must supply a reasoning justification to every single tool call that you make. You cannot just call tools willy nilly.
+* The outputs of the simulation will be stored into the workbench for analysis, there can be a lot of data, so I don't want to just dump them into the context if I don't have to.
+* In order to use the workbench, you need to define a script of the name [[config:workbench:script]], you'll want to re-define it every time that you run the workbench.
+* You can call one or more tools each iteration, but once you call `make_conclusion` the conversation will end. So make sure you are confident in your conclusion.
+
+The algorithm that you are classifying is described below:
+
+[[template:target-prompt.txt]]
