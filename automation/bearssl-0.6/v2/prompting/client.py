@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from typing import Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, Callable
 
 from openai import OpenAI
 
@@ -11,7 +11,7 @@ from actions import LLMAction, LLMActionResponse
 logger = logging.getLogger(__name__)
 
 
-TemplateFeature = Callable[[Dict, str, List[str]], str]
+TemplateFeature = Callable[[Dict, Any, str, List[str]], str]
 
 
 class OpenAIClient:
@@ -44,7 +44,7 @@ class OpenAIClient:
             if tag_name not in self.template_tools:
                 raise RuntimeError(f"Unrecognized tag name: {tag_name}")
             arguments = m.group('arguments')
-            return self.template_tools[tag_name](ctx, tag_name, arguments[1:].split(':'))
+            return self.template_tools[tag_name](ctx, self, tag_name, arguments[1:].split(':'))
 
         processed_content = re.sub(
             r'\[\[(?P<tag>[^\]:]+)(?P<arguments>(:[^\]:]+)*)]]',
@@ -89,7 +89,7 @@ class OpenAIClient:
                 args_dict = json.loads(item.arguments)
                 tool = self.tools[item.name]
                 args = tool.schema.model_validate(args_dict)
-                responses.append(tool.execute(ctx, args))
+                responses.append((item, tool.execute(ctx, args)))
             else:
                 logger.info(f'model response: {item.content}')
 

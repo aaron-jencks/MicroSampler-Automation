@@ -4,7 +4,7 @@ from typing import Dict, List
 from prompting.client import OpenAIClient
 
 
-def template_insert_file(ctx: Dict, tag_name: str, args: List[str]) -> str:
+def template_insert_file(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
     file_path = Path(args[0])
