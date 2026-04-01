@@ -74,10 +74,10 @@ class WorkbenchReadFile(LLMAction):
             return LLMActionResponse(None, LLMActionError(
                 "file not found",
                 f"{kwargs.file_name}"
-            ))
+            ), None)
         with open(file_path, mode='r') as fp:
             data = fp.read()
-        return LLMActionResponse(data, None)
+        return LLMActionResponse(data, None, None)
 
 
 class WorkbenchDeleteFile(LLMAction):
@@ -100,7 +100,7 @@ class WorkbenchDeleteFile(LLMAction):
             return LLMActionResponse(None, LLMActionError(
                 "file not found",
                 f"{kwargs.file_name}"
-            ))
+            ), None)
         os.remove(file_path)
         return default_action_response
 
@@ -123,7 +123,7 @@ class WorkbenchListFiles(LLMAction):
         for dirpath, dirnames, filenames in os.walk(prefix):
             for filename in filenames:
                 result.append(str(Path(dirpath) / filename))
-        return LLMActionResponse('\n'.join(result), None)
+        return LLMActionResponse('\n'.join(result), None, None)
 
 
 class WorkbenchRunArgs(ToolBaseArgs):
@@ -150,7 +150,7 @@ class WorkbenchRun(LLMAction):
             return LLMActionResponse(None, LLMActionError(
                 "file not found",
                 str(self.script_path)
-            ))
+            ), None)
         try:
             response = sp.run(
                 [str(self.script_path), *kwargs.args],
@@ -162,13 +162,13 @@ class WorkbenchRun(LLMAction):
             return LLMActionResponse(None, LLMActionError(
                 "timeout",
                 "the script call exceeded 5 minutes"
-            ))
+            ), None)
         return LLMActionResponse(
             (
                 f"stdout:\n```\n{response.stdout.decode()}\n```\n"
                 f"stderr:\n```\n{response.stderr.decode()}\n```"
             ),
-            None
+            None, None
         )
 
 
@@ -198,7 +198,7 @@ class AttackFileCreate(LLMAction):
             return LLMActionResponse(None, LLMActionError(
                 "build failed",
                 f"stdout:\n```\n{build_status.stdout}\n```\nstderr:\n```\n{build_status.stderr}\n```"
-            ))
+            ), None)
         return default_action_response
 
 
@@ -214,7 +214,8 @@ class SimulationArgs(ToolBaseArgs):
             "The number of times to run the simulation without resetting the state. "
             "Think of it like there's a loop between global_setup and global_teardown. "
             "The global state is not reset between iterations. "
-            "However trial_setup and trial_teardown are still called each iteration, so in that way you can reset state."
+            "However trial_setup and trial_teardown are still called each iteration, "
+            "so in that way you can reset state."
         )
     )
     run_name: str = Field(
@@ -250,7 +251,7 @@ class RunSimulation(LLMAction):
     ) -> LLMActionResponse:
         logger.info('parsing run output')
 
-        result = base_result if base_result is not None else LLMActionResponse(None, None)
+        result = base_result if base_result is not None else LLMActionResponse(None, None, None)
 
         log_prefix = Path(ctx['workbench']['data_directory']) / args.run_name
         log_prefix.mkdir(parents=True, exist_ok=True)
@@ -298,22 +299,24 @@ class RunSimulation(LLMAction):
         config = RunConfiguration(
             kwargs.global_iterations,
             kwargs.inner_iterations,
+            kwargs.run_name,
         )
         logger.info("running class 0")
         cls_0_output = deploy_harness(ctx, config, 0)
-        result = self._handle_simulation_output(ctx, cls_0_output)
+        result = self._handle_simulation_output(ctx, kwargs, 0, cls_0_output)
         if result.error is not None:
             logger.info("an error occurred during class 0, skipping class 1")
             return result
         logger.info("running class 1")
         cls_1_output = deploy_harness(ctx, config, 1)
-        result = self._handle_simulation_output(ctx, cls_1_output, result)
+        result = self._handle_simulation_output(ctx, kwargs, 1, cls_1_output, result)
         return result
 
 
 class ConclusionArgs(ToolBaseArgs):
     constant_time: bool = Field(
-        description="True if you think the algorithm is constant time, False otherwise, support for this conclusion must be in your reasoning",
+        description="True if you think the algorithm is constant time, False otherwise, "
+                    "support for this conclusion must be in your reasoning",
     )
 
 
