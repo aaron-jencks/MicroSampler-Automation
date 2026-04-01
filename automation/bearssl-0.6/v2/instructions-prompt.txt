@@ -29,6 +29,8 @@ Notes:
 * You can call one or more tools each iteration, but once you call `make_conclusion` the conversation will end. So make sure you are confident in your conclusion.
 * When reading files, your paths should be relative to the workbench directory which is [[config:workbench:prefix]]
 
+You should output a report file with your findings, characterizing them with tables, and aggregations, don't just spit out the actual raw data. You can use the workbench to make these aggregations for your report. Place your report in a file called [[config:llm:report_name]]. It should reference places in the code where you can concretely point to that indicate timing leakage if there is any, it should characterize the timing distribution as well and use statistical significance to indicate constant-time-ness.
+
 The algorithm that you are classifying is described below:
 
 [[template:target-prompt.txt]]
