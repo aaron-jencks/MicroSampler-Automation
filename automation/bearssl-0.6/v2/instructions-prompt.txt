@@ -27,6 +27,7 @@ Notes:
 * The outputs of the simulation will be stored into the workbench for analysis, there can be a lot of data, so I don't want to just dump them into the context if I don't have to.
 * In order to use the workbench, you need to define a script of the name [[config:workbench:script]], you'll want to re-define it every time that you run the workbench.
 * You can call one or more tools each iteration, but once you call `make_conclusion` the conversation will end. So make sure you are confident in your conclusion.
+* When reading files, your paths should be relative to the workbench directory which is [[config:workbench:prefix]]
 
 The algorithm that you are classifying is described below:
 
