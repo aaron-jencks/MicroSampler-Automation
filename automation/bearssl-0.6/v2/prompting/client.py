@@ -68,6 +68,7 @@ class OpenAIClient:
         logger.info('prompting model...')
         logger.info(f'conversation: {self.conversation}')
         logger.info(f'template: {self.template}')
+        logger.info(f'msg: {msg}')
 
         response = self.client.responses.create(
             model=ctx["llm"]["model"],
