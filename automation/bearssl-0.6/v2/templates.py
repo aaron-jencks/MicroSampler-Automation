@@ -5,6 +5,7 @@ from typing import Dict, List, Type
 from pydantic import BaseModel
 
 from prompting.client import OpenAIClient
+from prompting.actions import LLMAction
 
 
 logger = logging.getLogger(__name__)
@@ -21,12 +22,13 @@ def template_insert_file(ctx: Dict, client: OpenAIClient, tag_name: str, args: L
     return f"{file_path.name if len(args) == 2 and args[1] else str(file_path)}\n```\n{data}\n```"
 
 
-def model_to_readable_doc(tag_name: str, model: Type[BaseModel]) -> str:
+def model_to_readable_doc(action: LLMAction) -> str:
+    model = action.schema
     schema = model.model_json_schema()
     props = schema.get("properties", {})
     required = set(schema.get("required", []))
 
-    lines = [f"{tag_name}:"]
+    lines = [f"{action.name}: {action.description}"]
 
     for name, field in props.items():
         field_type = field.get("type", "any")
@@ -45,10 +47,10 @@ def template_insert_schema(ctx: Dict, client: OpenAIClient, tag_name: str, args:
         for action in args:
             if action not in client.tools:
                 raise RuntimeError(f"Action {action} not found in client tools")
-            entries.append(model_to_readable_doc(action, client.tools[action].schema))
+            entries.append(model_to_readable_doc(client.tools[action]))
     else:
         for action in client.tools.keys():
-            entries.append(model_to_readable_doc(action, client.tools[action].schema))
+            entries.append(model_to_readable_doc(client.tools[action]))
 
     return "\n\n".join(entries)
 
