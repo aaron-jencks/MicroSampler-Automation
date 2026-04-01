@@ -281,7 +281,7 @@ class RunSimulation(LLMAction):
         logger.info("logging stderr")
         if args.stderr_file is not None and output.stderr is not None:
             err_file = log_prefix / args.stderr_file
-            err_file.with_stem(err_file.stem + f"_{cls}")
+            err_file = err_file.with_stem(err_file.stem + f"_{cls}")
             with open(err_file, mode='w+') as fp:
                 fp.write(output.stderr)
             if result.response_message == "":

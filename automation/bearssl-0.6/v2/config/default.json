@@ -27,5 +27,9 @@
         },
         "api_key": "",
         "report_name": "conclusion.md"
+    },
+    "logging": {
+        "prefix": "logs",
+        "output": "v2_output.log"
     }
 }

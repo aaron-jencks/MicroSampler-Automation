@@ -1,4 +1,5 @@
 import argparse
+import datetime as dt
 import logging
 from pathlib import Path
 from typing import List, Dict
@@ -14,6 +15,23 @@ from workbench import reset_workbench
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def setup_logging(ctx: Dict):
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+
+    log_path = Path(ctx["logging"]["prefix"]) / ctx["logging"]["output"]
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path = log_path.with_stem(log_path.stem + "_" + dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
+
+    file = logging.FileHandler(log_path)
+    file.setLevel(logging.DEBUG)
+
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    root.addHandler(console)
+    root.addHandler(file)
 
 
 def load_configs(cfgs: List[Path], default: Path) -> Dict:
@@ -100,8 +118,8 @@ def main(ctx: Dict, dry: bool = False):
         current_message = tool_responses
         iteration += 1
 
-    print(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
-    print(f"Reasoning: {conclusion.reasoning}")
+    logger.info(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
+    logger.info(f"Reasoning: {conclusion.reasoning}")
 
 
 if __name__ == "__main__":
@@ -113,5 +131,6 @@ if __name__ == "__main__":
 
     cfg = load_configs(args.config, args.default_config)
 
+    setup_logging(cfg)
     main(cfg, args.dry_run)
     
