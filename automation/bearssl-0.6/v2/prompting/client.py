@@ -22,6 +22,9 @@ class OpenAIClient:
         self.conversation: Optional[str] = None
         self.template: str = template_name
 
+    def create_template_tool(self, tag_name: str, handler: TemplateFeature):
+        self.template_tools[tag_name] = handler
+
     def create_action(self, action: LLMAction):
         self.tools[action.name] = action
 
