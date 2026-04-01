@@ -30,3 +30,5 @@ br_i31_modpow_v2(uint32_t *x, uint32_t *r,
 ```
 
 If you want to look at the project source code, it will be included in the workbench in the [[config:workbench:source:prefix]] directory. It will be stored in the `bearssl` directory. This is a read-only copy, it is not used to build the harness, modifying these files will do nothing.
+
+The actual function can be found in [[config:workbench:source:prefix]]/bearssl/int/i31_modpow.c for your perusal.

@@ -66,7 +66,7 @@ def main(ctx: Dict, dry: bool = False):
         messages = []
         errors = []
         for item_ctx, response in responses:
-            item_ctx_str = f"{item_ctx.name}({item_ctx.arguments})"
+            item_ctx_str = f"{item_ctx.name}"
             if response.error is not None:
                 errors.append(f"{item_ctx_str}:\n\n{response.error.name}: {response.error.description}")
             if response.conclusion is not None:
@@ -92,6 +92,7 @@ def main(ctx: Dict, dry: bool = False):
             output_message += " None"
 
         current_message = output_message
+        iteration += 1
 
     print(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
     print(f"Reasoning: {conclusion.reasoning}")

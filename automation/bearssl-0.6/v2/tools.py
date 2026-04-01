@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess as sp
 from typing import Dict, List, Optional, Type
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class ToolBaseArgs(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     reasoning: str = Field(description="The reason that you are executing this action")
 
 
