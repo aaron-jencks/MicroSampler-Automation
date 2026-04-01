@@ -95,7 +95,7 @@ def run_workbench(ctx: Dict, args: List[str]) -> sp.CompletedProcess[bytes]:
     if not script_path.exists():
         raise FileNotFoundError(script_path)
     response = sp.run(
-        ["bash", str(script_path), *args],
+        ["bash", ctx["workbench"]["script"], *args],
         cwd=Path(ctx['workbench']['prefix']).absolute(),
         capture_output=True,
         timeout=300
