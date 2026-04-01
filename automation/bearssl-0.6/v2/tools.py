@@ -34,7 +34,7 @@ class FileCreateArgs(FileNameArgs):
 
 
 class WorkbenchFileCreate(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self):
         super().__init__(
             f'workbench_create_file',
             f"creates or replaces a file in the workbench",
@@ -55,7 +55,7 @@ class WorkbenchFileCreate(LLMAction):
 
 
 class WorkbenchReadFile(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self):
         super().__init__(
             "workbench_read_file",
             "read a file and report its contents",
@@ -81,7 +81,7 @@ class WorkbenchReadFile(LLMAction):
 
 
 class WorkbenchDeleteFile(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self):
         super().__init__(
             "workbench_delete_file",
             "delete a file from the workbench",
@@ -106,7 +106,7 @@ class WorkbenchDeleteFile(LLMAction):
 
 
 class WorkbenchListFiles(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self):
         super().__init__(
             "workbench_list_files",
             "lists the names of the files currently in the workbench",
@@ -177,7 +177,7 @@ class AttackSourceArgs(ToolBaseArgs):
 
 
 class AttackFileCreate(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self):
         super().__init__(
             'create_attack_file',
             'stores the source code for the attack file',
@@ -321,7 +321,7 @@ class ConclusionArgs(ToolBaseArgs):
 
 
 class MakeConclusion(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self):
         super().__init__(
             "make_conclusion",
             "indicates that all analysis is done and that this is your final conclusion",
@@ -341,11 +341,11 @@ class MakeConclusion(LLMAction):
 
 
 def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
-    client.create_action(WorkbenchFileCreate(ctx))
-    client.create_action(WorkbenchReadFile(ctx))
-    client.create_action(WorkbenchDeleteFile(ctx))
-    client.create_action(WorkbenchListFiles(ctx))
+    client.create_action(WorkbenchFileCreate())
+    client.create_action(WorkbenchReadFile())
+    client.create_action(WorkbenchDeleteFile())
+    client.create_action(WorkbenchListFiles())
     client.create_action(WorkbenchRun(ctx))
-    client.create_action(AttackFileCreate(ctx))
+    client.create_action(AttackFileCreate())
     client.create_action(RunSimulation(ctx))
-    client.create_action(MakeConclusion(ctx))
+    client.create_action(MakeConclusion())
