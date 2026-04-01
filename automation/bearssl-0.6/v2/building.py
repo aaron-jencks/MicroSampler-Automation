@@ -75,9 +75,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
     result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0, output_files=[])
     try:
         commands = [
-            f"./{ctx['harness']['executable']}",
-            str(cls),
-            str(configuration.inner_iterations),
+            f"./{ctx['harness']['executable']} {cls} {configuration.inner_iterations}",
         ]
         logger.info(f"Running: {' '.join(commands)}")
         run_output = sp.run(

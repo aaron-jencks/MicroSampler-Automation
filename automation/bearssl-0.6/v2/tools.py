@@ -272,10 +272,16 @@ class RunSimulation(LLMAction):
         log_prefix = Path(ctx['workbench']['data_directory']) / args.run_name
         log_prefix.mkdir(parents=True, exist_ok=True)
 
+        if result.response_message is None:
+            result.response_message = ""
+        else:
+            result.response_message += "\n\n"
+        result.response_message += f"Class {cls}:\n\n"
+
         logger.info("logging stderr")
-        result.response_message = ""
         if args.stderr_file is not None and output.stderr is not None:
             err_file = log_prefix / args.stderr_file
+            err_file.with_stem(err_file.stem + f"_{cls}")
             with open(err_file, mode='w+') as fp:
                 fp.write(output.stderr)
             if result.response_message == "":
