@@ -21,6 +21,7 @@ class OpenAIClient:
         self.template_tools: Dict[str, TemplateFeature] = {}
         self.conversation: Optional[str] = None
         self.template: str = template_name
+        self.dry_run : bool = False
 
     def create_template_tool(self, tag_name: str, handler: TemplateFeature):
         self.template_tools[tag_name] = handler
@@ -69,6 +70,10 @@ class OpenAIClient:
         logger.info(f'conversation: {self.conversation}')
         logger.info(f'template: {self.template}')
         logger.info(f'msg: {msg}')
+
+        if self.dry_run:
+            logger.info("dry run requested, skipping actual prompting")
+            return []
 
         response = self.client.responses.create(
             model=ctx["llm"]["model"],

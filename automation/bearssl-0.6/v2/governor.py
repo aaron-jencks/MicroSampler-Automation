@@ -34,8 +34,10 @@ def setup_model_client(ctx: Dict) -> OpenAIClient:
     return client
 
 
-def main(ctx: Dict):
+def main(ctx: Dict, dry: bool = False):
     client = setup_model_client(ctx)
+    if dry:
+        client.dry_run = True
 
     logger.info(f"using instruction prompt:\n\n{client.load_model_template(ctx)}")
 
@@ -49,6 +51,9 @@ def main(ctx: Dict):
         logger.info("starting prompting iteration {}".format(iteration))
 
         responses = client.prompt_model(ctx, current_message)
+        if dry:
+            logger.info("dry run requested, exiting...")
+            return
         if len(responses) == 0:
             logger.warning("llm didn't do anything")
             with open(Path(ctx["llm"]["templates"]["stuck_message"]), 'r') as fp:
@@ -98,5 +103,5 @@ if __name__ == "__main__":
 
     cfg = load_configs(args.config, args.default_config)
 
-    main(cfg)
+    main(cfg, args.dry_run)
     
