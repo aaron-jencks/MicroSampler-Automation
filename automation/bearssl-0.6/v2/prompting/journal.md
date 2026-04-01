@@ -8,3 +8,7 @@ How can I make a system that allows the agent to execute actions like codex? May
 3/31/2026
 
 I'm almost done getting the actions integrated into the governor, I just need to update the client to actually allow the use of the template tools and then get the prompt reconfigured and then re-do the loop in the governor main loop. Shouldn't take more than a few hours.
+
+4/1/2026
+
+I got everything running I just need to figure out some path differences, it looks like the system cannot find paths that the model asks for even though they should definitely exist.
