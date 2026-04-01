@@ -1,12 +1,13 @@
 import logging
-import os, sys
+import os
 from pathlib import Path
 import subprocess as sp
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError
+from prompting.client import OpenAIClient
 from building import build_harness, deploy_harness, RunConfiguration, RunResult
 
 logger = logging.getLogger(__name__)
@@ -308,3 +309,13 @@ class RunSimulation(LLMAction):
         cls_1_output = deploy_harness(ctx, config, 1)
         result = self._handle_simulation_output(ctx, cls_1_output, result)
         return result
+
+
+def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
+    client.create_action(WorkbenchFileCreate(ctx))
+    client.create_action(WorkbenchReadFile(ctx))
+    client.create_action(WorkbenchDeleteFile(ctx))
+    client.create_action(WorkbenchListFiles(ctx))
+    client.create_action(WorkbenchRun(ctx))
+    client.create_action(AttackFileCreate(ctx))
+    client.create_action(RunSimulation(ctx))
