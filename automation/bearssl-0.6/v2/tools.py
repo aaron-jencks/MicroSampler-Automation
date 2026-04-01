@@ -134,7 +134,7 @@ class WorkbenchRunArgs(ToolBaseArgs):
 
 class WorkbenchRun(LLMAction):
     def __init__(self, ctx: Dict):
-        self.script_path = Path(ctx['workbench']['workbench']) / ctx['workbench']['script']
+        self.script_path = Path(ctx['workbench']['prefix']) / ctx['workbench']['script']
         super().__init__(
             "workbench_run",
             f"runs the workbench script: {self.script_path}, must finish within 5 minutes",

@@ -28,7 +28,7 @@ def setup_model_client(ctx: Dict) -> OpenAIClient:
         inner_client = OpenAI(api_key=ctx["llm"]["api_key"])
     else:
         inner_client = OpenAI()
-    client = OpenAIClient(inner_client, "input")
+    client = OpenAIClient(inner_client, "instructions")
     add_default_tools_to_client(ctx, client)
     add_default_template_tools_to_client(ctx, client)
     return client

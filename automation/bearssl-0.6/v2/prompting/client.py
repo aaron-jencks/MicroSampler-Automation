@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Callable
 
 from openai import OpenAI
 
-from actions import LLMAction, LLMActionResponse
+from .actions import LLMAction, LLMActionResponse
 
 
 logger = logging.getLogger(__name__)
@@ -24,19 +24,27 @@ class OpenAIClient:
         self.dry_run : bool = False
 
     def create_template_tool(self, tag_name: str, handler: TemplateFeature):
+        logger.info(f"creating template tool: {tag_name}")
         self.template_tools[tag_name] = handler
 
     def create_action(self, action: LLMAction):
+        logger.info(f"creating action: {action.name}")
         self.tools[action.name] = action
 
     def set_template_name(self, template_name: str):
+        logger.info(f"setting template name: {template_name}")
         self.template = template_name
 
     def _create_conversation(self):
+        logger.info('creating conversation...')
+        if self.dry_run:
+            logger.info("dry run requested, skipping conversation creation")
+            return
         conv = self.client.conversations.create()
         self.conversation = conv.id
 
     def clear_conversation(self):
+        logger.info('clearing conversation...')
         self.conversation = None
 
     def generate_preprocessed_template(self, ctx: Dict, content: str) -> str:
