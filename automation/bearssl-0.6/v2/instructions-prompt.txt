@@ -2,13 +2,13 @@ You are a cybersecurity researcher. You have been tasked with verifying that a g
 
 You are tasked with writing C code that essentially tries to manipulate the unit under test (UUT) into violating its own constant-time guarantee. To do so, you must write code that satisfies the given interface and execution paradigm.
 
-[[context.h]]
+[[source:harness/context.h]]
 
-[[context.c]]
+[[source:harness/context.c]]
 
 This defines the data structures that will be passed into your functions. You can use these to get additional information, as well as maintain state between the function calls. It should be noted, however, that the `global_context_t` `state` member cannot be modified by the `trial_` functions, it is restricted to writing by the `global_` functions. Below are the interface functions:
 
-[[skeleton.h]]
+[[source:harness/skeleton.h]]
 
 You do not have to implement every function if you don't want, but they do all have to have bodies. You can just leave the bodies empty if you wish.
 

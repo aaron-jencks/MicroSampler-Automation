@@ -1,18 +1,14 @@
 import argparse
-from dataclasses import dataclass
-from enum import Enum
 import logging
-import os
 from pathlib import Path
-import shutil
-import subprocess as sp
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 from cascade_config import CascadeConfig
 from openai import OpenAI
 
 from prompting.client import OpenAIClient
-import tools
+from templates import add_default_template_tools_to_client
+from tools import add_default_tools_to_client
 
 
 logging.basicConfig(level=logging.INFO)
@@ -33,112 +29,74 @@ def setup_model_client(ctx: Dict) -> OpenAIClient:
     else:
         inner_client = OpenAI()
     client = OpenAIClient(inner_client, "input")
-    client.create_action(tools.WorkbenchFileCreate(ctx))
-    client.create_action(tools.WorkbenchReadFile(ctx))
-    client.create_action(tools.WorkbenchDeleteFile(ctx))
-    client.create_action(tools.WorkbenchListFiles(ctx))
-    client.create_action(tools.WorkbenchRun(ctx))
-    client.create_action(tools.AttackFileCreate(ctx))
-    client.create_action(tools.RunSimulation(ctx))
+    add_default_tools_to_client(ctx, client)
+    add_default_template_tools_to_client(ctx, client)
     return client
 
 
 def main(ctx: Dict):
-    logger.info(f"Using instruction prompt:\n\n{generate_model_instructions(ctx)}")
+    client = setup_model_client(ctx)
 
+    logger.info(f"using instruction prompt:\n\n{client.load_model_template(ctx)}")
+
+    with open(Path(ctx["llm"]["templates"]["initial_message"]), 'r') as fp:
+        current_message = client.generate_preprocessed_template(ctx, fp.read())
+
+    logger.info("starting prompting loop...")
     iteration = 1
-    context = [{
-        "role": "developer",
-        "content": "Let's get started, you'll need to generate code, test cases, everything on this first pass here."
-    }]
-    previous_config = None
+    conclusion = None
     while True:
-        logger.info(f"Starting iteration: {iteration}")
-        config = handle_code_generation(ctx, context, previous_config)
-        if config.have_conclusion:
-            logger.info(f"The model thinks it's done!")
-            logger.info("The algorithm IS constant-time" if config.constant_time_passed else "The algorithm is NOT constant-time")
-            logger.info(f"Justification: {config.reasoning}")
+        logger.info("starting prompting iteration {}".format(iteration))
+
+        responses = client.prompt_model(ctx, current_message)
+        if len(responses) == 0:
+            logger.warning("llm didn't do anything")
+            with open(Path(ctx["llm"]["templates"]["stuck_message"]), 'r') as fp:
+                current_message = client.generate_preprocessed_template(ctx, fp.read())
+            continue
+
+        messages = []
+        errors = []
+        for item_ctx, response in responses:
+            item_ctx_str = f"{item_ctx.name}({item_ctx.arguments})"
+            if response.error is not None:
+                errors.append(f"{item_ctx_str}:\n\n{response.error.name}: {response.error.description}")
+            if response.conclusion is not None:
+                conclusion = response.conclusion
+                break
+            if response.response_message is not None:
+                messages.append(f"{item_ctx_str}:\n\n{response.response_message}")
+            if response.error is None and response.response_message is None:
+                messages.append(f"{item_ctx_str}: No output")
+
+        if conclusion is not None:
             break
-        if config.attack_source is None:
-            logger.info("Using previous attacker source code")
-        else:
-            logger.info(f"Using new attacker source code:\n```\n{config.attack_source}\n```")
-        if config.key_cases is None:
-            logger.info("No key cases supplied, they must be hardcoded")
-        else:
-            logger.info(f"Using key cases:\n```\n{'\n'.join(config.key_cases)}\n```")
-        logger.info(f"Doing {config.global_iterations} iterations")
-        logger.info(f"Doing {config.inner_iterations} inner iterations")
-        logger.info(f"The current model reasoning is: {config.reasoning}")
 
-        gi_responses = "The code has finished running, here are the results:"
-        errored = False
-        for gi in range(config.global_iterations):
-            logger.info(f"Running global iteration {gi}")
-            logger.info("Running class 0")
-            c0_result = deploy_harness(ctx, config, 0)
-            logger.info(f"Run stderr: \n```\n{c0_result.stderr}\n```")
-            if c0_result.errored:
-                logger.warning("An error occurred while running deployed code")
-                if c0_result.timedout:
-                    logger.warning("The code timed out")
-                    e_string = "There was an error while running the generated code: It timed out."
-                else:
-                    logger.warning("There was a runtime issue with the code")
-                    e_string = (f"There was an error while running the generated code (return code {c0_result.return_code}):\n\n"
-                                f"stdout:\n```\n{c0_result.stdout}\n```\n\n"
-                                f"stderr:\n```\n{c0_result.stderr}\n```")
-                context.append({
-                    "role": "user",
-                    "content": e_string,
-                })
-                errored = True
-                break
-            logger.info("Running class 1")
-            c1_result = deploy_harness(ctx, config, 1)
-            logger.info(f"Run stderr: \n```\n{c1_result.stderr}\n```")
-            if c1_result.errored:
-                logger.warning("An error occurred while running deployed code")
-                if c1_result.timedout:
-                    logger.warning("The code timed out")
-                    e_string = "There was an error while running the generated code: It timed out."
-                else:
-                    logger.warning("There was a runtime issue with the code")
-                    e_string = (f"There was an error while running the generated code (return code {c1_result.return_code}):\n\n"
-                                f"stdout:\n```\n{c1_result.stdout}\n```\n\n"
-                                f"stderr:\n```\n{c1_result.stderr}\n```")
-                context.append({
-                    "role": "user",
-                    "content": e_string,
-                })
-                errored = True
-                break
-            logger.info("Both deployments finished, collecting data")
-            gi_responses += (f"\n\nIteration {gi} results:\n\n"
-                            f"Class 0:\n```\n{c0_result.stdout}\n```\n\n"
-                            f"Class 1:\n```\n{c1_result.stdout}\n```")
+        output_message = "Output:"
 
-        if not errored:
-            context.append({
-                "role": "user",
-                "content": gi_responses,
-            })
-        iteration += 1
-        previous_config = config
+        if len(messages) > 0:
+            output_message += "\n\n"
+            output_message += "\n\n".join(messages)
+        if len(errors) > 0:
+            output_message += "\n\nErrors:\n\n"
+            output_message += "\n\n".join(errors)
+        if len(messages) == 0 and len(errors) == 0:
+            output_message += " None"
+
+        current_message = output_message
+
+    print(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
+    print(f"Reasoning: {conclusion.reasoning}")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument('config', nargs='*', type=Path, help='the config files to use')
     ap.add_argument('--default-config', type=Path, default=Path('./config/default.json'), help='the default configuration file to use')
+    ap.add_argument("--dry-run", action="store_true", help='indicates to exit after generating the first prompts')
     args = ap.parse_args()
 
     cfg = load_configs(args.config, args.default_config)
-    if cfg["llm"]["api_key"] != "":
-        cfg["llm"]["client"] = OpenAI(api_key=cfg["llm"]["api_key"])
-    else:
-        cfg["llm"]["client"] = OpenAI()
 
     main(cfg)
     

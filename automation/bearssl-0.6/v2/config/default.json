@@ -15,7 +15,9 @@
     "llm": {
         "model": "gpt-5.3-codex",
         "templates": {
-            "input": "input-prompt.txt"
+            "instructions": "instructions-prompt.txt",
+            "initial_message": "initial-prompt.txt",
+            "stuck_message": "stuck-prompt.txt"
         },
         "api_key": ""
     }
