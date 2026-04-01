@@ -39,7 +39,6 @@ def reset_workbench(ctx: Dict, data: bool = False):
     source_prefix.mkdir(parents=True)
     for key in ctx["workbench"]["source"]["contents"]:
         key_prefix = source_prefix / key
-        key_prefix.mkdir(parents=True)
         source_tree = Path(ctx["workbench"]["source"]["contents"][key])
         logger.info(f"importing {key}: {source_tree} -> {key_prefix}")
         if not source_tree.exists():

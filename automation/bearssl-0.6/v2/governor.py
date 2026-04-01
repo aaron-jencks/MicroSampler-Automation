@@ -9,6 +9,7 @@ from openai import OpenAI
 from prompting.client import OpenAIClient
 from templates import add_default_template_tools_to_client
 from tools import add_default_tools_to_client
+from workbench import reset_workbench
 
 
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +36,8 @@ def setup_model_client(ctx: Dict) -> OpenAIClient:
 
 
 def main(ctx: Dict, dry: bool = False):
+    reset_workbench(ctx, True)
+
     client = setup_model_client(ctx)
     if dry:
         client.dry_run = True
