@@ -11,7 +11,7 @@ from actions import LLMAction, LLMActionResponse
 logger = logging.getLogger(__name__)
 
 
-TemplateFeature = Callable[[Dict, str, str], str]
+TemplateFeature = Callable[[Dict, str, List[str]], str]
 
 
 class OpenAIClient:
@@ -46,11 +46,11 @@ class OpenAIClient:
             tag_name = m.group('tag')
             if tag_name not in self.template_tools:
                 raise RuntimeError(f"Unrecognized tag name: {tag_name}")
-            argument = m.group('argument')
-            return self.template_tools[tag_name](ctx, tag_name, argument)
+            arguments = m.group('arguments')
+            return self.template_tools[tag_name](ctx, tag_name, arguments[1:].split(':'))
 
         processed_template = re.sub(
-            r'\[\[(?P<tag>[^\]]+):(?P<argument>[^\]]+)]]',
+            r'\[\[(?P<tag>[^\]:]+)(?P<arguments>(:[^\]:]+)*)]]',
             replace_tags,
             template,
             flags=re.MULTILINE | re.UNICODE
