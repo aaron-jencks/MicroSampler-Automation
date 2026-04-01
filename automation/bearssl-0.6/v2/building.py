@@ -85,8 +85,8 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
             timeout=ctx["harness"]["timeout"],
             shell=True
         )
-        result.stderr = run_output.stderr.decode()
-        result.stdout = run_output.stdout.decode()
+        result.stderr = run_output.stderr.decode(errors="ignore")
+        result.stdout = run_output.stdout.decode(errors="ignore")
         result.return_code = run_output.returncode
         result.errored = run_output.returncode != 0
         if not result.errored:

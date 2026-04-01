@@ -18,8 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logging(ctx: Dict):
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
+    )
+
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
+    console.setFormatter(formatter)
 
     log_path = Path(ctx["logging"]["prefix"]) / ctx["logging"]["output"]
     log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -27,6 +32,7 @@ def setup_logging(ctx: Dict):
 
     file = logging.FileHandler(log_path)
     file.setLevel(logging.DEBUG)
+    file.setFormatter(formatter)
 
     root = logging.getLogger()
     root.setLevel(logging.INFO)
