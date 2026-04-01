@@ -28,21 +28,16 @@ void generate_json_output(global_context_t ctx, uint64_t* durations, char** keys
 int main(int argc, char** argv) {
     size_t iterations = 1;
     int class = 0;
-    char* key_file = NULL;
     if (argc > 1) {
         sscanf(argv[1], "%d", &class);
         if(argc > 2) sscanf(argv[2], "%zu", &iterations);
-        if(argc > 3) key_file = argv[3];
     }
     uint64_t* iteration_durations = malloc(sizeof(uint64_t) * iterations);
     char** iteration_keys = malloc(sizeof(char*) * iterations);
-    size_t key_count = 0;
-    char** key_file_keys = NULL;
-    if(key_file) key_file_keys = read_key_file(key_file, &key_count, MAX_KEY_LEN);
 
     fprintf(stderr, "Running class %d for %zd iterations\n", class, iterations);
 
-    global_context_t global_context = create_global_context(class, iterations, key_file_keys, key_count);
+    global_context_t global_context = create_global_context(class, iterations);
     global_setup(&global_context);
 
     for(size_t i = 0; i < iterations; i++) {

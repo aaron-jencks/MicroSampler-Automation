@@ -27,8 +27,6 @@ typedef struct {
 typedef struct {
     const int class;                // the class to classify (0, 1)
     const size_t iterations;        // the number of iterations the UUT will be run for
-    const char* const * const keys; // loaded keys from the supplied key file.
-    const size_t key_count;         // the number of keys loaded from the key file.
     void* state;                    // for use by the client, allows storing global state, can be read, but not modified during the test iterations
 } global_context_t;
 
@@ -49,9 +47,8 @@ trial_context_t create_default_trial_context(char* key, size_t iters);
 /// @brief Used by the harness to initialize the global context
 /// @param class the class to be classified
 /// @param iterations the number of iterations to run the UUT for
-/// @param keys the keys that were loaded from the key file
 /// @return a global context ready to be used by the client
-global_context_t create_global_context(const int class, const size_t iterations, const char* const * const keys, const size_t key_count);
+global_context_t create_global_context(const int class, const size_t iterations);
 
 /// @brief creates an iteration context for the client
 /// @param global_ctx a read-only copy of the global context
