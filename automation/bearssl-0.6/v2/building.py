@@ -106,3 +106,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
         result.timedout = True
         result.errored = True
     return result
+
+
+def setup_workbench(ctx: Dict):
+    pass

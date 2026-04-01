@@ -6,6 +6,7 @@ from typing import List, Dict
 from cascade_config import CascadeConfig
 from openai import OpenAI
 
+from building import setup_workbench
 from prompting.client import OpenAIClient
 from templates import add_default_template_tools_to_client
 from tools import add_default_tools_to_client
@@ -38,6 +39,8 @@ def main(ctx: Dict, dry: bool = False):
     client = setup_model_client(ctx)
     if dry:
         client.dry_run = True
+
+    setup_workbench(ctx)
 
     logger.info(f"using instruction prompt:\n\n{client.load_model_template(ctx)}")
 
