@@ -63,35 +63,41 @@ def main(ctx: Dict, dry: bool = False):
                 current_message = client.generate_preprocessed_template(ctx, fp.read())
             continue
 
+        tool_responses = []
         messages = []
         errors = []
         for item_ctx, response in responses:
+            msg_body = {
+                "type": "function_call_output",
+                "call_id": item_ctx.call_id,
+                "output": ""
+            }
             item_ctx_str = f"{item_ctx.name}"
+            message_string = ""
+            error_string = ""
             if response.error is not None:
-                errors.append(f"{item_ctx_str}:\n\n{response.error.name}: {response.error.description}")
+                error_string = f"{response.error.name}: {response.error.description}"
             if response.conclusion is not None:
                 conclusion = response.conclusion
                 break
             if response.response_message is not None:
-                messages.append(f"{item_ctx_str}:\n\n{response.response_message}")
+                message_string = f"{item_ctx_str}:\n\n{response.response_message}"
             if response.error is None and response.response_message is None:
-                messages.append(f"{item_ctx_str}: No output")
+                message_string = "No output"
+            if message_string != "":
+                msg_body["output"] = f"Output:\n\n{message_string}"
+                messages.append(f"{item_ctx_str}: {message_string}")
+            if error_string != "":
+                if message_string != "":
+                    msg_body["output"] += "\n\n"
+                msg_body["output"] += f"Error:\n\n{error_string}"
+                errors.append(f"{item_ctx_str}: {error_string}")
+            tool_responses.append(msg_body)
 
         if conclusion is not None:
             break
 
-        output_message = "Output:"
-
-        if len(messages) > 0:
-            output_message += "\n\n"
-            output_message += "\n\n".join(messages)
-        if len(errors) > 0:
-            output_message += "\n\nErrors:\n\n"
-            output_message += "\n\n".join(errors)
-        if len(messages) == 0 and len(errors) == 0:
-            output_message += " None"
-
-        current_message = output_message
+        current_message = tool_responses
         iteration += 1
 
     print(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")

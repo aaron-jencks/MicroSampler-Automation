@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, Callable, Union
 
 from openai import OpenAI
 
@@ -70,7 +70,7 @@ class OpenAIClient:
 
         return self.generate_preprocessed_template(ctx, template)
 
-    def prompt_model(self, ctx: Dict, msg: str) -> List[LLMActionResponse]:
+    def prompt_model(self, ctx: Dict, msg: Union[str, List[Dict]]) -> List[LLMActionResponse]:
         if self.conversation is None:
             self._create_conversation()
 

@@ -71,11 +71,6 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
     deploy_path = Path(ctx["harness"]["deployment_prefix"])
     os.makedirs(deploy_path, exist_ok=True)
     shutil.copy(Path(ctx["harness"]["prefix"]) / ctx["harness"]["executable"], deploy_path)
-    if configuration.key_cases is not None:
-        logger.info("Generating Key File...")
-        with open(deploy_path / ctx["harness"]["key_file"], 'w+') as f:
-            contents = '\n'.join(configuration.key_cases)
-            f.write(contents)
     logger.info("Running UUT...")
     result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0)
     try:
