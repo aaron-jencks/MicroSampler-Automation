@@ -1,10 +1,10 @@
 CC ?= cc
-CFLAGS ?= -Os
+CFLAGS ?= -O2
 BEARSSL_SRC_ROOT ?= ../../../../apps/bearssl-0.6/src
 BEARSSL_INC_ROOT ?= ../../../../apps/bearssl-0.6/inc
 CPPFLAGS += -DLOCAL_X86_BUILD -I. -I$(BEARSSL_SRC_ROOT) -I$(BEARSSL_INC_ROOT)
 LDFLAGS ?=
-LDLIBS ?=-lpthread
+LDLIBS ?=-lpthread -lm
 
 BUILD_DIR ?= build
 HARNESS := harness
@@ -12,7 +12,7 @@ ATTACK_IMPL := attack.c
 
 SOURCES=codec/ccopy.c int/i31_tmont.c int/i31_montmul.c int/i31_modpow.c int/i31_ninv31.c int/i31_muladd.c util/util.c int/i31_sub.c int/i31_add.c int/i32_div32.c
 UUT_SOURCES := $(addprefix $(BEARSSL_SRC_ROOT)/,$(SOURCES))
-LOCAL_SOURCES := context.c timing.c wrapper.c fileio.c
+LOCAL_SOURCES := context.c timing.c wrapper.c fileio.c encryption_util.c error.c
 HARNESS_SOURCES := harness.c $(LOCAL_SOURCES) $(ATTACK_IMPL) $(UUT_SOURCES)
 
 HARNESS_OBJECTS := \
@@ -38,16 +38,22 @@ $(BUILD_DIR)/harness.o: harness.c context.h skeleton.h wrapper.h | $(BUILD_DIR)
 $(BUILD_DIR)/wrapper.o: wrapper.c wrapper.h context.h timing.h $(UUT_SOURCES) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/context.o: context.c context.h timing.h | $(BUILD_DIR)
+$(BUILD_DIR)/context.o: context.c context.h timing.h encryption_util.h error.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/timing.o: timing.c timing.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/attack.o: $(ATTACK_IMPL) skeleton.h context.h | $(BUILD_DIR)
+$(BUILD_DIR)/attack.o: $(ATTACK_IMPL) skeleton.h context.h encryption_util.h error.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/fileio.o: fileio.c fileio.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/encryption_util.o: encryption_util.c encryption_util.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/error.o: error.c error.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(ATTACK_IMPL):

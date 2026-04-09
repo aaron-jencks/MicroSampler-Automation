@@ -3,12 +3,13 @@
 #include "utils.h"
 #include "inner.h"
 
-uint64_t timed_call_br_i31_modpow_v2(
+uint64_t timed_call_br_ccopy_v2(
     trial_context_t ctx
 ) {
+    size_t i;
     uint64_t start, end, duration;
     start = monotonic_ns();
-    br_i31_modpow_v2(ctx.x, ctx.r, ctx.e, ctx.elen, ctx.m, ctx.m0i, ctx.t1, ctx.t2);
+    br_ccopy_v2(*ctx.key, ctx.dest, ctx.dummy, ctx.data, *ctx.data_len);
     end = monotonic_ns();
     return end - start;
 }
