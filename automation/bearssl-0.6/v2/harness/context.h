@@ -14,14 +14,14 @@ bench_context_t contains the definition of the trial/iteration specific state, i
 
 
 typedef struct {
-    uint32_t * const x;
-    uint32_t * const r;
-    unsigned char * const e; 
-    size_t elen;
-    uint32_t * const m; 
-    uint32_t m0i; 
-    uint32_t * const t1; 
-    uint32_t * const t2;
+    uint32_t * const x;         // OUTPUT: result (and also initial base)
+    uint32_t * const r;         // Precomputed constant (Montgomery-related)
+    unsigned char * const e;    // exponent (e.g., RSA exponent)
+    size_t elen;                // length of exponent in bytes
+    uint32_t * const m;         // modulus
+    uint32_t m0i;               // Montgomery constant (precomputed inverse)
+    uint32_t * const t1;        // temp buffer
+    uint32_t * const t2;        // temp buffer
 } trial_context_t;
 
 typedef struct {
