@@ -308,7 +308,7 @@ class RunSimulation(LLMAction):
 
         result = base_result if base_result is not None else LLMActionResponse(None, None, None)
 
-        log_prefix = Path(ctx['workbench']['data_directory']) / args.run_name
+        log_prefix = Path(ctx['workbench']['prefix']) / ctx["workbench"]["data_directory"] / args.run_name
         log_prefix.mkdir(parents=True, exist_ok=True)
 
         if result.response_message is None:
