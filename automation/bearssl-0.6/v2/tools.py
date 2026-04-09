@@ -27,6 +27,30 @@ def create_log_statement_for_tool_use(args: ToolBaseArgs, fmt: str, *fargs):
     )
 
 
+class BugReport(LLMAction):
+    def __init__(self):
+        super().__init__(
+            "bug_report",
+            "reports an identified bug for immediate developer attention, this can be something as simple as a json formatting error",
+            ToolBaseArgs
+        )
+
+    def execute(self, ctx: Dict, kwargs: ToolBaseArgs) -> LLMActionResponse:
+        create_log_statement_for_tool_use(
+            kwargs,
+            "the model thinks there's a bug in the code: {}",
+            kwargs.reasoning
+        )
+        resp = input("Is this a real bug (y/N)? ").lower()
+        if resp == '' or resp == 'n':
+            return LLMActionResponse("this is not a valid bug, please keep working", None, None)
+        elif resp == 'y':
+            return LLMActionResponse(None, None, LLMConclusion(
+                False,
+                "There is a bug in the code, please fix it and try again",
+            ))
+
+
 class FileNameArgs(ToolBaseArgs):
     file_name: str = Field(description="The name of the file")
 
@@ -381,3 +405,4 @@ def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
     client.create_action(AttackFileCreate())
     client.create_action(RunSimulation(ctx))
     client.create_action(MakeConclusion())
+    client.create_action(BugReport())

@@ -25,7 +25,7 @@ void generate_json_output(global_context_t ctx, uint64_t* durations, uint32_t* k
         printf("\n\t\t{\n\t\t\t\"iteration\": %zu,", i);
         for(size_t ki = 0; ki < 32; ki++) {
             uint32_t bit = (uint32_t)((keys[i] >> ki) & 0x1);
-            printf("\n\t\t{ \"bit\": %zu, \"class\": %u, \"key\": %u, \"duration\": %u }", ki, bit, durations[i], keys[i]);
+            printf("\n\t\t{ \"bit\": %zu, \"class\": %u, \"key\": %u, \"duration\": %lu }", ki, bit, keys[i], durations[i]);
             if(ki < 31) printf(",");
         }
         printf("\n\t\t}");

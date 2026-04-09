@@ -1,5 +1,5 @@
 CC ?= cc
-CFLAGS ?= -Os
+CFLAGS ?= -O2
 BEARSSL_SRC_ROOT ?= ../../../../apps/bearssl-0.6/src
 BEARSSL_INC_ROOT ?= ../../../../apps/bearssl-0.6/inc
 CPPFLAGS += -DLOCAL_X86_BUILD -I. -I$(BEARSSL_SRC_ROOT) -I$(BEARSSL_INC_ROOT)
