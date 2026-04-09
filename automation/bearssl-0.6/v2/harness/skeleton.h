@@ -18,9 +18,10 @@ for(size_t i = 0; i < iterations; i++) {
     iteration_keys[i] = (uint32_t)GENERATE_RANDOM_KEY;
     bench_context_t run_context = create_context(&global_context, iteration_keys[i], i);
     trial_setup(&run_context);
-    for(size_t i = 0; i < 32; i++) {
+    for(size_t ki = 0; ki < 32; ki++) {
+        uint32_t bit = (uint32_t)((iteration_keys[i] >> ki) & 0x1);
         trial_context_t trial_context = create_default_trial_context(
-            iteration_keys[i],
+            bit,
             BUFFER_SIZE
         );
         trial_inner_setup(&run_context, &trial_context);
