@@ -20,15 +20,15 @@ void destroy_trial_context(trial_context_t ctx) {
 }
 
 void generate_json_output(global_context_t ctx, uint64_t* durations, uint32_t* keys) {
-    printf("{\n\t\"iterations\": %zd,\n\t\"durations\": [", ctx.iterations);
+    printf("{\n\t\"iterations\": %zd,\n\t\"data\": [", ctx.iterations);
     for(size_t i = 0; i < ctx.iterations; i++) {
-        printf("\n\t\t{\n\t\t\t\"iteration\": %zu,", i);
+        printf("\n\t\t{\n\t\t\t\"iteration\": %zu,\n\t\t\t\"durations\": [", i);
         for(size_t ki = 0; ki < 32; ki++) {
             uint32_t bit = (uint32_t)((keys[i] >> ki) & 0x1);
-            printf("\n\t\t{ \"bit\": %zu, \"class\": %u, \"key\": %u, \"duration\": %lu }", ki, bit, keys[i], durations[i]);
+            printf("\n\t\t\t\t{ \"bit\": %zu, \"class\": %u, \"key\": %u, \"duration\": %lu }", ki, bit, keys[i], durations[i]);
             if(ki < 31) printf(",");
         }
-        printf("\n\t\t}");
+        printf("\n\t\t\t]\n\t\t}");
         if(i < ctx.iterations-1) printf(",");
     }
     printf("\n\t]\n}\n");
