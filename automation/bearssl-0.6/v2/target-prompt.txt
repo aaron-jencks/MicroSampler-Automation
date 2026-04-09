@@ -1,5 +1,3 @@
-The algorithm you are classifying is this:
-
 ```
 void
 br_ccopy_v2(uint32_t ctl, void *dst, void *dummy, const void *src, size_t len)

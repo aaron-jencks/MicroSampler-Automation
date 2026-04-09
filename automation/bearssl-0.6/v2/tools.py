@@ -251,7 +251,7 @@ class SimulationArgs(ToolBaseArgs):
             "This will be placed in the workbench data directory. "
             "Each class will get it's own file, it will have the layout of:\n"
             "```\n"
-            "data_directory/run_name\n"
+            "data_directory/[run_name]\n"
             "\tdata.json\n"
             "```"
         )
@@ -262,8 +262,8 @@ class SimulationArgs(ToolBaseArgs):
             "If omitted the stderr will not be logged. "
             "The error file will be place in:\n"
             "```\n"
-            "data_directory/run_name\n"
-            "\tstderr_file\n"
+            "data_directory/[run_name]\n"
+            "\t[stderr_file]\n"
             "```"
         )
     )

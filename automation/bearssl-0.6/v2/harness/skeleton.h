@@ -37,10 +37,9 @@ global_teardown(&global_context);
 ```
 
 global_setup and global_teardown are used if iterations > 1, it allows the client to initialize the system state, start processes, threads, whatever they need. If they need to pass information between setup and teardown, store it in the state member of the ctx parameter.
-trial_setup and trial_inner_setup allow the client to initialize the system state further with finer control. This state is setup and torn down every iteration. pre_setup is called before the trial context is generated and post_setup is called after.
+trial_setup and trial_inner_setup allow the client to initialize the system state further with finer control. This state is setup and torn down every iteration. trial_setup is called before the trial context is generated and trial_inner_setup is called for each bit of the key after the context is generated.
     ^ The client should not spawn processes or threads here, instead this should be used to setup state, any processes or threads should be performed in helper_start and helper_stop.
       Do not free the arrays inside of the trial_context_t, you can modify
-trial_generate_key is responsible for generating the key string to be passed into the UUT, it should be zero-terminated, if not it will be truncated. Do not free the buffer. The key can be at most max_len characters.
 helper_start and helper_stop can be used to initialize the system, spawn processes, etc...
 */
 
