@@ -36,7 +36,7 @@ def setup_logging(ctx: Dict):
 
     root = logging.getLogger()
     root.setLevel(logging.INFO)
-    root.addHandler(console)
+    # root.addHandler(console)
     root.addHandler(file)
 
 

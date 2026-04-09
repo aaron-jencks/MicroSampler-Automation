@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field, ConfigDict
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
 from building import build_harness, deploy_harness, RunConfiguration, RunResult, verify_legal_code
-from workbench import reset_workbench, create_workbench_file, delete_workbench_file, run_workbench, read_workbench_file, list_workbench_files
+from workbench import (reset_workbench, create_workbench_file, delete_workbench_file, run_workbench,
+                       read_workbench_file, list_workbench_files, handle_workbench_filename)
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class WorkbenchFileCreate(LLMAction):
         )
 
     def execute(self, ctx: Dict, kwargs: FileCreateArgs) -> LLMActionResponse:
-        file_path = Path(ctx['workbench']['prefix']) / kwargs.file_name
+        file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
             kwargs,
             "creating file: {} with contents:\n```\n{}\n```",
@@ -62,8 +63,7 @@ class WorkbenchReadFile(LLMAction):
         )
 
     def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
-        prefix = Path(ctx['workbench']['prefix'])
-        file_path = prefix / kwargs.file_name
+        file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
             kwargs,
             "reading file: {}",
@@ -88,8 +88,7 @@ class WorkbenchDeleteFile(LLMAction):
         )
 
     def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
-        prefix = Path(ctx['workbench']['prefix'])
-        file_path = prefix / kwargs.file_name
+        file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
             kwargs,
             "deleting file: {}",

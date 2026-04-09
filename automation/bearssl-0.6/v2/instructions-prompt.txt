@@ -39,7 +39,7 @@ Notes:
 * The outputs of the simulation will be stored into the workbench for analysis, there can be a lot of data, so I don't want to just dump them into the context if I don't have to.
 * In order to use the workbench, you need to define a script of the name [[config:workbench:script]], you'll want to re-define it every time that you run the workbench.
 * You can call one or more tools each iteration, but once you call `make_conclusion` the conversation will end. So make sure you are confident in your conclusion.
-* When reading files, your paths should be relative to the workbench directory which is [[config:workbench:prefix]]
+* When reading or creating files, your path should be relative to the workbench directory which is [[config:workbench:prefix]] (ie. `data/my_run/data.json`, not `[[config:workbench:prefix]]/data/my_run/data.json`).
 
 You should output a report file with your findings, characterizing them with tables, and aggregations, don't just spit out the actual raw data. You can use the workbench to make these aggregations for your report. Place your report in a file called [[config:llm:report_name]]. It should reference places in the code where you can concretely point to that indicate timing leakage if there is any (you must include the file name as well as the line number in your reference), it should characterize the timing distribution as well and use statistical significance to indicate constant-time-ness.
 

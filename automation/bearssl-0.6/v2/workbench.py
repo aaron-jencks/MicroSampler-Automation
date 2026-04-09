@@ -13,6 +13,13 @@ def get_workbench_path(ctx: Dict) -> Path:
     return Path(ctx["workbench"]["prefix"])
 
 
+def handle_workbench_filename(ctx: Dict, fname: str) -> Path:
+    prefix = get_workbench_path(ctx)
+    if fname.startswith(str(prefix)):
+        return Path(fname)
+    return prefix / fname
+
+
 def reset_workbench(ctx: Dict, data: bool = False):
     logger.info("resetting/creating workbench")
     prefix = get_workbench_path(ctx)
