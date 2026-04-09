@@ -46,3 +46,10 @@ You should output a report file with your findings, characterizing them with tab
 The algorithm that you are classifying is described below:
 
 [[template:target-prompt.txt]]
+
+Before you begin, it may be helpful to do this in 3 stages.
+
+1. Planning: Analyze the code that you are given to analyze and determine what your attack approach should be. Include this in your report.
+2. Building: Implement your attack and run several different test cases.
+3. Analysis: Analyze the results and determine if you learned anything new. You should include every run that you did and what it told you in your report.
+4. Conclusion: If you have enough information to make a conclusion, then finish! Otherwise go back to step 1.
