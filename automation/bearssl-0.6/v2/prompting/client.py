@@ -79,10 +79,11 @@ class OpenAIClient:
         logger.info('prompting model...')
         logger.info(f'conversation: {self.conversation}')
         logger.info(f'template: {self.template}')
-        if isinstance(msg, str):
-            logger.info(f'msg: {msg}')
-        else:
-            logger.info('msg is a tool response')
+        # if isinstance(msg, str):
+        #     logger.info(f'msg: {msg}')
+        # else:
+        #     logger.info('msg is a tool response')
+        logger.info(f'msg: {msg}')
 
         if self.dry_run:
             logger.info("dry run requested, skipping actual prompting")

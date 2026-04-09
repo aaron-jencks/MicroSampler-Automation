@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 import subprocess as sp
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional, Type, Tuple
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -275,7 +275,7 @@ class SimulationArgs(ToolBaseArgs):
             "Each class will get it's own file, it will have the layout of:\n"
             "```\n"
             "data_directory/[run_name]\n"
-            "\tdata.json\n"
+            "\tdata-{global_iteration}.json\n"
             "```"
         )
     )
@@ -286,7 +286,7 @@ class SimulationArgs(ToolBaseArgs):
             "The error file will be place in:\n"
             "```\n"
             "data_directory/[run_name]\n"
-            "\t[stderr_file]\n"
+            "\t[stderr_file]-{global_iteration}\n"
             "```"
         )
     )
@@ -300,54 +300,65 @@ class RunSimulation(LLMAction):
             SimulationArgs
         )
 
-    def _handle_simulation_output(
+    def _handle_single_simulation_output(
             self, ctx: Dict, args: SimulationArgs,
-            output: RunResult, base_result: LLMActionResponse = None
-    ) -> LLMActionResponse:
-        logger.info('parsing run output')
-
-        result = base_result if base_result is not None else LLMActionResponse(None, None, None)
+            iteration: int,
+            output: RunResult
+    ) -> Tuple[List[Path], bool]:
+        output_files = []
 
         log_prefix = Path(ctx['workbench']['prefix']) / ctx["workbench"]["data_directory"] / args.run_name
         log_prefix.mkdir(parents=True, exist_ok=True)
 
-        if result.response_message is None:
-            result.response_message = ""
-        else:
-            result.response_message += "\n\n"
-
-        logger.info("logging stderr")
         if args.stderr_file is not None and output.stderr is not None:
             err_file = log_prefix / args.stderr_file
+            err_file = err_file.with_stem(f"{err_file.stem}-{iteration}")
             with open(err_file, mode='w+') as fp:
                 fp.write(output.stderr)
-            if result.response_message == "":
-                result.response_message = "output files:"
-            result.response_message += f"\n{err_file}"
-        else:
-            logger.info("stderr file not supplied or not stderr output captured, skipping")
+            output_files.append(err_file)
 
         if output.errored:
-            if output.timedout:
-                result.error = LLMActionError(
-                    "simulation timed out",
-                    f"simulation took longer than {ctx['harness']['timeout']} seconds"
-                )
-            else:
-                result.error = LLMActionError(
-                    "simulation failed",
-                    f"simulation failed with code: {output.return_code}\n"
-                    f"stderr:\n```\n{output.stderr}\n```",
-                )
-            return result
+            return output_files, True
 
-        output_file_name = log_prefix / f"data.json"
+        output_file_name = log_prefix / f"data-{iteration}.json"
         with open(output_file_name, mode='w+') as fp:
             fp.write(output.stdout)
 
-        if result.response_message == "":
-            result.response_message = "output files:"
-        result.response_message += f"\n{output_file_name}"
+        return output_files, False
+
+    def _handle_simulation_output(
+            self, ctx: Dict, args: SimulationArgs,
+            outputs: List[RunResult]
+    ) -> LLMActionResponse:
+        logger.info('parsing run output')
+
+        log_prefix = Path(ctx['workbench']['prefix']) / ctx["workbench"]["data_directory"] / args.run_name
+        log_prefix.mkdir(parents=True, exist_ok=True)
+
+        result = LLMActionResponse("", None, None)
+
+        output_files = []
+
+        for iteration in range(args.global_iterations):
+            output = outputs[iteration]
+            files, errored = self._handle_single_simulation_output(ctx, args, iteration, output)
+            output_files += files
+            if errored:
+                if output.timedout:
+                    result.error = LLMActionError(
+                        "simulation timed out",
+                        f"simulation took longer than {ctx['harness']['timeout']} seconds"
+                    )
+                else:
+                    result.error = LLMActionError(
+                        "simulation failed",
+                        f"simulation failed with code: {output.return_code}\n"
+                        f"stderr:\n```\n{output.stderr}\n```",
+                    )
+                break
+
+        result.response_message = "Output files:\n"
+        result.response_message += "\n".join(map(str, output_files))
 
         return result
 
@@ -362,9 +373,8 @@ class RunSimulation(LLMAction):
             kwargs.run_name,
             kwargs.random_seed,
         )
-        logger.info("running class 0")
-        run_output = deploy_harness(ctx, config)
-        result = self._handle_simulation_output(ctx, kwargs, run_output)
+        run_outputs = deploy_harness(ctx, config)
+        result = self._handle_simulation_output(ctx, kwargs, run_outputs)
         return result
 
 

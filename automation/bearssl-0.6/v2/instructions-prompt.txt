@@ -30,6 +30,47 @@ The main tools you need to create and run the simulation:
 
 [[schema:create_attack_file:run_simulation]]
 
+The output form of the harness will look something like this:
+
+```json
+{
+    "iterations": [inner_iterations],
+    "data": [
+        {
+            "iteration": 0,
+            "durations": [
+                {
+                    "bit": 0,
+                    "class": 0,
+                    "key": 1234,
+                    "duration": 1234556
+                },
+                {
+                    "bit": 1,
+                    "class": 0,
+                    "key": 1234,
+                    "duration": 1234556
+                },
+                ...
+                {
+                    "bit": 31,
+                    "class": 1,
+                    "key": 1234,
+                    "duration": 1234556
+                }
+            ]
+        },
+        ...
+        {
+            "iteration": [inner_iterations]-1,
+            ...
+        }
+    ]
+}
+```
+
+You can use this for your parsing.
+
 I've also constructed a workbench area for you to work in to do analysis it has basic file operations:
 
 [[schema:workbench_create_file:workbench_read_file:workbench_delete_file:workbench_list_files:workbench_run:workbench_reset]]
