@@ -1,0 +1,26 @@
+{
+    "harness": {
+        "prefix": "bearssl-0.6/ccopy/harness",
+        "deployment_prefix": "bearssl-0.6/ccopy/deploy"
+    },
+    "workbench": {
+        "prefix": "bearssl-.06/ccopy/workbench",
+        "source": {
+            "prefix": "source",
+            "contents": {
+                "bearssl": "../apps/bearssl-0.6/src"
+            }
+        }
+    },
+    "llm": {
+        "templates": {
+            "instructions": "bearssl-0.6/ccopy/prompts/instructions-prompt.txt",
+            "initial_message": "bearssl-0.6/ccopy/prompts/initial-prompt.txt",
+            "stuck_message": "bearssl-0.6/ccopy/prompts/stuck-prompt.txt"
+        }
+    },
+    "logging": {
+        "prefix": "bearssl-0.6/ccopy/logs",
+        "output": "ccopy_output.log"
+    }
+}
