@@ -5,7 +5,12 @@
         "target": "attack.c",
         "key_file": "keys.txt",
         "deployment_prefix": "deploy",
-        "timeout": 60
+        "timeout": 60,
+        "allowed_references": [
+            "encryption_util.h",
+            "error.h",
+            "context.h"
+        ]
     },
     "workbench": {
         "prefix": "workbench",

@@ -76,8 +76,16 @@ def template_insert_config_value(ctx: Dict, client: OpenAIClient, tag_name: str,
     return current
 
 
+def template_insert_allowed_references(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
+    result = []
+    for reference in ctx["harness"]["allowed_references"]:
+        result.append(f"- {reference}")
+    return '\n'.join(result)
+
+
 def add_default_template_tools_to_client(ctx: Dict, client: OpenAIClient):
     client.create_template_tool("source", template_insert_file)
     client.create_template_tool("schema", template_insert_schema)
     client.create_template_tool("template", template_insert_template)
     client.create_template_tool("config", template_insert_config_value)
+    client.create_template_tool("allowed_references", template_insert_allowed_references)

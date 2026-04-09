@@ -44,7 +44,7 @@ $(BUILD_DIR)/context.o: context.c context.h timing.h encryption_util.h error.h |
 $(BUILD_DIR)/timing.o: timing.c timing.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/attack.o: $(ATTACK_IMPL) skeleton.h context.h | $(BUILD_DIR)
+$(BUILD_DIR)/attack.o: $(ATTACK_IMPL) skeleton.h context.h encryption_util.h error.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/fileio.o: fileio.c fileio.h | $(BUILD_DIR)

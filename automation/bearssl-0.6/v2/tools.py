@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
-from building import build_harness, deploy_harness, RunConfiguration, RunResult
+from building import build_harness, deploy_harness, RunConfiguration, RunResult, verify_legal_code
 from workbench import reset_workbench, create_workbench_file, delete_workbench_file, run_workbench, read_workbench_file, list_workbench_files
 
 logger = logging.getLogger(__name__)
@@ -206,6 +206,12 @@ class AttackFileCreate(LLMAction):
             "writing attack code:\n```\n{}\n```",
             kwargs.attack_contents
         )
+        if not verify_legal_code(ctx, kwargs.attack_contents):
+            return LLMActionResponse(None, LLMActionError(
+                "illegal attack code", (
+                "the attack code you wrote does not pass preliminary validation "
+                "you may have unallowed local references."
+            )), None)
         file_name = Path(ctx['harness']['prefix']) / ctx['harness']['target']
         with open(file_name, mode='w+') as fp:
             fp.write(kwargs.attack_contents)
@@ -234,6 +240,11 @@ class SimulationArgs(ToolBaseArgs):
             "so in that way you can reset state."
         )
     )
+    random_seed: int = Field(
+        description=(
+            "The random seed for reproducibility purposes."
+        )
+    )
     run_name: str = Field(
         description=(
             "The location in the workbench to store the output json data. "
@@ -241,14 +252,19 @@ class SimulationArgs(ToolBaseArgs):
             "Each class will get it's own file, it will have the layout of:\n"
             "```\n"
             "data_directory/run_name\n"
-            "\tclass_#.json\n"
+            "\tdata.json\n"
             "```"
         )
     )
     stderr_file: Optional[str] = Field(
         description=(
             "The location in the workbench to store the stderr output. "
-            "If omitted the stderr will not be logged."
+            "If omitted the stderr will not be logged. "
+            "The error file will be place in:\n"
+            "```\n"
+            "data_directory/run_name\n"
+            "\tstderr_file\n"
+            "```"
         )
     )
 
@@ -262,7 +278,7 @@ class RunSimulation(LLMAction):
         )
 
     def _handle_simulation_output(
-            self, ctx: Dict, args: SimulationArgs, cls: int,
+            self, ctx: Dict, args: SimulationArgs,
             output: RunResult, base_result: LLMActionResponse = None
     ) -> LLMActionResponse:
         logger.info('parsing run output')
@@ -276,12 +292,10 @@ class RunSimulation(LLMAction):
             result.response_message = ""
         else:
             result.response_message += "\n\n"
-        result.response_message += f"Class {cls}:\n\n"
 
         logger.info("logging stderr")
         if args.stderr_file is not None and output.stderr is not None:
             err_file = log_prefix / args.stderr_file
-            err_file = err_file.with_stem(err_file.stem + f"_{cls}")
             with open(err_file, mode='w+') as fp:
                 fp.write(output.stderr)
             if result.response_message == "":
@@ -304,7 +318,7 @@ class RunSimulation(LLMAction):
                 )
             return result
 
-        output_file_name = log_prefix / f"class_{cls}.json"
+        output_file_name = log_prefix / f"data.json"
         with open(output_file_name, mode='w+') as fp:
             fp.write(output.stdout)
 
@@ -323,16 +337,11 @@ class RunSimulation(LLMAction):
             kwargs.global_iterations,
             kwargs.inner_iterations,
             kwargs.run_name,
+            kwargs.random_seed,
         )
         logger.info("running class 0")
-        cls_0_output = deploy_harness(ctx, config, 0)
-        result = self._handle_simulation_output(ctx, kwargs, 0, cls_0_output)
-        if result.error is not None:
-            logger.info("an error occurred during class 0, skipping class 1")
-            return result
-        logger.info("running class 1")
-        cls_1_output = deploy_harness(ctx, config, 1)
-        result = self._handle_simulation_output(ctx, kwargs, 1, cls_1_output, result)
+        run_output = deploy_harness(ctx, config)
+        result = self._handle_simulation_output(ctx, kwargs, run_output)
         return result
 
 

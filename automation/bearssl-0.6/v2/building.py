@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import logging
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess as sp
 from typing import Optional, Dict, List
@@ -16,6 +17,7 @@ class RunConfiguration:
     global_iterations: int
     inner_iterations: int
     run_name: str
+    random_seed: int
 
 
 @dataclass
@@ -35,6 +37,14 @@ class BuildResult:
     return_code: int
 
 
+def verify_legal_code(ctx: Dict, contents: str) -> bool:
+    acceptable_references = set(ctx["harness"]["allowed_references"])
+    for m in re.finditer(r"#include \"(?P<filename>.*?)\"", contents):
+        if m.group("filename") not in acceptable_references:
+            return False
+    return True
+
+
 def build_harness(ctx: Dict) -> BuildResult:
     make_output = sp.run(
         ["make", "clean", "harness"],
@@ -48,14 +58,7 @@ def build_harness(ctx: Dict) -> BuildResult:
     )
 
 
-def store_output_data(ctx: Dict, run_name: str, data: str, cls: int) -> Path:
-    output_file = Path(ctx['workbench']['data_directory']) / run_name / f"class_{cls}.json"
-    logger.info(f"Storing {output_file}")
-    create_workbench_file(ctx, str(output_file), data)
-    return output_file
-
-
-def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunResult:
+def deploy_harness(ctx: Dict, configuration: RunConfiguration) -> RunResult:
     logger.info("Building harness...")
     build_output = build_harness(ctx)
     if build_output.return_code != 0:
@@ -66,6 +69,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
             errored=True,
             timedout=False,
             return_code=build_output.return_code,
+            output_files=[],
         )
     logger.info("Staging Deployment...")
     deploy_path = Path(ctx["harness"]["deployment_prefix"])
@@ -75,7 +79,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
     result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0, output_files=[])
     try:
         commands = [
-            f"./{ctx['harness']['executable']} {cls} {configuration.inner_iterations}",
+            f"./{ctx['harness']['executable']} {configuration.inner_iterations} {configuration.random_seed}",
         ]
         logger.info(f"Running: {' '.join(commands)}")
         run_output = sp.run(
@@ -89,10 +93,6 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
         result.stdout = run_output.stdout.decode(errors="ignore")
         result.return_code = run_output.returncode
         result.errored = run_output.returncode != 0
-        if not result.errored:
-            result.output_files = [
-                str(store_output_data(ctx, configuration.run_name, result.stdout, cls))
-            ]
         logger.info("UUT finished.")
     except sp.TimeoutExpired:
         logger.info("UUT timed out.")
