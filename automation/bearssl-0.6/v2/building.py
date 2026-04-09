@@ -6,6 +6,8 @@ import shutil
 import subprocess as sp
 from typing import Optional, Dict, List
 
+from workbench import create_workbench_file
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,9 +51,7 @@ def build_harness(ctx: Dict) -> BuildResult:
 def store_output_data(ctx: Dict, run_name: str, data: str, cls: int) -> Path:
     output_file = Path(ctx['workbench']['data_directory']) / run_name / f"class_{cls}.json"
     logger.info(f"Storing {output_file}")
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_file, 'w+') as f:
-        f.write(data)
+    create_workbench_file(ctx, str(output_file), data)
     return output_file
 
 
@@ -75,9 +75,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
     result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0, output_files=[])
     try:
         commands = [
-            f"./{ctx['harness']['executable']}",
-            str(cls),
-            str(configuration.inner_iterations),
+            f"./{ctx['harness']['executable']} {cls} {configuration.inner_iterations}",
         ]
         logger.info(f"Running: {' '.join(commands)}")
         run_output = sp.run(
@@ -87,8 +85,8 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration, cls: int) -> RunR
             timeout=ctx["harness"]["timeout"],
             shell=True
         )
-        result.stderr = run_output.stderr.decode()
-        result.stdout = run_output.stdout.decode()
+        result.stderr = run_output.stderr.decode(errors="ignore")
+        result.stdout = run_output.stdout.decode(errors="ignore")
         result.return_code = run_output.returncode
         result.errored = run_output.returncode != 0
         if not result.errored:
