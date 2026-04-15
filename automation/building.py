@@ -49,7 +49,7 @@ def build_harness(ctx: Dict) -> BuildResult:
     make_output = sp.run(
         ["make", "clean", "harness"],
         capture_output=True,
-        cwd=ctx["harness"]["prefix"]
+        cwd=Path(ctx["general_prefix"]) / ctx["harness"]["prefix"]
     )
     return BuildResult(
         stdout=make_output.stdout.decode(),
@@ -72,9 +72,9 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration) -> List[RunResult
             output_files=[],
         )]
     logger.info("Staging Deployment...")
-    deploy_path = Path(ctx["harness"]["deployment_prefix"])
+    deploy_path = Path(ctx["general_prefix"]) / ctx["harness"]["deployment_prefix"]
     os.makedirs(deploy_path, exist_ok=True)
-    shutil.copy(Path(ctx["harness"]["prefix"]) / ctx["harness"]["executable"], deploy_path)
+    shutil.copy(Path(ctx["general_prefix"]) / ctx["harness"]["prefix"] / ctx["harness"]["executable"], deploy_path)
     logger.info("Running UUT...")
     result_list = []
     for iteration in range(configuration.global_iterations):

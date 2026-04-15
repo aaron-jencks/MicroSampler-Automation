@@ -2,12 +2,14 @@ import json
 import logging
 import re
 import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Callable, Union
 
 import openai
 from openai import OpenAI
 
-from .actions import LLMAction, LLMActionResponse
+from prompting.actions import LLMAction, LLMActionResponse
+from reporting import ReportLog
 
 
 logger = logging.getLogger(__name__)
@@ -17,13 +19,14 @@ TemplateFeature = Callable[[Dict, Any, str, List[str]], str]
 
 
 class OpenAIClient:
-    def __init__(self, client: OpenAI, template_name: str):
+    def __init__(self, client: OpenAI, template_name: str, reporter: ReportLog):
         self.client = client
         self.tools: Dict[str, LLMAction] = {}
         self.template_tools: Dict[str, TemplateFeature] = {}
         self.conversation: Optional[str] = None
         self.template: str = template_name
         self.dry_run : bool = False
+        self.reporter = reporter
 
     def create_template_tool(self, tag_name: str, handler: TemplateFeature):
         logger.info(f"creating template tool: {tag_name}")
@@ -67,7 +70,8 @@ class OpenAIClient:
         return processed_content
 
     def load_model_template(self, ctx: Dict) -> str:
-        with open(ctx["llm"]["templates"][self.template], 'r') as f:
+        fp = Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / ctx["llm"]["templates"][self.template]
+        with open(fp, 'r') as f:
             template = f.read()
 
         return self.generate_preprocessed_template(ctx, template)
@@ -115,6 +119,7 @@ class OpenAIClient:
                 args_dict = json.loads(item.arguments)
                 tool = self.tools[item.name]
                 args = tool.schema.model_validate(args_dict)
+                self.reporter.log_transcript(tool.format_report_line(ctx, args))
                 responses.append((item, tool.execute(ctx, args)))
             else:
                 logger.info(f'model response: {item.content}')

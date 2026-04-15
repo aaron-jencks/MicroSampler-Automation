@@ -1,4 +1,5 @@
 {
+    "general_prefix": ".",
     "harness": {
         "prefix": "harness",
         "executable": "harness",
@@ -19,13 +20,14 @@
         "source": {
             "prefix": "source",
             "contents": {
-                "bearssl": "../../../apps/bearssl-0.6/src"
+                "bearssl": "../apps/bearssl-0.6/src"
             }
         }
     },
     "llm": {
         "model": "gpt-5.3-codex",
         "templates": {
+            "prefix": "prompts",
             "instructions": "instructions-prompt.txt",
             "initial_message": "initial-prompt.txt",
             "stuck_message": "stuck-prompt.txt"
@@ -36,5 +38,9 @@
     "logging": {
         "prefix": "logs",
         "output": "v2_output.log"
+    },
+    "final_report": {
+        "run_name": "undefined",
+        "file": "final_report.md"
     }
 }

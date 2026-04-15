@@ -7,6 +7,7 @@ from typing import List, Dict
 from cascade_config import CascadeConfig
 from openai import OpenAI
 
+from reporting import ReportLog
 from prompting.client import OpenAIClient
 from templates import add_default_template_tools_to_client
 from tools import add_default_tools_to_client
@@ -22,11 +23,7 @@ def setup_logging(ctx: Dict):
         "%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
     )
 
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    console.setFormatter(formatter)
-
-    log_path = Path(ctx["logging"]["prefix"]) / ctx["logging"]["output"]
+    log_path = Path(ctx["general_prefix"]) / ctx["logging"]["prefix"] / ctx["logging"]["output"]
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path = log_path.with_stem(log_path.stem + "_" + dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
@@ -48,12 +45,12 @@ def load_configs(cfgs: List[Path], default: Path) -> Dict:
     return conf.parse()
 
 
-def setup_model_client(ctx: Dict) -> OpenAIClient:
+def setup_model_client(ctx: Dict, reporter: ReportLog) -> OpenAIClient:
     if ctx["llm"]["api_key"] != "":
         inner_client = OpenAI(api_key=ctx["llm"]["api_key"])
     else:
         inner_client = OpenAI()
-    client = OpenAIClient(inner_client, "instructions")
+    client = OpenAIClient(inner_client, "instructions", reporter)
     add_default_tools_to_client(ctx, client)
     add_default_template_tools_to_client(ctx, client)
     return client
@@ -62,13 +59,15 @@ def setup_model_client(ctx: Dict) -> OpenAIClient:
 def main(ctx: Dict, dry: bool = False):
     reset_workbench(ctx, True)
 
-    client = setup_model_client(ctx)
+    reporter = ReportLog()
+
+    client = setup_model_client(ctx, reporter)
     if dry:
         client.dry_run = True
 
     logger.info(f"using instruction prompt:\n\n{client.load_model_template(ctx)}")
 
-    with open(Path(ctx["llm"]["templates"]["initial_message"]), 'r') as fp:
+    with open(Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / ctx["llm"]["templates"]["initial_message"], 'r') as fp:
         current_message = client.generate_preprocessed_template(ctx, fp.read())
 
     logger.info("starting prompting loop...")
@@ -83,7 +82,7 @@ def main(ctx: Dict, dry: bool = False):
             return
         if len(responses) == 0:
             logger.warning("llm didn't do anything")
-            with open(Path(ctx["llm"]["templates"]["stuck_message"]), 'r') as fp:
+            with open(Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / ctx["llm"]["templates"]["stuck_message"], 'r') as fp:
                 current_message = client.generate_preprocessed_template(ctx, fp.read())
             continue
 
@@ -126,6 +125,7 @@ def main(ctx: Dict, dry: bool = False):
 
     logger.info(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
     logger.info(f"Reasoning: {conclusion.reasoning}")
+    reporter.generate_report(ctx)
 
 
 if __name__ == "__main__":

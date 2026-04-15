@@ -10,13 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_workbench_path(ctx: Dict) -> Path:
-    return Path(ctx["workbench"]["prefix"])
+    return Path(ctx["general_prefix"]) / ctx["workbench"]["prefix"]
 
 
 def handle_workbench_filename(ctx: Dict, fname: str) -> Path:
     prefix = get_workbench_path(ctx)
-    if fname.startswith(str(prefix)):
-        return Path(fname)
+    if fname.startswith(str(ctx["workbench"]["prefix"])):
+        return Path(ctx["general_prefix"]) / fname
     return prefix / fname
 
 
@@ -46,7 +46,7 @@ def reset_workbench(ctx: Dict, data: bool = False):
     source_prefix.mkdir(parents=True)
     for key in ctx["workbench"]["source"]["contents"]:
         key_prefix = source_prefix / key
-        source_tree = Path(ctx["workbench"]["source"]["contents"][key])
+        source_tree = Path(ctx["general_prefix"]) / ctx["workbench"]["source"]["contents"][key]
         logger.info(f"importing {key}: {source_tree} -> {key_prefix}")
         if not source_tree.exists():
             raise FileNotFoundError(source_tree)
@@ -103,7 +103,7 @@ def run_workbench(ctx: Dict, args: List[str]) -> sp.CompletedProcess[bytes]:
         raise FileNotFoundError(script_path)
     response = sp.run(
         ["bash", ctx["workbench"]["script"], *args],
-        cwd=Path(ctx['workbench']['prefix']).absolute(),
+        cwd=Path(prefix).absolute(),
         capture_output=True,
         timeout=300
     )

@@ -9,7 +9,7 @@ from prompting.actions import LLMAction, LLMActionResponse, default_action_respo
 from prompting.client import OpenAIClient
 from building import build_harness, deploy_harness, RunConfiguration, RunResult, verify_legal_code
 from workbench import (reset_workbench, create_workbench_file, delete_workbench_file, run_workbench,
-                       read_workbench_file, list_workbench_files, handle_workbench_filename)
+                       read_workbench_file, list_workbench_files, handle_workbench_filename, get_workbench_path)
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,9 @@ class BugReport(LLMAction):
             "reports an identified bug for immediate developer attention, this can be something as simple as a json formatting error",
             ToolBaseArgs
         )
+
+    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> str:
+        return f"reported a bug: {kwargs.reasoning}"
 
     def execute(self, ctx: Dict, kwargs: ToolBaseArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
@@ -67,6 +70,9 @@ class WorkbenchFileCreate(LLMAction):
             FileCreateArgs
         )
 
+    def format_report_line(self, ctx: Dict, kwargs: FileCreateArgs) -> str:
+        return f"created a workbench file: {kwargs.file_name}"
+
     def execute(self, ctx: Dict, kwargs: FileCreateArgs) -> LLMActionResponse:
         file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
@@ -85,6 +91,9 @@ class WorkbenchReadFile(LLMAction):
             "read a file and report its contents",
             FileNameArgs
         )
+
+    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> str:
+        return f"read a workbench file: {kwargs.file_name}"
 
     def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
         file_path = handle_workbench_filename(ctx, kwargs.file_name)
@@ -111,6 +120,9 @@ class WorkbenchDeleteFile(LLMAction):
             FileNameArgs
         )
 
+    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> str:
+        return f"deleted a workbench file: {kwargs.file_name}"
+
     def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
         file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
@@ -136,6 +148,9 @@ class WorkbenchListFiles(LLMAction):
             ToolBaseArgs
         )
 
+    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> str:
+        return "listed the workbench files"
+
     def execute(self, ctx: Dict, kwargs: ToolBaseArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
@@ -153,12 +168,15 @@ class WorkbenchRunArgs(ToolBaseArgs):
 
 class WorkbenchRun(LLMAction):
     def __init__(self, ctx: Dict):
-        self.script_path = Path(ctx['workbench']['prefix']) / ctx['workbench']['script']
+        self.script_path = get_workbench_path(ctx) / ctx['workbench']['script']
         super().__init__(
             "workbench_run",
             f"runs the workbench script: {self.script_path}, must finish within 5 minutes",
             WorkbenchRunArgs
         )
+
+    def format_report_line(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> str:
+        return f"ran the workbench: {kwargs.args}"
 
     def execute(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
@@ -201,6 +219,9 @@ class WorkbenchReset(LLMAction):
             ResetWorkbenchArgs
         )
 
+    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> str:
+        return "reset the workbench"
+
     def execute(self, ctx: Dict, kwargs: ResetWorkbenchArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
@@ -223,6 +244,9 @@ class AttackFileCreate(LLMAction):
             AttackSourceArgs
         )
 
+    def format_report_line(self, ctx: Dict, kwargs: AttackSourceArgs) -> str:
+        return f"modified the attack source code:\n```\n{kwargs.attack_contents}\n```"
+
     def execute(self, ctx: Dict, kwargs: AttackSourceArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
@@ -235,7 +259,7 @@ class AttackFileCreate(LLMAction):
                 "the attack code you wrote does not pass preliminary validation "
                 "you may have unallowed local references."
             )), None)
-        file_name = Path(ctx['harness']['prefix']) / ctx['harness']['target']
+        file_name = Path(ctx["general_prefix"]) / ctx['harness']['prefix'] / ctx['harness']['target']
         with open(file_name, mode='w+') as fp:
             fp.write(kwargs.attack_contents)
         build_status = build_harness(ctx)
@@ -300,6 +324,15 @@ class RunSimulation(LLMAction):
             SimulationArgs
         )
 
+    def format_report_line(self, ctx: Dict, kwargs: SimulationArgs) -> str:
+        lines = [
+            f'global iterations: {kwargs.global_iterations}',
+            f'inner iterations: {kwargs.inner_iterations}',
+            f'random seed: {kwargs.random_seed}',
+            f'run name: "{kwargs.run_name}"',
+        ]
+        return f"ran simulation:\n\t" + '\n\t'.join(lines)
+
     def _handle_single_simulation_output(
             self, ctx: Dict, args: SimulationArgs,
             iteration: int,
@@ -307,7 +340,7 @@ class RunSimulation(LLMAction):
     ) -> Tuple[List[Path], bool]:
         output_files = []
 
-        log_prefix = Path(ctx['workbench']['prefix']) / ctx["workbench"]["data_directory"] / args.run_name
+        log_prefix = get_workbench_path(ctx) / ctx["workbench"]["data_directory"] / args.run_name
         log_prefix.mkdir(parents=True, exist_ok=True)
 
         if args.stderr_file is not None and output.stderr is not None:
@@ -332,7 +365,7 @@ class RunSimulation(LLMAction):
     ) -> LLMActionResponse:
         logger.info('parsing run output')
 
-        log_prefix = Path(ctx['workbench']['prefix']) / ctx["workbench"]["data_directory"] / args.run_name
+        log_prefix = get_workbench_path(ctx) / ctx["workbench"]["data_directory"] / args.run_name
         log_prefix.mkdir(parents=True, exist_ok=True)
 
         result = LLMActionResponse("", None, None)
@@ -392,6 +425,9 @@ class MakeConclusion(LLMAction):
             "indicates that all analysis is done and that this is your final conclusion",
             ConclusionArgs
         )
+
+    def format_report_line(self, ctx: Dict, args: ConclusionArgs) -> str:
+        return 'made conclusion'
 
     def execute(self, ctx: Dict, kwargs: ConclusionArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
