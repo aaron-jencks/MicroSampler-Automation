@@ -49,7 +49,7 @@ class LLMAction(ABC):
         }
 
     @abstractmethod
-    def format_report_line(self, ctx: Dict, kwargs: Type[BaseModel]) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: Type[BaseModel]) -> Optional[str]:
         pass
 
     @abstractmethod

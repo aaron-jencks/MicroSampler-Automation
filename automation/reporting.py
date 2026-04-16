@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from workbench import get_workbench_path
 
@@ -12,8 +12,9 @@ class ReportLog:
     def __init__(self):
         self.log = []
 
-    def log_transcript(self, line: str):
-        self.log.append(line)
+    def log_transcript(self, line: Optional[str]):
+        if line is not None:
+            self.log.append(line)
 
     def generate_transcript(self) -> str:
         lines = [
