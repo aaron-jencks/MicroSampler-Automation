@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     uint64_t* iteration_durations = malloc(sizeof(uint64_t) * total_bit_iterations);
     uint32_t* iteration_keys = malloc(sizeof(uint32_t) * total_bit_iterations);
 
-    global_context_t global_context = create_global_context(iterations);
+    global_context_t global_context = create_global_context(iterations, seed);
     global_setup(&global_context);
 
     for(size_t i = 0; i < iterations; i++) {

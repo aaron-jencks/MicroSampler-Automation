@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
     const size_t iterations;        // the number of iterations the UUT will be run for
-    const unsigned int random_seed  // the random seed used for generating the keys
+    const unsigned int random_seed; // the random seed used for generating the keys
     void* state;                    // for use by the client, allows storing global state, can be read, but not modified during the test iterations
 } global_context_t;
 
