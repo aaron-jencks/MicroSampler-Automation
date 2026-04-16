@@ -3,33 +3,17 @@ from pathlib import Path
 import subprocess as sp
 from typing import Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, ConfigDict
-
 from building import build_harness, deploy_harness, RunConfiguration, RunResult, verify_legal_code
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
 from reporting import ReportLog
+from tools.args import (AttackSourceArgs, BugReportArgs, ConclusionArgs, create_log_statement_for_tool_use,
+                        FileCreateArgs, FileNameArgs, ResetWorkbenchArgs, SimulationArgs, SuggestionBoxArgs,
+                        ToolBaseArgs, WorkbenchRunArgs)
 from workbench import (reset_workbench, create_workbench_file, delete_workbench_file, run_workbench,
                        read_workbench_file, list_workbench_files, handle_workbench_filename, get_workbench_path)
 
 logger = logging.getLogger(__name__)
-
-
-class ToolBaseArgs(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    reasoning: str = Field(description="The reason that you are executing this action")
-
-
-def create_log_statement_for_tool_use(args: ToolBaseArgs, fmt: str, *fargs):
-    inner_string = fmt.format(*fargs)
-    logger.info(
-        f"{inner_string}\n"
-        f"step reasoning: {args.reasoning}"
-    )
-
-
-class BugReportArgs(ToolBaseArgs):
-    bug: str = Field(description="The description of the bug that you are reporting")
 
 
 class BugReport(LLMAction):
@@ -59,10 +43,6 @@ class BugReport(LLMAction):
             ))
 
 
-class SuggestionBoxArgs(ToolBaseArgs):
-    suggestion: str = Field(description="The description of the suggestion that you are submitting")
-
-
 class SuggestionBox(LLMAction):
     def __init__(self, reporter: ReportLog):
         super().__init__(
@@ -79,14 +59,6 @@ class SuggestionBox(LLMAction):
             kwargs.suggestion
         )
         self.reporter.log_suggestion(kwargs.suggestion)
-
-
-class FileNameArgs(ToolBaseArgs):
-    file_name: str = Field(description="The name of the file")
-
-
-class FileCreateArgs(FileNameArgs):
-    file_contents: str = Field(description="The content of the file")
 
 
 class WorkbenchFileCreate(LLMAction):
@@ -187,12 +159,6 @@ class WorkbenchListFiles(LLMAction):
         return LLMActionResponse('\n'.join(result), None, None)
 
 
-class WorkbenchRunArgs(ToolBaseArgs):
-    args: List[str] = Field(description="The cli args to be passed to the shell script, "
-                                        "if they would be separated by a space in the shell, "
-                                        "they should be different elements.")
-
-
 class WorkbenchRun(LLMAction):
     def __init__(self, ctx: Dict):
         self.script_path = get_workbench_path(ctx) / ctx['workbench']['script']
@@ -231,12 +197,6 @@ class WorkbenchRun(LLMAction):
             ), None)
 
 
-class ResetWorkbenchArgs(ToolBaseArgs):
-    flush_data: bool = Field(
-        description="whether to delete the cached simulation run data or not"
-    )
-
-
 class WorkbenchReset(LLMAction):
     def __init__(self):
         super().__init__(
@@ -257,10 +217,6 @@ class WorkbenchReset(LLMAction):
         )
         reset_workbench(ctx, data=kwargs.flush_data)
         return default_action_response
-
-
-class AttackSourceArgs(ToolBaseArgs):
-    attack_contents: str = Field(description="The contents of the attack source code")
 
 
 class AttackFileCreate(LLMAction):
@@ -296,51 +252,6 @@ class AttackFileCreate(LLMAction):
                 f"stdout:\n```\n{build_status.stdout}\n```\nstderr:\n```\n{build_status.stderr}\n```"
             ), None)
         return default_action_response
-
-
-class SimulationArgs(ToolBaseArgs):
-    global_iterations: int = Field(
-        description=(
-            "The number of times to run the simulation while resetting the state each time. "
-            "Think of it like we're resetting the microarchitectural state each time."
-        )
-    )
-    inner_iterations: int = Field(
-        description=(
-            "The number of times to run the simulation without resetting the state. "
-            "Think of it like there's a loop between global_setup and global_teardown. "
-            "The global state is not reset between iterations. "
-            "However trial_setup and trial_teardown are still called each iteration, "
-            "so in that way you can reset state."
-        )
-    )
-    random_seed: int = Field(
-        description=(
-            "The random seed for reproducibility purposes."
-        )
-    )
-    run_name: str = Field(
-        description=(
-            "The location in the workbench to store the output json data. "
-            "This will be placed in the workbench data directory. "
-            "Each class will get it's own file, it will have the layout of:\n"
-            "```\n"
-            "data_directory/[run_name]\n"
-            "\tdata-{global_iteration}.json\n"
-            "```"
-        )
-    )
-    stderr_file: Optional[str] = Field(
-        description=(
-            "The location in the workbench to store the stderr output. "
-            "If omitted the stderr will not be logged. "
-            "The error file will be place in:\n"
-            "```\n"
-            "data_directory/[run_name]\n"
-            "\t[stderr_file]-{global_iteration}\n"
-            "```"
-        )
-    )
 
 
 class RunSimulation(LLMAction):
@@ -436,13 +347,6 @@ class RunSimulation(LLMAction):
         run_outputs = deploy_harness(ctx, config)
         result = self._handle_simulation_output(ctx, kwargs, run_outputs)
         return result
-
-
-class ConclusionArgs(ToolBaseArgs):
-    constant_time: bool = Field(
-        description="True if you think the algorithm is constant time, False otherwise, "
-                    "support for this conclusion must be in your reasoning",
-    )
 
 
 class MakeConclusion(LLMAction):

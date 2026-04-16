@@ -10,7 +10,7 @@ from openai import OpenAI
 from reporting import ReportLog
 from prompting.client import OpenAIClient
 from templates import add_default_template_tools_to_client
-from tools import add_default_tools_to_client
+from tools.defs import add_default_tools_to_client
 from workbench import reset_workbench
 
 
