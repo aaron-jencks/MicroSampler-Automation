@@ -7,3 +7,4 @@
 **/deploy/
 **/*.log
 **/harness
+**/local.json
