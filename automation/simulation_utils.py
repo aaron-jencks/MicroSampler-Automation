@@ -1,6 +1,9 @@
+import json
 import logging
 from pathlib import Path
 from typing import Dict, List, Tuple
+
+import pandas as pd
 
 from building import RunResult
 from prompting.actions import LLMActionError, LLMActionResponse
@@ -76,3 +79,35 @@ def handle_simulation_output(
     result.response_message += "\n".join(map(str, output_files))
 
     return result
+
+
+def get_simulation_dataframe(ctx: Dict, run_name: str) -> pd.DataFrame:
+    run_folder = get_data_directory(ctx, run_name)
+
+    def determine_global_iterations() -> int:
+        count = 0
+        while True:
+            data_file = run_folder / f"data-{count}.json"
+            if not data_file.exists():
+                return count
+            count += 1
+
+    def read_single_run_data(run: int) -> List[Dict]:
+        data_file = run_folder / f"data-{run}.json"
+        with open(data_file, mode='r') as fp:
+            raw_data = json.load(fp)
+        rows = []
+        for row in raw_data["data"]:
+            iteration = row["iteration"]
+            for bit_data in row["durations"]:
+                rows.append({
+                    'global_iteration': run,
+                    'inner_iteration': iteration,
+                    **bit_data
+                })
+        return rows
+
+    rows = []
+    for gi in range(determine_global_iterations()):
+        rows.extend(read_single_run_data(gi))
+    return pd.DataFrame(rows)
