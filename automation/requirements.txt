@@ -1,3 +1,6 @@
 cascade-config
+matplotlib
+numpy
 openai
+pandas
 pydantic

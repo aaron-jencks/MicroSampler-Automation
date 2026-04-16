@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from reporting.sections import ReportSection
+from reporting.utils import get_report_directory
 from workbench import get_workbench_path
 
 
@@ -15,12 +16,6 @@ class ReportDataType(Enum):
     SUGGESTION = 2
     SIMULATION = 3
     LLM_REPORT = 4
-
-
-def get_report_directory(ctx: Dict):
-    dpath = Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"]
-    dpath.mkdir(parents=True, exist_ok=True)
-    return dpath
 
 
 class ReportLog:

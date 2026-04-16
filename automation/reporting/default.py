@@ -1,7 +1,14 @@
+from pathlib import Path
 from typing import Any, Dict
+import uuid
+
+import pandas as pd
 
 from reporting.logger import ReportLog, ReportDataType
+from reporting.plotting.default import TimingScatterGenerator
 from reporting.sections import ReportSection
+from reporting.utils import get_report_directory
+from simulation_utils import get_simulation_dataframe
 from workbench import get_workbench_path
 
 
@@ -74,8 +81,23 @@ class SimulationSection(ReportSection):
     def reset(self):
         self.runs = []
 
+    def _generate_plot_filename(self, ctx: Dict) -> Path:
+        return get_report_directory(ctx) / ctx["final_report"]["plots_prefix"] / f"{uuid.uuid4()}.png"
+
+    def _do_global_iteration_plot(self, ctx: Dict, df: pd.DataFrame) -> Path:
+        pname = self._generate_plot_filename(ctx)
+        generator = TimingScatterGenerator(pname)
+        generator.generate_plot(ctx, df)
+        return pname
+
     def body(self, ctx: Dict) -> str:
-        pass
+        dfs = [
+            get_simulation_dataframe(ctx, run)
+            for run in self.runs
+        ]
+        global_df = pd.concat(dfs, ignore_index=True)
+        builder = f"![iteration_versus_duration]({str(self._do_global_iteration_plot(ctx, global_df))}"
+        return builder
 
 
 def create_default_report_sections(ctx: Dict, reporter: ReportLog):
