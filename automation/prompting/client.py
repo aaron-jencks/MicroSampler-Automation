@@ -121,7 +121,11 @@ class OpenAIClient:
                 args = tool.schema.model_validate(args_dict)
                 self.reporter.log_transcript(tool.format_report_line(ctx, args))
                 responses.append((item, tool.execute(ctx, args)))
+            elif item.type == 'message':
+                for content in item.content:
+                    logger.info(f'model text output: {content.text}')
+                    self.reporter.log_transcript(f'model thought: {content.text}')
             else:
-                logger.info(f'model response: {item.content}')
+                logger.info(f'uncategorized model response: {item.content}')
 
         return responses
