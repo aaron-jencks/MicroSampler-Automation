@@ -7,6 +7,7 @@ from typing import List, Dict
 from cascade_config import CascadeConfig
 from openai import OpenAI
 
+from reporting.default import create_default_report_sections
 from reporting.logger import ReportLog
 from prompting.client import OpenAIClient
 from templates import add_default_template_tools_to_client
@@ -59,6 +60,7 @@ def main(ctx: Dict, dry: bool = False):
     reset_workbench(ctx, True)
 
     reporter = ReportLog()
+    create_default_report_sections(ctx, reporter)
 
     client = setup_model_client(ctx, reporter)
     if dry:
