@@ -261,6 +261,7 @@ class AttackFileCreate(LLMAction):
                 "build failed",
                 f"stdout:\n```\n{build_status.stdout}\n```\nstderr:\n```\n{build_status.stderr}\n```"
             ), None)
+        self.reporter.clear_simulations()  # previous simulation data is invalid now
         return default_action_response
 
 
@@ -295,6 +296,8 @@ class RunSimulation(LLMAction):
         )
         run_outputs = deploy_harness(ctx, config)
         result = handle_simulation_output(ctx, kwargs, run_outputs)
+        if result.error is None:
+            self.reporter.log_simulation(kwargs.run_name)
         return result
 
 
@@ -313,6 +316,11 @@ class MakeConclusion(LLMAction):
             "the LLM has come to a conclusion that the model {} constant-time",
             "is" if kwargs.constant_time is True else "is NOT",
         )
+        if len(self.reporter.simulations) == 0:
+            return LLMActionResponse(None, LLMActionError(
+                "so relevant simulation data",
+                "you haven't run any simulations since last modifying your attack code"
+            ), None)
         return LLMActionResponse(None, None, LLMConclusion(
             kwargs.constant_time,
             kwargs.reasoning

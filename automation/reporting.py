@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 from workbench import get_workbench_path
 
@@ -10,8 +10,9 @@ logger = logging.getLogger(__name__)
 
 class ReportLog:
     def __init__(self):
-        self.log = []
-        self.suggestion_box = []
+        self.log: List[str] = []
+        self.suggestion_box: List[str] = []
+        self.simulations: List[str] = []
 
     def log_transcript(self, line: Optional[str]):
         if line is not None:
@@ -19,6 +20,12 @@ class ReportLog:
 
     def log_suggestion(self, suggestion: str):
         self.suggestion_box.append(suggestion)
+
+    def log_simulation(self, run_name: str):
+        self.simulations.append(run_name)
+
+    def clear_simulations(self):
+        self.simulations = []
 
     def generate_transcript(self) -> str:
         lines = [
