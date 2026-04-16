@@ -20,8 +20,7 @@ class ReportDataType(Enum):
 
 class ReportLog:
     def __init__(self):
-        self.suggestion_box: List[str] = []
-        self.simulations: List[str] = []
+        self.simulation_count = 0
         self.sections: Dict[ReportDataType, List[ReportSection]] = {}
 
     def add_section(self, dt: ReportDataType, section: ReportSection):
@@ -44,9 +43,11 @@ class ReportLog:
         self._log_data(ReportDataType.SUGGESTION, suggestion)
 
     def log_simulation(self, run_name: str):
+        self.simulation_count += 1
         self._log_data(ReportDataType.SIMULATION, run_name)
 
     def clear_simulations(self):
+        self.simulation_count = 0
         if ReportDataType.SIMULATION not in self.sections:
             return
         for s in self.sections[ReportDataType.SIMULATION]:

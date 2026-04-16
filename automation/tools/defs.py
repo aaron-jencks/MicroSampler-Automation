@@ -316,7 +316,7 @@ class MakeConclusion(LLMAction):
             "the LLM has come to a conclusion that the model {} constant-time",
             "is" if kwargs.constant_time is True else "is NOT",
         )
-        if len(self.reporter.simulations) == 0:
+        if self.reporter.simulation_count == 0:
             return LLMActionResponse(None, LLMActionError(
                 "so relevant simulation data",
                 "you haven't run any simulations since last modifying your attack code"
