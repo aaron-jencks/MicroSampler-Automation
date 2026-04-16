@@ -23,6 +23,7 @@ typedef struct {
 
 typedef struct {
     const size_t iterations;        // the number of iterations the UUT will be run for
+    const unsigned int random_seed  // the random seed used for generating the keys
     void* state;                    // for use by the client, allows storing global state, can be read, but not modified during the test iterations
 } global_context_t;
 
@@ -47,8 +48,9 @@ void reset_trial_context(trial_context_t* const ctx);
 
 /// @brief Used by the harness to initialize the global context
 /// @param iterations the number of iterations to run the UUT for
+/// @param random_seed the random seed used for key generation
 /// @return a global context ready to be used by the client
-global_context_t create_global_context(const size_t iterations);
+global_context_t create_global_context(const size_t iterations, const unsigned int random_seed);
 
 /// @brief creates an iteration context for the client
 /// @param global_ctx a read-only copy of the global context

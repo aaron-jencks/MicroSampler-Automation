@@ -20,7 +20,7 @@ void destroy_trial_context(trial_context_t ctx) {
 }
 
 void generate_json_output(global_context_t ctx, uint64_t* durations, uint32_t* keys) {
-    printf("{\n\t\"iterations\": %zd,\n\t\"data\": [", ctx.iterations);
+    printf("{\n\t\"iterations\": %zd,\n\t\"seed\": %ud\n\t\"data\": [", ctx.iterations, ctx.random_seed);
     for(size_t i = 0; i < ctx.iterations; i++) {
         printf("\n\t\t{\n\t\t\t\"iteration\": %zu,\n\t\t\t\"durations\": [", i);
         for(size_t ki = 0; ki < 32; ki++) {

@@ -36,9 +36,10 @@ void reset_trial_context(trial_context_t* const ctx) {
     fill_words_deterministically(ctx->data, *ctx->data_len, 0x11111111u);
 }
 
-global_context_t create_global_context(const size_t iterations) {
+global_context_t create_global_context(const size_t iterations, const unsigned int random_seed) {
     global_context_t result = {
         .iterations = iterations,
+        .random_seed = random_seed,
         .state = NULL
     };
     return result;
