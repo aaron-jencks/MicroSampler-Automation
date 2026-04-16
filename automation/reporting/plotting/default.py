@@ -66,10 +66,19 @@ class TimingDistributionGenerator(PlotGenerator):
         super().__init__(fname)
         self.iteration = iteration
 
+    def _create_histogram(self, ax, y):
+        mean = np.mean(y)
+        std = np.std(y)
+        ax.hist(y, bins=100)
+        ax.axvline(mean, linestyle="--", label=f"Mean = {mean:.2f}")
+        ax.axvline(mean + std, linestyle=":", label=f"+1σ = {mean + std:.2f}")
+        ax.axvline(mean - std, linestyle=":", label=f"-1σ = {mean - std:.2f}")
+        ax.legend()
+
     def generate_plot(self, ctx: Dict, df: DataFrame):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-        ax1.hist(df[(df["class"] == 0) & (df["inner_iteration"] == self.iteration)]["duration"], bins=100)
-        ax2.hist(df[(df["class"] == 1) & (df["inner_iteration"] == self.iteration)]["duration"], bins=100)
+        self._create_histogram(ax1, df[(df["class"] == 0) & (df["inner_iteration"] == self.iteration)]["duration"])
+        self._create_histogram(ax2, df[(df["class"] == 1) & (df["inner_iteration"] == self.iteration)]["duration"])
         ax1.set_title("Class 0")
         ax2.set_title("Class 1")
         fig.suptitle(f"Duration Distribution of Iteration {self.iteration}")
@@ -80,10 +89,19 @@ class TimingDistributionGenerator(PlotGenerator):
 
 
 class GlobalTimingDistributionGenerator(PlotGenerator):
+    def _create_histogram(self, ax, y):
+        mean = np.mean(y)
+        std = np.std(y)
+        ax.hist(y, bins=100)
+        ax.axvline(mean, linestyle="--", label=f"Mean = {mean:.2f}")
+        ax.axvline(mean + std, linestyle=":", label=f"+1σ = {mean + std:.2f}")
+        ax.axvline(mean - std, linestyle=":", label=f"-1σ = {mean - std:.2f}")
+        ax.legend()
+
     def generate_plot(self, ctx: Dict, df: DataFrame):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-        ax1.hist(df[df["class"] == 0]["duration"], bins=100)
-        ax2.hist(df[df["class"] == 1]["duration"], bins=100)
+        self._create_histogram(ax1, df[df["class"] == 0]["duration"])
+        self._create_histogram(ax2, df[df["class"] == 1]["duration"])
         ax1.set_title("Class 0")
         ax2.set_title("Class 1")
         fig.suptitle(f"Duration Distribution")
