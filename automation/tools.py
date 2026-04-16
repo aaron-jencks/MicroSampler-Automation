@@ -1,13 +1,14 @@
 import logging
 from pathlib import Path
 import subprocess as sp
-from typing import Dict, List, Optional, Type, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from building import build_harness, deploy_harness, RunConfiguration, RunResult, verify_legal_code
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
-from building import build_harness, deploy_harness, RunConfiguration, RunResult, verify_legal_code
+from reporting import ReportLog
 from workbench import (reset_workbench, create_workbench_file, delete_workbench_file, run_workbench,
                        read_workbench_file, list_workbench_files, handle_workbench_filename, get_workbench_path)
 
@@ -27,22 +28,26 @@ def create_log_statement_for_tool_use(args: ToolBaseArgs, fmt: str, *fargs):
     )
 
 
+class BugReportArgs(ToolBaseArgs):
+    bug: str = Field(description="The description of the bug that you are reporting")
+
+
 class BugReport(LLMAction):
     def __init__(self):
         super().__init__(
             "bug_report",
             "reports an identified bug for immediate developer attention, this can be something as simple as a json formatting error",
-            ToolBaseArgs
+            BugReportArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> str:
-        return f"reported a bug: {kwargs.reasoning}"
+    def format_report_line(self, ctx: Dict, kwargs: BugReportArgs) -> Optional[str]:
+        return f"reported a bug: {kwargs.bug}"
 
-    def execute(self, ctx: Dict, kwargs: ToolBaseArgs) -> LLMActionResponse:
+    def execute(self, ctx: Dict, kwargs: BugReportArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "the model thinks there's a bug in the code: {}",
-            kwargs.reasoning
+            kwargs.bug
         )
         resp = input("Is this a real bug (y/N)? ").lower()
         if resp == '' or resp == 'n':
@@ -52,6 +57,28 @@ class BugReport(LLMAction):
                 False,
                 "There is a bug in the code, please fix it and try again",
             ))
+
+
+class SuggestionBoxArgs(ToolBaseArgs):
+    suggestion: str = Field(description="The description of the suggestion that you are submitting")
+
+
+class SuggestionBox(LLMAction):
+    def __init__(self, reporter: ReportLog):
+        super().__init__(
+            "suggestion_box",
+            "use this to indicate something that could be done to make your process more efficient, will be reviewed by the developer",
+            SuggestionBoxArgs
+        )
+        self.reporter = reporter
+
+    def execute(self, ctx: Dict, kwargs: SuggestionBoxArgs) -> LLMActionResponse:
+        create_log_statement_for_tool_use(
+            kwargs,
+            "submitting suggestion: {}",
+            kwargs.suggestion
+        )
+        self.reporter.log_suggestion(kwargs.suggestion)
 
 
 class FileNameArgs(ToolBaseArgs):
@@ -70,7 +97,7 @@ class WorkbenchFileCreate(LLMAction):
             FileCreateArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: FileCreateArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: FileCreateArgs) -> Optional[str]:
         return f"created a workbench file: {kwargs.file_name}"
 
     def execute(self, ctx: Dict, kwargs: FileCreateArgs) -> LLMActionResponse:
@@ -92,7 +119,7 @@ class WorkbenchReadFile(LLMAction):
             FileNameArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> Optional[str]:
         return f"read a workbench file: {kwargs.file_name}"
 
     def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
@@ -120,7 +147,7 @@ class WorkbenchDeleteFile(LLMAction):
             FileNameArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> Optional[str]:
         return f"deleted a workbench file: {kwargs.file_name}"
 
     def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
@@ -148,7 +175,7 @@ class WorkbenchListFiles(LLMAction):
             ToolBaseArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> Optional[str]:
         return "listed the workbench files"
 
     def execute(self, ctx: Dict, kwargs: ToolBaseArgs) -> LLMActionResponse:
@@ -175,7 +202,7 @@ class WorkbenchRun(LLMAction):
             WorkbenchRunArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> Optional[str]:
         return f"ran the workbench: {kwargs.args}"
 
     def execute(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> LLMActionResponse:
@@ -219,7 +246,7 @@ class WorkbenchReset(LLMAction):
             ResetWorkbenchArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> Optional[str]:
         return "reset the workbench"
 
     def execute(self, ctx: Dict, kwargs: ResetWorkbenchArgs) -> LLMActionResponse:
@@ -244,7 +271,7 @@ class AttackFileCreate(LLMAction):
             AttackSourceArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: AttackSourceArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: AttackSourceArgs) -> Optional[str]:
         return f"modified the attack source code:\n```\n{kwargs.attack_contents}\n```"
 
     def execute(self, ctx: Dict, kwargs: AttackSourceArgs) -> LLMActionResponse:
@@ -324,7 +351,7 @@ class RunSimulation(LLMAction):
             SimulationArgs
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: SimulationArgs) -> str:
+    def format_report_line(self, ctx: Dict, kwargs: SimulationArgs) -> Optional[str]:
         lines = [
             f'global iterations: {kwargs.global_iterations}',
             f'inner iterations: {kwargs.inner_iterations}',
@@ -426,9 +453,6 @@ class MakeConclusion(LLMAction):
             ConclusionArgs
         )
 
-    def format_report_line(self, ctx: Dict, args: ConclusionArgs) -> str:
-        return 'made conclusion'
-
     def execute(self, ctx: Dict, kwargs: ConclusionArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
@@ -441,7 +465,7 @@ class MakeConclusion(LLMAction):
         ))
 
 
-def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
+def add_default_tools_to_client(ctx: Dict, client: OpenAIClient, reporter: ReportLog):
     client.create_action(WorkbenchFileCreate())
     client.create_action(WorkbenchReadFile())
     client.create_action(WorkbenchDeleteFile())
@@ -452,3 +476,4 @@ def add_default_tools_to_client(ctx: Dict, client: OpenAIClient):
     client.create_action(RunSimulation(ctx))
     client.create_action(MakeConclusion())
     client.create_action(BugReport())
+    client.create_action(SuggestionBox(reporter))

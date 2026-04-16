@@ -33,7 +33,6 @@ def setup_logging(ctx: Dict):
 
     root = logging.getLogger()
     root.setLevel(logging.INFO)
-    # root.addHandler(console)
     root.addHandler(file)
 
 
@@ -51,7 +50,7 @@ def setup_model_client(ctx: Dict, reporter: ReportLog) -> OpenAIClient:
     else:
         inner_client = OpenAI()
     client = OpenAIClient(inner_client, "instructions", reporter)
-    add_default_tools_to_client(ctx, client)
+    add_default_tools_to_client(ctx, client, reporter)
     add_default_template_tools_to_client(ctx, client)
     return client
 
