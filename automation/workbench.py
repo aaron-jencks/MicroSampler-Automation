@@ -29,12 +29,11 @@ def reset_workbench(ctx: Dict, data: bool = False):
     data_prefix = prefix / ctx["workbench"]["data_directory"]
     if data_prefix.exists() and data:
         shutil.rmtree(data_prefix)
-    if not data_prefix.exists():
-        data_prefix.mkdir(parents=True)
+    data_prefix.mkdir(parents=True, exist_ok=True)
 
     # Nuke the workbench
     for item in prefix.iterdir():
-        if item == ctx["workbench"]["data_directory"]:
+        if item == data_prefix:
             continue
         if item.is_dir():
             shutil.rmtree(item)
