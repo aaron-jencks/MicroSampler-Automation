@@ -4,7 +4,7 @@ from typing import Callable, Dict, Optional, Type
 
 from pydantic import BaseModel
 
-from reporting import ReportLog
+from reporting.logger import ReportLog
 
 
 @dataclass

@@ -9,7 +9,7 @@ import openai
 from openai import OpenAI
 
 from prompting.actions import LLMAction, LLMActionResponse
-from reporting import ReportLog
+from reporting.logger import ReportLog
 
 
 logger = logging.getLogger(__name__)
