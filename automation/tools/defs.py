@@ -1,9 +1,9 @@
 import logging
 from pathlib import Path
 import subprocess as sp
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
-from building import build_harness, deploy_harness, RunConfiguration, RunResult, verify_legal_code
+from building import build_harness, deploy_harness, RunConfiguration, verify_legal_code
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
 from reporting import ReportLog
@@ -18,17 +18,18 @@ logger = logging.getLogger(__name__)
 
 
 class BugReport(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             "bug_report",
             "reports an identified bug for immediate developer attention, this can be something as simple as a json formatting error",
-            BugReportArgs
+            BugReportArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: BugReportArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: BugReportArgs) -> Optional[str]:
         return f"reported a bug: {kwargs.bug}"
 
-    def execute(self, ctx: Dict, kwargs: BugReportArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: BugReportArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "the model thinks there's a bug in the code: {}",
@@ -49,31 +50,33 @@ class SuggestionBox(LLMAction):
         super().__init__(
             "suggestion_box",
             "use this to indicate something that could be done to make your process more efficient, will be reviewed by the developer",
-            SuggestionBoxArgs
+            SuggestionBoxArgs,
+            reporter
         )
-        self.reporter = reporter
 
-    def execute(self, ctx: Dict, kwargs: SuggestionBoxArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: SuggestionBoxArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "submitting suggestion: {}",
             kwargs.suggestion
         )
         self.reporter.log_suggestion(kwargs.suggestion)
+        return default_action_response
 
 
 class WorkbenchFileCreate(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             f'workbench_create_file',
             f"creates or replaces a file in the workbench",
-            FileCreateArgs
+            FileCreateArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: FileCreateArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: FileCreateArgs) -> Optional[str]:
         return f"created a workbench file: {kwargs.file_name}"
 
-    def execute(self, ctx: Dict, kwargs: FileCreateArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: FileCreateArgs) -> LLMActionResponse:
         file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
             kwargs,
@@ -85,17 +88,18 @@ class WorkbenchFileCreate(LLMAction):
 
 
 class WorkbenchReadFile(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             "workbench_read_file",
             "read a file and report its contents",
-            FileNameArgs
+            FileNameArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: FileNameArgs) -> Optional[str]:
         return f"read a workbench file: {kwargs.file_name}"
 
-    def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
         file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
             kwargs,
@@ -113,17 +117,18 @@ class WorkbenchReadFile(LLMAction):
 
 
 class WorkbenchDeleteFile(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             "workbench_delete_file",
             "delete a file from the workbench",
-            FileNameArgs
+            FileNameArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: FileNameArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: FileNameArgs) -> Optional[str]:
         return f"deleted a workbench file: {kwargs.file_name}"
 
-    def execute(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: FileNameArgs) -> LLMActionResponse:
         file_path = handle_workbench_filename(ctx, kwargs.file_name)
         create_log_statement_for_tool_use(
             kwargs,
@@ -141,17 +146,18 @@ class WorkbenchDeleteFile(LLMAction):
 
 
 class WorkbenchListFiles(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             "workbench_list_files",
             "lists the names of the files currently in the workbench",
-            ToolBaseArgs
+            ToolBaseArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> Optional[str]:
         return "listed the workbench files"
 
-    def execute(self, ctx: Dict, kwargs: ToolBaseArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: ToolBaseArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "listing workbench files"
@@ -161,18 +167,19 @@ class WorkbenchListFiles(LLMAction):
 
 
 class WorkbenchRun(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self, ctx: Dict, reporter: ReportLog):
         self.script_path = get_workbench_path(ctx) / ctx['workbench']['script']
         super().__init__(
             "workbench_run",
             f"runs the workbench script: {self.script_path}, must finish within 5 minutes",
-            WorkbenchRunArgs
+            WorkbenchRunArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> Optional[str]:
         return f"ran the workbench: {kwargs.args}"
 
-    def execute(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: WorkbenchRunArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "running workbench script"
@@ -199,18 +206,19 @@ class WorkbenchRun(LLMAction):
 
 
 class WorkbenchReset(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             "workbench_reset",
             "resets the workbench to its original state, "
             "removing all files and resetting all imported sources.",
-            ResetWorkbenchArgs
+            ResetWorkbenchArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: ToolBaseArgs) -> Optional[str]:
         return "reset the workbench"
 
-    def execute(self, ctx: Dict, kwargs: ResetWorkbenchArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: ResetWorkbenchArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "resetting workbench files {} the data files",
@@ -221,17 +229,18 @@ class WorkbenchReset(LLMAction):
 
 
 class AttackFileCreate(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             'create_attack_file',
             'stores the source code for the attack file',
-            AttackSourceArgs
+            AttackSourceArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: AttackSourceArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: AttackSourceArgs) -> Optional[str]:
         return f"modified the attack source code:\n```\n{kwargs.attack_contents}\n```"
 
-    def execute(self, ctx: Dict, kwargs: AttackSourceArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: AttackSourceArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "writing attack code:\n```\n{}\n```",
@@ -256,14 +265,15 @@ class AttackFileCreate(LLMAction):
 
 
 class RunSimulation(LLMAction):
-    def __init__(self, ctx: Dict):
+    def __init__(self, ctx: Dict, reporter: ReportLog):
         super().__init__(
             "run_simulation",
             f"runs the harness simulation with a timeout of {ctx['harness']['timeout']} seconds",
-            SimulationArgs
+            SimulationArgs,
+            reporter
         )
 
-    def format_report_line(self, ctx: Dict, kwargs: SimulationArgs) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: SimulationArgs) -> Optional[str]:
         lines = [
             f'global iterations: {kwargs.global_iterations}',
             f'inner iterations: {kwargs.inner_iterations}',
@@ -272,7 +282,7 @@ class RunSimulation(LLMAction):
         ]
         return f"ran simulation:\n\t" + '\n\t'.join(lines)
 
-    def execute(self, ctx: Dict, kwargs: SimulationArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: SimulationArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "running harness simulation"
@@ -289,14 +299,15 @@ class RunSimulation(LLMAction):
 
 
 class MakeConclusion(LLMAction):
-    def __init__(self):
+    def __init__(self, reporter: ReportLog):
         super().__init__(
             "make_conclusion",
             "indicates that all analysis is done and that this is your final conclusion",
-            ConclusionArgs
+            ConclusionArgs,
+            reporter
         )
 
-    def execute(self, ctx: Dict, kwargs: ConclusionArgs) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: ConclusionArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
             "the LLM has come to a conclusion that the model {} constant-time",
@@ -309,14 +320,14 @@ class MakeConclusion(LLMAction):
 
 
 def add_default_tools_to_client(ctx: Dict, client: OpenAIClient, reporter: ReportLog):
-    client.create_action(WorkbenchFileCreate())
-    client.create_action(WorkbenchReadFile())
-    client.create_action(WorkbenchDeleteFile())
-    client.create_action(WorkbenchListFiles())
-    client.create_action(WorkbenchRun(ctx))
-    client.create_action(WorkbenchReset())
-    client.create_action(AttackFileCreate())
-    client.create_action(RunSimulation(ctx))
-    client.create_action(MakeConclusion())
-    client.create_action(BugReport())
+    client.create_action(WorkbenchFileCreate(reporter))
+    client.create_action(WorkbenchReadFile(reporter))
+    client.create_action(WorkbenchDeleteFile(reporter))
+    client.create_action(WorkbenchListFiles(reporter))
+    client.create_action(WorkbenchRun(ctx, reporter))
+    client.create_action(WorkbenchReset(reporter))
+    client.create_action(AttackFileCreate(reporter))
+    client.create_action(RunSimulation(ctx, reporter))
+    client.create_action(MakeConclusion(reporter))
+    client.create_action(BugReport(reporter))
     client.create_action(SuggestionBox(reporter))

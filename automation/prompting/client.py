@@ -119,7 +119,6 @@ class OpenAIClient:
                 args_dict = json.loads(item.arguments)
                 tool = self.tools[item.name]
                 args = tool.schema.model_validate(args_dict)
-                self.reporter.log_transcript(tool.format_report_line(ctx, args))
                 responses.append((item, tool.execute(ctx, args)))
             elif item.type == 'message':
                 for content in item.content:

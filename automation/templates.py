@@ -73,7 +73,7 @@ def template_insert_config_value(ctx: Dict, client: OpenAIClient, tag_name: str,
     current = ctx
     for key in args:
         current = current[key]
-    return current
+    return repr(current)
 
 
 def template_insert_allowed_references(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:

@@ -4,6 +4,8 @@ from typing import Callable, Dict, Optional, Type
 
 from pydantic import BaseModel
 
+from reporting import ReportLog
+
 
 @dataclass
 class LLMActionError:
@@ -31,10 +33,11 @@ LLMActionCallback = Callable[[Dict, Type[BaseModel]], LLMActionResponse]
 
 
 class LLMAction(ABC):
-    def __init__(self, name: str, description: str, schema: Type[BaseModel]):
+    def __init__(self, name: str, description: str, schema: Type[BaseModel], reporter: ReportLog):
         self.name = name
         self.description = description
         self.schema = schema
+        self.reporter = reporter
 
     def format_documentation(self) -> str:
         return f"{self.name}: {self.description}"
@@ -48,9 +51,15 @@ class LLMAction(ABC):
             'strict': True
         }
 
-    def format_report_line(self, ctx: Dict, kwargs: Type[BaseModel]) -> Optional[str]:
+    def format_report_transcript_line(self, ctx: Dict, kwargs: BaseModel) -> Optional[str]:
         return None
 
     @abstractmethod
-    def execute(self, ctx: Dict, kwargs: Type[BaseModel]) -> LLMActionResponse:
+    def body(self, ctx: Dict, kwargs: BaseModel) -> LLMActionResponse:
         pass
+
+    def execute(self, ctx: Dict, kwargs: BaseModel) -> LLMActionResponse:
+        rline = self.format_report_transcript_line(ctx, kwargs)
+        if rline is not None:
+            self.reporter.log_transcript(rline)
+        return self.body(ctx, kwargs)
