@@ -104,6 +104,7 @@ def get_simulation_dataframe(ctx: Dict, run_name: str) -> Optional[pd.DataFrame]
             iteration = row["iteration"]
             for bit_data in row["durations"]:
                 rows.append({
+                    'run_name': run_name,
                     'random_seed': seed,
                     'global_iteration': gi,
                     'inner_iteration': iteration,
