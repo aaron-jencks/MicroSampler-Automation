@@ -96,7 +96,7 @@ class SimulationSection(ReportSection):
             for run in self.runs
         ]
         global_df = pd.concat(dfs, ignore_index=True)
-        builder = f"![iteration_versus_duration]({str(self._do_global_iteration_plot(ctx, global_df))})"
+        builder = f"![iteration_versus_duration]({str(self._do_global_iteration_plot(ctx, global_df).relative_to(get_report_directory(ctx)))})"
         return builder
 
 

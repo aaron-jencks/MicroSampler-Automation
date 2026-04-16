@@ -3,6 +3,8 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import markdown
+
 from reporting.sections import ReportSection
 from reporting.utils import get_report_directory
 from workbench import get_workbench_path
@@ -74,3 +76,21 @@ class ReportLog:
 
         with open(fpath, 'w+') as fp:
             fp.write(builder)
+
+        html_body = markdown.markdown(builder, extensions=['tables', 'fenced_code'])
+
+        full_html = f"""<!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Report</title>
+        </head>
+        <body>
+        {html_body}
+        </body>
+        </html>
+        """
+
+        fpath = get_report_directory(ctx) / ctx["final_report"]["html_file"]
+        with open(fpath, 'w+') as fp:
+            fp.write(full_html)
