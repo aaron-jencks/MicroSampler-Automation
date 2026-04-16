@@ -1,11 +1,15 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 import uuid
 
+import markdown
 import pandas as pd
+from tqdm import tqdm
 
 from reporting.logger import ReportLog, ReportDataType
-from reporting.plotting.default import TimingScatterGenerator
+from reporting.plotting.default import TimingScatterGenerator, GlobalTimingDistributionGenerator, \
+    GlobalTimingDistributionBoxGenerator, TimingDistributionGenerator, TimingDistributionBoxGenerator, \
+    GlobalTimingIterationHeatmapGenerator
 from reporting.sections import ReportSection
 from reporting.utils import get_report_directory
 from simulation_utils import get_simulation_dataframe
@@ -70,14 +74,59 @@ class SimulationSection(ReportSection):
         generator.generate_plot(ctx, df)
         return pname
 
+    def _do_global_distribution_plot(self, ctx: Dict, df: pd.DataFrame) -> Path:
+        pname = self._generate_plot_filename(ctx)
+        generator = GlobalTimingDistributionGenerator(pname)
+        generator.generate_plot(ctx, df)
+        return pname
+
+    def _do_global_box_plot(self, ctx: Dict, df: pd.DataFrame) -> Path:
+        pname = self._generate_plot_filename(ctx)
+        generator = GlobalTimingDistributionBoxGenerator(pname)
+        generator.generate_plot(ctx, df)
+        return pname
+
+    def _do_iteration_distribution_plots(self, ctx: Dict, df: pd.DataFrame, iteration: int) -> Tuple[Path, Path]:
+        pname_dist = self._generate_plot_filename(ctx)
+        pname_box = self._generate_plot_filename(ctx)
+        dgen = TimingDistributionGenerator(iteration, pname_dist)
+        dgen.generate_plot(ctx, df)
+        bgen = TimingDistributionBoxGenerator(iteration, pname_box)
+        bgen.generate_plot(ctx, df)
+        return pname_dist, pname_box
+
+    def _do_iteration_heatmap(self, ctx: Dict, df: pd.DataFrame) -> Path:
+        pname = self._generate_plot_filename(ctx)
+        generator = GlobalTimingIterationHeatmapGenerator(pname)
+        generator.generate_plot(ctx, df)
+        return pname
+
+    def _format_image_line(self, ctx: Dict, name: str, p: Path) -> str:
+        return f"![{name}]({str(p.relative_to(get_report_directory(ctx)))})"
+
     def body(self, ctx: Dict) -> str:
         dfs = [
             get_simulation_dataframe(ctx, run)
             for run in self.runs
         ]
         global_df = pd.concat(dfs, ignore_index=True)
-        builder = f"![iteration_versus_duration]({str(self._do_global_iteration_plot(ctx, global_df).relative_to(get_report_directory(ctx)))})"
-        return builder
+        images = [
+            self._format_image_line(ctx, "iteration_versus_duration", self._do_global_iteration_plot(ctx, global_df)),
+            self._format_image_line(ctx, "global_duration_distribution", self._do_global_distribution_plot(ctx, global_df)),
+            self._format_image_line(ctx, "global_duration_boxplot", self._do_global_box_plot(ctx, global_df)),
+            self._format_image_line(ctx, "global_duration_heatmap", self._do_iteration_heatmap(ctx, global_df)),
+        ]
+        global_images = '\n\n'.join(images)
+        global_html = markdown.markdown(global_images)
+        iteration_images = []
+        for iteration in tqdm(range(global_df.inner_iteration.max() + 1), desc="Generating Iteration Plots"):
+            dimg, bimg = self._do_iteration_distribution_plots(ctx, global_df, iteration)
+            iteration_images.append(self._format_image_line(ctx, f"iteration_{iteration}_distribution", dimg))
+            iteration_images.append(self._format_image_line(ctx, f"iteration_{iteration}_boxplot", bimg))
+        iteration_image_md = '\n\n'.join(iteration_images)
+        iteration_html = markdown.markdown(iteration_image_md)
+        return (f"<details><summary>Global Duration Distribution</summary>{global_html}</details>"
+                f"<details><summary>Iteration Specific Distributions</summary>{iteration_html}</details>")
 
 
 def create_default_report_sections(ctx: Dict, reporter: ReportLog):

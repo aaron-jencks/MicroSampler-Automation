@@ -252,8 +252,8 @@ def run_attack_and_simulation_checks(ctx: Dict, actions: Dict[str, Any], reporte
 
     sim_response = run_action(actions["simulate"], ctx, {
         "reasoning": "Run a short deterministic simulation to validate deployment and output handling.",
-        "global_iterations": 2,
-        "inner_iterations": 4,
+        "global_iterations": 10,
+        "inner_iterations": 100,
         "random_seed": 12345,
         "run_name": "smoke-run",
         "stderr_file": "stderr.log",
