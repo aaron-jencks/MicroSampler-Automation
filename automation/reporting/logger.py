@@ -70,7 +70,7 @@ class ReportLog:
             sections.extend(sl)
         sections.sort(key=lambda s: s.index)
 
-        builder += "\n\n".join([s.body(ctx) for s in sections])
+        builder += "\n\n".join([s.generate_section(ctx) for s in sections])
 
         with open(fpath, 'w+') as fp:
             fp.write(builder)
