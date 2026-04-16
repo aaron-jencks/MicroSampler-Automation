@@ -24,3 +24,5 @@ We generate plots for each inner iteration of each simulation. We merge together
 Anyway we'll have the combined runtime plot with the trend line, then a plot for each iteration aggregating together all of the data of that inner iteration across all global iterations and runs. We do a histogram and box plot including also the mean and standard deviation information. We would have a set of plots for each class 0 and 1.
 
 We should have a global set of plots, shown above, but lets also have a set of plots for each individual run too. That way, just in case there is some kind of confounding factor we can see it ourselves.
+
+To make this robust, we should be able to define sections for our report and have the report include user defined sections, the basic interface would just to be a class, or function that can return a string to be directly put into the report.
