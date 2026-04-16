@@ -33,7 +33,7 @@ class TimingScatterGenerator(PlotGenerator):
 
         # trend lines
         def compute_trendline(ax, cls: int):
-            x_sorted = np.sort(df[df["class"] == cls]["inner_iteration"].unique().values)
+            x_sorted = np.sort(df[df["class"] == cls]["inner_iteration"].unique())
             xc = df[df["class"] == cls]["inner_iteration"].values
             yc = df[df["class"] == cls]["duration"].values
             m, b = np.polyfit(xc, yc, 1)
@@ -46,8 +46,8 @@ class TimingScatterGenerator(PlotGenerator):
         compute_trendline(ax1, 0)
         compute_trendline(ax2, 1)
 
-        ax1.title("Class 0")
-        ax2.title("Class 1")
+        ax1.set_title("Class 0")
+        ax2.set_title("Class 1")
 
         handles, labels = ax1.get_legend_handles_labels()  # Both plots have the same colors and labels
         fig.legend(handles, labels)
