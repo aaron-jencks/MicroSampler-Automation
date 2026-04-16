@@ -1,0 +1,13 @@
+{
+    "general_prefix": "bearssl-0.6/ccopy",
+    "workbench": {
+        "source": {
+            "contents": {
+                "bearssl": "../../../apps/bearssl-0.6/src"
+            }
+        }
+    },
+    "logging": {
+        "output": "ccopy_output.log"
+    }
+}
