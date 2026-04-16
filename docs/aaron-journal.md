@@ -22,3 +22,5 @@ Okay, so what we do is we generate a plot showing all of the runtimes with inner
 We generate plots for each inner iteration of each simulation. We merge together all of the relevant simulations into a single data source, because all relevant simulation data will be the same parameters, just with different seeds and run names, and maybe different iteration counts, but everything else will be the same, the code will invalidate everything once the attack source changes, so the data should be comparable.
 
 Anyway we'll have the combined runtime plot with the trend line, then a plot for each iteration aggregating together all of the data of that inner iteration across all global iterations and runs. We do a histogram and box plot including also the mean and standard deviation information. We would have a set of plots for each class 0 and 1.
+
+We should have a global set of plots, shown above, but lets also have a set of plots for each individual run too. That way, just in case there is some kind of confounding factor we can see it ourselves.
