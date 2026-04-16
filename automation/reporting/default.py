@@ -4,7 +4,6 @@ import uuid
 
 import markdown
 import pandas as pd
-from tqdm import tqdm
 
 from reporting.logger import ReportLog, ReportDataType
 from reporting.plotting.default import TimingScatterGenerator, GlobalTimingDistributionGenerator, \
@@ -104,6 +103,28 @@ class SimulationSection(ReportSection):
     def _format_image_line(self, ctx: Dict, name: str, p: Path) -> str:
         return f"![{name}]({str(p.relative_to(get_report_directory(ctx)))})"
 
+    def _generate_iteration_distribution_table(self, df: pd.DataFrame) -> str:
+        rows = [
+            "| Iteration | Class | Samples | Mean | Median | Std Dev | Min | Max |",
+            "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+
+        grouped = (
+            df.groupby(["inner_iteration", "class"])["duration"]
+            .agg(["count", "mean", "median", "std", "min", "max"])
+            .reset_index()
+            .sort_values(["inner_iteration", "class"])
+        )
+
+        for _, row in grouped.iterrows():
+            stddev = 0.0 if pd.isna(row["std"]) else row["std"]
+            rows.append(
+                f"| {int(row['inner_iteration'])} | {int(row['class'])} | {int(row['count'])} | "
+                f"{row['mean']:.2f} | {row['median']:.2f} | {stddev:.2f} | {int(row['min'])} | {int(row['max'])} |"
+            )
+
+        return markdown.markdown("\n".join(rows), extensions=["tables"])
+
     def body(self, ctx: Dict) -> str:
         dfs = [
             get_simulation_dataframe(ctx, run)
@@ -118,13 +139,8 @@ class SimulationSection(ReportSection):
         ]
         global_images = '\n\n'.join(images)
         global_html = markdown.markdown(global_images)
-        iteration_images = []
-        for iteration in tqdm(range(global_df.inner_iteration.max() + 1), desc="Generating Iteration Plots"):
-            dimg, bimg = self._do_iteration_distribution_plots(ctx, global_df, iteration)
-            iteration_images.append(self._format_image_line(ctx, f"iteration_{iteration}_distribution", dimg))
-            iteration_images.append(self._format_image_line(ctx, f"iteration_{iteration}_boxplot", bimg))
-        iteration_image_md = '\n\n'.join(iteration_images)
-        iteration_html = markdown.markdown(iteration_image_md)
+        # dimg, bimg = self._do_iteration_distribution_plots(ctx, global_df, iteration)
+        iteration_html = self._generate_iteration_distribution_table(global_df)
         return (f"<details><summary>Global Duration Distribution</summary>{global_html}</details>"
                 f"<details><summary>Iteration Specific Distributions</summary>{iteration_html}</details>")
 

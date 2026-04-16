@@ -281,7 +281,7 @@ class RunSimulation(LLMAction):
             f'random seed: {kwargs.random_seed}',
             f'run name: "{kwargs.run_name}"',
         ]
-        return f"ran simulation:\n\t" + '\n\t'.join(lines)
+        return f"ran simulation:\n\t- " + '\n\t- '.join(lines)
 
     def body(self, ctx: Dict, kwargs: SimulationArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(

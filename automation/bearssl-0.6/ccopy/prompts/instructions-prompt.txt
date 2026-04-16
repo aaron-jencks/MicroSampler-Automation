@@ -85,6 +85,14 @@ Notes:
 
 You should output a report file with your findings, characterizing them with tables, and aggregations, don't just spit out the actual raw data. You can use the workbench to make these aggregations for your report. Place your report in a file called [[config:llm:report_name]]. It should reference places in the code where you can concretely point to that indicate timing leakage if there is any (you must include the file name as well as the line number in your reference), it should characterize the timing distribution as well and use statistical significance to indicate constant-time-ness. You should not include images in your report.
 
+If you think that you encounter a bug during your work, you may make a bug report:
+
+[[schema:bug_report]]
+
+If you find a certain aspect of your task difficult and you think that there's something could be done to make it easier, you may make a suggestion:
+
+[[schema:suggestion_box]]
+
 The algorithm that you are classifying is described below:
 
 [[template:target-prompt.txt]]
