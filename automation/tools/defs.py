@@ -6,7 +6,7 @@ from typing import Dict, Optional
 from building import build_harness, deploy_harness, RunConfiguration, verify_legal_code
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
-from reporting import ReportLog
+from reporting.logger import ReportLog
 from simulation_utils import handle_simulation_output
 from tools.args import (AttackSourceArgs, BugReportArgs, ConclusionArgs, create_log_statement_for_tool_use,
                         FileCreateArgs, FileNameArgs, ResetWorkbenchArgs, SimulationArgs, SuggestionBoxArgs,

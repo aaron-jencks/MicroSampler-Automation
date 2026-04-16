@@ -7,7 +7,7 @@ from typing import List, Dict
 from cascade_config import CascadeConfig
 from openai import OpenAI
 
-from reporting import ReportLog
+from reporting.logger import ReportLog
 from prompting.client import OpenAIClient
 from templates import add_default_template_tools_to_client
 from tools.defs import add_default_tools_to_client
