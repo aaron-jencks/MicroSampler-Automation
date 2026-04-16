@@ -48,9 +48,8 @@ class LLMAction(ABC):
             'strict': True
         }
 
-    @abstractmethod
     def format_report_line(self, ctx: Dict, kwargs: Type[BaseModel]) -> Optional[str]:
-        pass
+        return None
 
     @abstractmethod
     def execute(self, ctx: Dict, kwargs: Type[BaseModel]) -> LLMActionResponse:
