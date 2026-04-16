@@ -64,8 +64,7 @@ class ReportLog:
 
     def generate_report(self, ctx: Dict):
         logger.info(f'generating report to {ctx["final_report"]["file"]}')
-        fpath = get_report_directory(ctx) / ctx["final_report"]["file"]
-        builder = f"# {ctx['final_report']['run_name']} Final Report\n\n"
+        builder = f"<h1>{ctx['final_report']['run_name']} Final Report</h1>\n\n"
 
         sections = []
         for sl in list(self.sections.values()):
@@ -74,11 +73,6 @@ class ReportLog:
 
         builder += "\n\n".join([s.generate_section(ctx) for s in sections])
 
-        with open(fpath, 'w+') as fp:
-            fp.write(builder)
-
-        html_body = markdown.markdown(builder, extensions=['tables', 'fenced_code'])
-
         full_html = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -86,11 +80,11 @@ class ReportLog:
           <title>Report</title>
         </head>
         <body>
-        {html_body}
+        {builder}
         </body>
         </html>
         """
 
-        fpath = get_report_directory(ctx) / ctx["final_report"]["html_file"]
+        fpath = get_report_directory(ctx) / ctx["final_report"]["file"]
         with open(fpath, 'w+') as fp:
             fp.write(full_html)

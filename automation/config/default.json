@@ -42,8 +42,7 @@
     "final_report": {
         "prefix": "final_report",
         "run_name": "undefined",
-        "file": "final_report.md",
-        "plots_prefix": "images",
-        "html_file": "final_report.html"
+        "file": "final_report.html",
+        "plots_prefix": "images"
     }
 }

@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
+import markdown
+
 
 class ReportSection(ABC):
     def __init__(self, index: int, name: str):
@@ -20,6 +22,7 @@ class ReportSection(ABC):
         pass
 
     def generate_section(self, ctx: Dict) -> str:
-        builder = f"## {self.name}\n\n"
-        builder += self.body(ctx)
+        builder = f"<details>\n<summary>{self.name}</summary>\n\n"
+        builder += markdown.markdown(self.body(ctx), extensions=['tables', 'fenced_code'])
+        builder += "\n\n</details>"
         return builder

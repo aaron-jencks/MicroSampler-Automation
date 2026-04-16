@@ -12,29 +12,9 @@ from simulation_utils import get_simulation_dataframe
 from workbench import get_workbench_path
 
 
-class TranscriptSection(ReportSection):
-    def __init__(self, index: int):
-        super().__init__(index, 'Transcript')
-        self.content = ""
-        self.counter = 1
-
-    def ingest_data(self, line: Any):
-        if self.counter > 1:
-            self.content += "\n"
-        self.content += f"{self.counter}. {line}"
-        self.counter += 1
-
-    def body(self, ctx: Dict) -> str:
-        return self.content
-
-    def reset(self):
-        self.content = ""
-        self.counter = 1
-
-
-class SuggestionSection(ReportSection):
-    def __init__(self, index: int):
-        super().__init__(index, 'Suggestion Report')
+class ListSection(ReportSection):
+    def __init__(self, index: int, name: str):
+        super().__init__(index, name)
         self.content = ""
 
     def ingest_data(self, line: Any):
@@ -101,7 +81,7 @@ class SimulationSection(ReportSection):
 
 
 def create_default_report_sections(ctx: Dict, reporter: ReportLog):
-    reporter.add_section(ReportDataType.TRANSCRIPT, TranscriptSection(0))
+    reporter.add_section(ReportDataType.TRANSCRIPT, ListSection(0, "Transcript"))
     reporter.add_section(ReportDataType.LLM_REPORT, ModelReportSection(1))
-    reporter.add_section(ReportDataType.SUGGESTION, SuggestionSection(2))
+    reporter.add_section(ReportDataType.SUGGESTION, ListSection(2, "Suggestion Report"))
     reporter.add_section(ReportDataType.SIMULATION, SimulationSection(3))

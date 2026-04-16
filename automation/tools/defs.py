@@ -238,7 +238,7 @@ class AttackFileCreate(LLMAction):
         )
 
     def format_report_transcript_line(self, ctx: Dict, kwargs: AttackSourceArgs) -> Optional[str]:
-        return f"modified the attack source code:\n```\n{kwargs.attack_contents}\n```"
+        return f"modified the attack source code:\n\n```\n{kwargs.attack_contents}\n```"
 
     def body(self, ctx: Dict, kwargs: AttackSourceArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
