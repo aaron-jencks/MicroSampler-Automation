@@ -1,11 +1,17 @@
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from workbench import get_workbench_path
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_report_directory(ctx: Dict):
+    dpath = Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"]
+    dpath.mkdir(parents=True, exist_ok=True)
+    return dpath
 
 
 class ReportLog:
@@ -50,7 +56,7 @@ class ReportLog:
 
     def generate_report(self, ctx: Dict):
         logger.info(f'generating report to {ctx["final_report"]["file"]}')
-        fpath = Path(ctx["general_prefix"]) / ctx["final_report"]["file"]
+        fpath = get_report_directory(ctx) / ctx["final_report"]["file"]
         builder = f"#{ctx['final_report']['run_name']} Final Report"
         builder += "\n\n##Transcript\n\n"
         builder += self.generate_transcript()
