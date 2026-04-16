@@ -7,8 +7,6 @@ import shutil
 import subprocess as sp
 from typing import Optional, Dict, List
 
-from workbench import create_workbench_file
-
 logger = logging.getLogger(__name__)
 
 
