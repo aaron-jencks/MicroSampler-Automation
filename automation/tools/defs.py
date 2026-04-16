@@ -7,6 +7,7 @@ from building import build_harness, deploy_harness, RunConfiguration, RunResult,
 from prompting.actions import LLMAction, LLMActionResponse, default_action_response, LLMActionError, LLMConclusion
 from prompting.client import OpenAIClient
 from reporting import ReportLog
+from simulation_utils import handle_simulation_output
 from tools.args import (AttackSourceArgs, BugReportArgs, ConclusionArgs, create_log_statement_for_tool_use,
                         FileCreateArgs, FileNameArgs, ResetWorkbenchArgs, SimulationArgs, SuggestionBoxArgs,
                         ToolBaseArgs, WorkbenchRunArgs)
@@ -271,68 +272,6 @@ class RunSimulation(LLMAction):
         ]
         return f"ran simulation:\n\t" + '\n\t'.join(lines)
 
-    def _handle_single_simulation_output(
-            self, ctx: Dict, args: SimulationArgs,
-            iteration: int,
-            output: RunResult
-    ) -> Tuple[List[Path], bool]:
-        output_files = []
-
-        log_prefix = get_workbench_path(ctx) / ctx["workbench"]["data_directory"] / args.run_name
-        log_prefix.mkdir(parents=True, exist_ok=True)
-
-        if args.stderr_file is not None and output.stderr is not None:
-            err_file = log_prefix / args.stderr_file
-            err_file = err_file.with_stem(f"{err_file.stem}-{iteration}")
-            with open(err_file, mode='w+') as fp:
-                fp.write(output.stderr)
-            output_files.append(err_file)
-
-        if output.errored:
-            return output_files, True
-
-        output_file_name = log_prefix / f"data-{iteration}.json"
-        with open(output_file_name, mode='w+') as fp:
-            fp.write(output.stdout)
-
-        return output_files, False
-
-    def _handle_simulation_output(
-            self, ctx: Dict, args: SimulationArgs,
-            outputs: List[RunResult]
-    ) -> LLMActionResponse:
-        logger.info('parsing run output')
-
-        log_prefix = get_workbench_path(ctx) / ctx["workbench"]["data_directory"] / args.run_name
-        log_prefix.mkdir(parents=True, exist_ok=True)
-
-        result = LLMActionResponse("", None, None)
-
-        output_files = []
-
-        for iteration in range(args.global_iterations):
-            output = outputs[iteration]
-            files, errored = self._handle_single_simulation_output(ctx, args, iteration, output)
-            output_files += files
-            if errored:
-                if output.timedout:
-                    result.error = LLMActionError(
-                        "simulation timed out",
-                        f"simulation took longer than {ctx['harness']['timeout']} seconds"
-                    )
-                else:
-                    result.error = LLMActionError(
-                        "simulation failed",
-                        f"simulation failed with code: {output.return_code}\n"
-                        f"stderr:\n```\n{output.stderr}\n```",
-                    )
-                break
-
-        result.response_message = "Output files:\n"
-        result.response_message += "\n".join(map(str, output_files))
-
-        return result
-
     def execute(self, ctx: Dict, kwargs: SimulationArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
@@ -345,7 +284,7 @@ class RunSimulation(LLMAction):
             kwargs.random_seed,
         )
         run_outputs = deploy_harness(ctx, config)
-        result = self._handle_simulation_output(ctx, kwargs, run_outputs)
+        result = handle_simulation_output(ctx, kwargs, run_outputs)
         return result
 
 
