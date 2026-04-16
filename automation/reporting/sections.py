@@ -20,6 +20,6 @@ class ReportSection(ABC):
         pass
 
     def generate_section(self, ctx: Dict) -> str:
-        builder = f"##{self.name}\n\n"
+        builder = f"## {self.name}\n\n"
         builder += self.body(ctx)
         return builder

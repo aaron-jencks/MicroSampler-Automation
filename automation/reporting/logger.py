@@ -63,7 +63,7 @@ class ReportLog:
     def generate_report(self, ctx: Dict):
         logger.info(f'generating report to {ctx["final_report"]["file"]}')
         fpath = get_report_directory(ctx) / ctx["final_report"]["file"]
-        builder = f"#{ctx['final_report']['run_name']} Final Report\n\n"
+        builder = f"# {ctx['final_report']['run_name']} Final Report\n\n"
 
         sections = []
         for sl in list(self.sections.values()):
