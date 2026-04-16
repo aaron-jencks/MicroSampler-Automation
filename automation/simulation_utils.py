@@ -99,10 +99,12 @@ def get_simulation_dataframe(ctx: Dict, run_name: str) -> Optional[pd.DataFrame]
         data_file = run_folder / f"data-{gi}.json"
         with open(data_file, mode='r') as fp:
             raw_data = json.load(fp)
+        seed = raw_data["seed"]
         for row in raw_data["data"]:
             iteration = row["iteration"]
             for bit_data in row["durations"]:
                 rows.append({
+                    'random_seed': seed,
                     'global_iteration': gi,
                     'inner_iteration': iteration,
                     **bit_data
