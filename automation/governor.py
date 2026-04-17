@@ -119,6 +119,34 @@ def main(ctx: Dict, dry: bool = False):
             tool_responses.append(msg_body)
 
         if conclusion is not None:
+            if ctx["expected_conclusion"]["enabled"]:
+                if conclusion.constant_time != ctx["expected_conclusion"]["is_constant"]:
+                    logger.warning("llm made wrong conclusion")
+                    with open(Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / ctx["llm"]["templates"]["wrong_conclusion_message"], 'r') as fp:
+                        tool_responses.append({
+                            "role": "user",
+                            "content": client.generate_preprocessed_template(ctx, fp.read())
+                        })
+                    current_message = tool_responses
+                    iteration += 1
+                    continue
+                if ctx["expected_conclusion"]["manual_verify"]:
+                    logger.info("generating temporary report")
+                    reporter.generate_report(ctx)
+                    correct = input("Is the model correct in its conclusion (y/n)? ")
+                    if correct.lower() == "y":
+                        break
+                    elif correct.lower() == "n" or correct == "":
+                        feedback = input("What is your feedback to the model: ")
+                        tool_responses.append({
+                            "role": "user",
+                            "content": feedback
+                        })
+                        current_message = tool_responses
+                        iteration += 1
+                        continue
+                    else:
+                        raise Exception("Invalid input")
             break
 
         current_message = tool_responses

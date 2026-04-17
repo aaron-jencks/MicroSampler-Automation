@@ -1,5 +1,10 @@
 {
     "general_prefix": ".",
+    "expected_conclusion": {
+        "enabled": false,
+        "is_constant": false,
+        "manual_verify": false
+    },
     "harness": {
         "prefix": "harness",
         "executable": "harness",
@@ -30,7 +35,8 @@
             "prefix": "prompts",
             "instructions": "instructions-prompt.txt",
             "initial_message": "initial-prompt.txt",
-            "stuck_message": "stuck-prompt.txt"
+            "stuck_message": "stuck-prompt.txt",
+            "wrong_conclusion_message": "wrong-conclusion.txt"
         },
         "api_key": "",
         "report_name": "conclusion.md"
