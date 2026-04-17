@@ -5,4 +5,5 @@ numpy
 openai
 pandas
 pydantic
+scipy
 tqdm

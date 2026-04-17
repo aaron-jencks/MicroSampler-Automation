@@ -4,12 +4,14 @@ import uuid
 
 import markdown
 import pandas as pd
+from scipy.stats import ttest_ind
 
 from reporting.logger import ReportLog, ReportDataType
 from reporting.plotting.default import TimingScatterGenerator, GlobalTimingDistributionGenerator, \
     GlobalTimingDistributionBoxGenerator, TimingDistributionGenerator, TimingDistributionBoxGenerator, \
     GlobalTimingIterationHeatmapGenerator
 from reporting.sections import ReportSection
+from reporting.tables import MarkdownTableBuilder
 from reporting.utils import get_report_directory
 from simulation_utils import get_simulation_dataframe
 from workbench import get_workbench_path
@@ -57,6 +59,7 @@ class SimulationSection(ReportSection):
     def __init__(self, index: int):
         super().__init__(index, 'Simulation Report')
         self.runs = []
+        self.table_builder = MarkdownTableBuilder()
 
     def ingest_data(self, line: Any):
         self.runs.append(line)
@@ -103,27 +106,96 @@ class SimulationSection(ReportSection):
     def _format_image_line(self, ctx: Dict, name: str, p: Path) -> str:
         return f"![{name}]({str(p.relative_to(get_report_directory(ctx)))})"
 
-    def _generate_iteration_distribution_table(self, df: pd.DataFrame) -> str:
-        rows = [
-            "| Iteration | Class | Samples | Mean | Median | Std Dev | Min | Max |",
-            "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
-        ]
-
-        grouped = (
-            df.groupby(["inner_iteration", "class"])["duration"]
+    def _calculate_distribution_stats(self, df: pd.DataFrame, group_columns: list[str]) -> pd.DataFrame:
+        return (
+            df.groupby(group_columns)["duration"]
             .agg(["count", "mean", "median", "std", "min", "max"])
             .reset_index()
-            .sort_values(["inner_iteration", "class"])
+            .sort_values(group_columns)
         )
 
+    def _perform_welch_test(self, sample_a: pd.Series, sample_b: pd.Series) -> tuple[float, float]:
+        statistic, pvalue = ttest_ind(sample_a, sample_b, equal_var=False)
+        return float(statistic), float(pvalue)
+
+    def _generate_global_distribution_table(self, df: pd.DataFrame) -> str:
+        grouped = self._calculate_distribution_stats(df, ["class"])
+        rows = []
         for _, row in grouped.iterrows():
             stddev = 0.0 if pd.isna(row["std"]) else row["std"]
-            rows.append(
-                f"| {int(row['inner_iteration'])} | {int(row['class'])} | {int(row['count'])} | "
-                f"{row['mean']:.2f} | {row['median']:.2f} | {stddev:.2f} | {int(row['min'])} | {int(row['max'])} |"
-            )
+            rows.append([
+                int(row["class"]),
+                int(row["count"]),
+                row["mean"],
+                row["median"],
+                stddev,
+                int(row["min"]),
+                int(row["max"]),
+            ])
+        return self.table_builder.to_html(
+            ["Class", "Samples", "Mean", "Median", "Std Dev", "Min", "Max"],
+            rows,
+        )
 
-        return markdown.markdown("\n".join(rows), extensions=["tables"])
+    def _generate_global_welch_ttest_table(self, df: pd.DataFrame) -> str:
+        class_zero = df[df["class"] == 0]["duration"]
+        class_one = df[df["class"] == 1]["duration"]
+        statistic, pvalue = self._perform_welch_test(class_zero, class_one)
+        rows = [[
+            int(class_zero.shape[0]),
+            int(class_one.shape[0]),
+            class_zero.mean(),
+            class_one.mean(),
+            statistic,
+            pvalue,
+            pvalue < 0.05,
+        ]]
+        return self.table_builder.to_html(
+            ["Class 0 Samples", "Class 1 Samples", "Class 0 Mean", "Class 1 Mean", "T-Statistic", "P-Value", "Significant (p < 0.05)"],
+            rows,
+        )
+
+    def _generate_iteration_distribution_table(self, df: pd.DataFrame) -> str:
+        grouped = self._calculate_distribution_stats(df, ["inner_iteration", "class"])
+        rows = []
+        for _, row in grouped.iterrows():
+            stddev = 0.0 if pd.isna(row["std"]) else row["std"]
+            rows.append([
+                int(row["inner_iteration"]),
+                int(row["class"]),
+                int(row["count"]),
+                row["mean"],
+                row["median"],
+                stddev,
+                int(row["min"]),
+                int(row["max"]),
+            ])
+        return self.table_builder.to_html(
+            ["Iteration", "Class", "Samples", "Mean", "Median", "Std Dev", "Min", "Max"],
+            rows,
+        )
+
+    def _generate_iteration_welch_ttest_table(self, df: pd.DataFrame) -> str:
+        rows = []
+        for iteration in sorted(df["inner_iteration"].unique()):
+            subset = df[df["inner_iteration"] == iteration]
+            class_zero = subset[subset["class"] == 0]["duration"]
+            class_one = subset[subset["class"] == 1]["duration"]
+            statistic, pvalue = self._perform_welch_test(class_zero, class_one)
+            rows.append([
+                int(iteration),
+                int(class_zero.shape[0]),
+                int(class_one.shape[0]),
+                class_zero.mean(),
+                class_one.mean(),
+                statistic,
+                pvalue,
+                pvalue < 0.05,
+            ])
+        return self.table_builder.to_html(
+            ["Iteration", "Class 0 Samples", "Class 1 Samples", "Class 0 Mean", "Class 1 Mean", "T-Statistic", "P-Value", "Significant (p < 0.05)"],
+            rows,
+        )
 
     def body(self, ctx: Dict) -> str:
         dfs = [
@@ -140,9 +212,16 @@ class SimulationSection(ReportSection):
         global_images = '\n\n'.join(images)
         global_html = markdown.markdown(global_images)
         # dimg, bimg = self._do_iteration_distribution_plots(ctx, global_df, iteration)
-        iteration_html = self._generate_iteration_distribution_table(global_df)
-        return (f"<details><summary>Global Duration Distribution</summary>{global_html}</details>"
-                f"<details><summary>Iteration Specific Distributions</summary>{iteration_html}</details>")
+        global_stats_html = self._generate_global_distribution_table(global_df)
+        global_welch_html = self._generate_global_welch_ttest_table(global_df)
+        iteration_stats_html = self._generate_iteration_distribution_table(global_df)
+        iteration_welch_html = self._generate_iteration_welch_ttest_table(global_df)
+        return (
+            f"<details><summary>Global Duration Distribution</summary>"
+            f"{global_welch_html}{global_stats_html}{global_html}</details>"
+            f"<details><summary>Iteration Specific Distributions</summary>"
+            f"{iteration_welch_html}{iteration_stats_html}</details>"
+        )
 
 
 def create_default_report_sections(ctx: Dict, reporter: ReportLog):
