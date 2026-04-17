@@ -9,5 +9,8 @@
     },
     "logging": {
         "output": "ccopy_output.log"
+    },
+    "final_report": {
+        "run_name": "smoke_test"
     }
 }
