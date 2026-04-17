@@ -1,5 +1,5 @@
 {
-    "general_prefix": "bearssl-0.6/ccopy",
+    "general_prefix": "bearssl-0.6/ccopy/v2",
     "expected_conclusion": {
         "enabled": true
     },
