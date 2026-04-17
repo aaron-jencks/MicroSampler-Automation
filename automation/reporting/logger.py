@@ -69,6 +69,8 @@ class ReportLog:
         if ctx["final_report"]["clear_report_area"] and prefix.exists():
             shutil.rmtree(prefix)
             prefix.mkdir(parents=True, exist_ok=True)
+        plots_prefix = prefix / ctx["final_report"]["plots_prefix"]
+        plots_prefix.mkdir(parents=True, exist_ok=True)
 
         builder = f"<h1>{ctx['final_report']['run_name']} Final Report</h1>\n\n"
 
