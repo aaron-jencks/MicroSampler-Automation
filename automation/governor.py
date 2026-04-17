@@ -118,7 +118,7 @@ def main(ctx: Dict, dry: bool = False):
                             msg_body["output"] = client.generate_preprocessed_template(ctx, fp.read())
                             reporter.log_transcript(f"system corrected conclusion")
                             valid = False
-                    if ctx["expected_conclusion"]["manual_verify"]:
+                    if valid and ctx["expected_conclusion"]["manual_verify"]:
                         logger.info("generating temporary report")
                         reporter.generate_report(ctx)
                         correct = input("Is the model correct in its conclusion (y/n)? ")

@@ -79,15 +79,16 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration) -> List[RunResult
         result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0, output_files=[])
         try:
             commands = [
-                f"./{ctx['harness']['executable']} {configuration.inner_iterations} {configuration.random_seed}",
+                f"./{ctx['harness']['executable']}",
+                str(configuration.inner_iterations),
+                str(configuration.random_seed),
             ]
             logger.info(f"Running: {' '.join(commands)}")
             run_output = sp.run(
                 commands,
                 cwd=deploy_path,
                 capture_output=True,
-                timeout=ctx["harness"]["timeout"],
-                shell=True
+                timeout=ctx["harness"]["timeout"]
             )
             result.stderr = run_output.stderr.decode(errors="ignore")
             result.stdout = run_output.stdout.decode(errors="ignore")

@@ -286,7 +286,10 @@ class RunSimulation(LLMAction):
     def body(self, ctx: Dict, kwargs: SimulationArgs) -> LLMActionResponse:
         create_log_statement_for_tool_use(
             kwargs,
-            "running harness simulation"
+            "running harness simulation with {} global iterations and {} inner iterations and seed {}",
+            kwargs.global_iterations,
+            kwargs.inner_iterations,
+            kwargs.random_seed,
         )
         config = RunConfiguration(
             kwargs.global_iterations,
