@@ -123,7 +123,8 @@ class OpenAIClient:
             elif item.type == 'message':
                 for content in item.content:
                     logger.info(f'model text output: {content.text}')
-                    self.reporter.log_transcript(f'model thought: {content.text}')
+                    line = content.text.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
+                    self.reporter.log_transcript(f'model thought: {line}')
             else:
                 logger.info(f'uncategorized model response: {item.content}')
 
