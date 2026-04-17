@@ -43,6 +43,7 @@
         "prefix": "final_report",
         "run_name": "undefined",
         "file": "final_report.html",
-        "plots_prefix": "images"
+        "plots_prefix": "images",
+        "clear_report_area": true
     }
 }

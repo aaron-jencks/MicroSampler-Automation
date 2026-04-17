@@ -1,6 +1,6 @@
 from enum import Enum
 import logging
-from pathlib import Path
+import shutil
 from typing import Any, Dict, List, Optional
 
 import markdown
@@ -64,6 +64,12 @@ class ReportLog:
 
     def generate_report(self, ctx: Dict):
         logger.info(f'generating report to {ctx["final_report"]["file"]}')
+
+        prefix = get_report_directory(ctx)
+        if ctx["final_report"]["clear_report_area"] and prefix.exists():
+            shutil.rmtree(prefix)
+            prefix.mkdir(parents=True, exist_ok=True)
+
         builder = f"<h1>{ctx['final_report']['run_name']} Final Report</h1>\n\n"
 
         sections = []
