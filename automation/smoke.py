@@ -81,11 +81,11 @@ def expected_workbench_path(ctx: Dict, fname: str) -> Path:
 
 
 def report_path(ctx: Dict) -> Path:
-    return Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"] / ctx["final_report"]["file"]
+    return Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"] / ctx["final_report"]["run_name"] / ctx["final_report"]["file"]
 
 
 def report_plots_path(ctx: Dict) -> Path:
-    return Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"] / ctx["final_report"]["plots_prefix"]
+    return Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"] / ctx["final_report"]["run_name"] / ctx["final_report"]["plots_prefix"]
 
 
 def harness_attack_path(ctx: Dict) -> Path:
