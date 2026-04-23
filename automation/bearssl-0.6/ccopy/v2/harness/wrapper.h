@@ -5,7 +5,7 @@
 
 #include "context.h"
 
-uint64_t timed_call_br_ccopy_v2(
+uint64_t timed_call_uut(
     trial_context_t ctx
 );
 

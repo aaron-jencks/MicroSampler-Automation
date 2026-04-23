@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
             );
             trial_inner_setup(&run_context, &trial_context);
             helper_start(&run_context);
-            iteration_durations[i] = timed_call_br_ccopy_v2(trial_context);
+            iteration_durations[i] = timed_call_uut(trial_context);
             helper_stop(&run_context);
             destroy_trial_context(trial_context);
         }
