@@ -15,7 +15,11 @@
             "encryption_util.h",
             "error.h",
             "context.h"
-        ]
+        ],
+        "uut": {
+            "prefix": "harness",
+            "file_stem": "wrapper"
+        }
     },
     "workbench": {
         "prefix": "workbench",
