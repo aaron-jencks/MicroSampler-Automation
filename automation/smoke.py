@@ -22,6 +22,7 @@ from tools.defs import (
 from workbench import get_workbench_path, reset_workbench
 
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent

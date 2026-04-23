@@ -44,6 +44,7 @@ def verify_legal_code(ctx: Dict, contents: str) -> bool:
 
 
 def build_harness(ctx: Dict) -> BuildResult:
+    logger.info(f"Building harness in: {ctx['harness']['prefix']}")
     make_output = sp.run(
         ["make", "clean", "harness"],
         capture_output=True,
@@ -57,7 +58,7 @@ def build_harness(ctx: Dict) -> BuildResult:
 
 
 def deploy_harness(ctx: Dict, configuration: RunConfiguration) -> List[RunResult]:
-    logger.info("Building harness...")
+    logger.info("Deploying harness...")
     build_output = build_harness(ctx)
     if build_output.return_code != 0:
         logger.error(f"Build harness failed with code {build_output.return_code}:\nstderr: {build_output.stderr}\nstdout: {build_output.stdout}")
