@@ -44,11 +44,15 @@ def verify_legal_code(ctx: Dict, contents: str) -> bool:
 
 
 def build_harness(ctx: Dict) -> BuildResult:
-    logger.info(f"Building harness in: {ctx['harness']['prefix']}")
+    harness_prefix = Path(ctx["harness"]["prefix"])
+    logger.info(f"Building harness in: {harness_prefix}")
+    logger.info(f"Fetching UUT source code...")
+    shutil.copy(Path(ctx["harness"]["uut"]["prefix"]) / ctx["harness"]["uut"]["file"], harness_prefix)
+    logger.info("Building harness...")
     make_output = sp.run(
         ["make", "clean", "harness"],
         capture_output=True,
-        cwd=Path(ctx["harness"]["prefix"])
+        cwd=harness_prefix,
     )
     return BuildResult(
         stdout=make_output.stdout.decode(),
