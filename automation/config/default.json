@@ -1,5 +1,4 @@
 {
-    "general_prefix": ".",
     "expected_conclusion": {
         "enabled": false,
         "is_constant": false,

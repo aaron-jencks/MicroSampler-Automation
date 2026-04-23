@@ -1,16 +1,26 @@
 {
-    "general_prefix": "bearssl-0.6/ccopy/v2",
+    "harness": {
+        "prefix": "bearssl-0.6/ccopy/v2/harness"
+    },
     "workbench": {
+        "prefix": "bearssl-0.6/ccopy/v2/workbench",
         "source": {
             "contents": {
-                "bearssl": "../../../apps/bearssl-0.6/src"
+                "bearssl": "../apps/bearssl-0.6/src"
             }
         }
     },
+    "llm": {
+        "templates": {
+            "prefix": "bearssl-0.6/ccopy/v2/prompts"
+        }
+    },
     "logging": {
-        "output": "ccopy_output.log"
+        "prefix": "bearssl-0.6/ccopy/v2/logs",
+        "output": "smoke_output.log"
     },
     "final_report": {
+        "prefix": "bearssl-0.6/ccopy/v2/final_report",
         "run_name": "smoke_test"
     }
 }
