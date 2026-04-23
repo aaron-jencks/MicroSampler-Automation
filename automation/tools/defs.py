@@ -252,7 +252,7 @@ class AttackFileCreate(LLMAction):
                 "the attack code you wrote does not pass preliminary validation "
                 "you may have unallowed local references."
             )), None)
-        file_name = Path(ctx["general_prefix"]) / ctx['harness']['prefix'] / ctx['harness']['target']
+        file_name = Path(ctx['harness']['prefix']) / ctx['harness']['target']
         with open(file_name, mode='w+') as fp:
             fp.write(kwargs.attack_contents)
         build_status = build_harness(ctx)

@@ -24,7 +24,7 @@ def setup_logging(ctx: Dict):
         "%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
     )
 
-    log_path = Path(ctx["general_prefix"]) / ctx["logging"]["prefix"] / ctx["logging"]["output"]
+    log_path = Path(ctx["logging"]["prefix"]) / ctx["logging"]["output"]
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path = log_path.with_stem(log_path.stem + "_" + dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
@@ -68,7 +68,7 @@ def main(ctx: Dict, dry: bool = False):
 
     logger.info(f"using instruction prompt:\n\n{client.load_model_template(ctx)}")
 
-    with open(Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / ctx["llm"]["templates"]["initial_message"], 'r') as fp:
+    with open(Path(ctx["llm"]["templates"]["prefix"]) / ctx["llm"]["templates"]["files"]["initial_message"], 'r') as fp:
         current_message = client.generate_preprocessed_template(ctx, fp.read())
 
     logger.info("starting prompting loop...")
@@ -88,7 +88,7 @@ def main(ctx: Dict, dry: bool = False):
             if stuck_count >= 5:
                 current_message = input("The model is really stuck, please do something: ")
             else:
-                with open(Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / ctx["llm"]["templates"]["stuck_message"], 'r') as fp:
+                with open(Path(ctx["llm"]["templates"]["prefix"]) / ctx["llm"]["templates"]["files"]["stuck_message"], 'r') as fp:
                     current_message = client.generate_preprocessed_template(ctx, fp.read())
             continue
         stuck_count = 0
@@ -113,8 +113,8 @@ def main(ctx: Dict, dry: bool = False):
                     valid = True
                     if conclusion.constant_time != ctx["expected_conclusion"]["is_constant"]:
                         logger.warning("llm made wrong conclusion")
-                        with open(Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] /
-                                  ctx["llm"]["templates"]["wrong_conclusion_message"], 'r') as fp:
+                        with open(Path(ctx["llm"]["templates"]["prefix"]) /
+                                  ctx["llm"]["templates"]["files"]["wrong_conclusion_message"], 'r') as fp:
                             msg_body["output"] = client.generate_preprocessed_template(ctx, fp.read())
                             reporter.log_transcript(f"system corrected conclusion")
                             valid = False

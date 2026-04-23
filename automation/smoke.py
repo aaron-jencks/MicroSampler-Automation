@@ -39,7 +39,7 @@ def setup_logging(ctx: Dict):
         "%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
     )
 
-    log_path = Path(ctx["general_prefix"]) / ctx["logging"]["prefix"] / ctx["logging"]["output"]
+    log_path = Path(ctx["logging"]["prefix"]) / ctx["logging"]["output"]
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path = log_path.with_stem(log_path.stem + "_" + dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
@@ -81,15 +81,15 @@ def expected_workbench_path(ctx: Dict, fname: str) -> Path:
 
 
 def report_path(ctx: Dict) -> Path:
-    return Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"] / ctx["final_report"]["run_name"] / ctx["final_report"]["file"]
+    return Path(ctx["final_report"]["prefix"]) / ctx["final_report"]["run_name"] / ctx["final_report"]["file"]
 
 
 def report_plots_path(ctx: Dict) -> Path:
-    return Path(ctx["general_prefix"]) / ctx["final_report"]["prefix"] / ctx["final_report"]["run_name"] / ctx["final_report"]["plots_prefix"]
+    return Path(ctx["final_report"]["prefix"]) / ctx["final_report"]["run_name"] / ctx["final_report"]["plots_prefix"]
 
 
 def harness_attack_path(ctx: Dict) -> Path:
-    return Path(ctx["general_prefix"]) / ctx["harness"]["prefix"] / ctx["harness"]["target"]
+    return Path(ctx["harness"]["prefix"]) / ctx["harness"]["target"]
 
 
 def load_template(path: Path) -> str:

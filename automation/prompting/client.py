@@ -70,7 +70,7 @@ class OpenAIClient:
         return processed_content
 
     def load_model_template(self, ctx: Dict) -> str:
-        fp = Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / ctx["llm"]["templates"][self.template]
+        fp = Path(ctx["llm"]["templates"]["prefix"]) / ctx["llm"]["templates"]["files"][self.template]
         with open(fp, 'r') as f:
             template = f.read()
 

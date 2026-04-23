@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def template_insert_file(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
-    file_path = Path(ctx["general_prefix"]) / args[0]
+    file_path = Path(args[0])
     if not file_path.exists():
         raise FileNotFoundError(file_path)
     with open(file_path, "r") as file:
@@ -58,7 +58,7 @@ def template_insert_schema(ctx: Dict, client: OpenAIClient, tag_name: str, args:
 def template_insert_template(ctx: Dict, client: OpenAIClient, tag_name: str, args: List[str]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
-    file_path = Path(ctx["general_prefix"]) / ctx["llm"]["templates"]["prefix"] / args[0]
+    file_path = Path(ctx["llm"]["templates"]["prefix"]) / args[0]
     if not file_path.exists():
         raise FileNotFoundError(file_path)
     with open(file_path, "r") as file:
