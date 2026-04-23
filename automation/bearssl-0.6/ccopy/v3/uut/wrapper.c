@@ -9,7 +9,7 @@ uint64_t timed_call_uut(
     size_t i;
     uint64_t start, end, duration;
     start = monotonic_ns();
-    br_ccopy(*ctx.key, ctx.dest, ctx.dummy, ctx.data, *ctx.data_len);
+    br_ccopy(*ctx.key, ctx.dest, ctx.data, *ctx.data_len);
     end = monotonic_ns();
     return end - start;
 }
