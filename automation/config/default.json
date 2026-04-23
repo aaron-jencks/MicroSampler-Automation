@@ -17,8 +17,8 @@
             "context.h"
         ],
         "uut": {
-            "prefix": "harness",
-            "file_stem": "wrapper"
+            "prefix": "uut",
+            "file": "wrapper.c"
         }
     },
     "workbench": {

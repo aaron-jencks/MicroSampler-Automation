@@ -4,7 +4,10 @@
     },
     "harness": {
         "prefix": "bearssl-0.6/ccopy/v2/harness",
-        "deployment_prefix": "bearssl-0.6/ccopy/v2/deploy"
+        "deployment_prefix": "bearssl-0.6/ccopy/v2/deploy",
+        "uut": {
+            "prefix": "bearssl-0.6/ccopy/v2/uut"
+        }
     },
     "workbench": {
         "prefix": "bearssl-0.6/ccopy/v2/workbench",
