@@ -1,1 +1,0 @@
-Let's get started, you'll need to generate code, test cases, everything on this first pass here.

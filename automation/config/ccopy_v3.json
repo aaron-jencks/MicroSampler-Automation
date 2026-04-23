@@ -6,7 +6,7 @@
         "prefix": "bearssl-0.6/ccopy/v2/harness",
         "deployment_prefix": "bearssl-0.6/ccopy/v2/deploy",
         "uut": {
-            "prefix": "bearssl-0.6/ccopy/v2/uut"
+            "prefix": "bearssl-0.6/ccopy/v3/uut"
         }
     },
     "workbench": {
@@ -20,11 +20,7 @@
     "llm": {
         "templates": {
             "files": {
-                "instructions": "bearssl-0.6/ccopy/v2/prompts/instructions-prompt.txt",
-                "initial_message": "bearssl-0.6/ccopy/v2/prompts/initial-prompt.txt",
-                "stuck_message": "bearssl-0.6/ccopy/v2/prompts/stuck-prompt.txt",
-                "wrong_conclusion_message": "bearssl-0.6/ccopy/v2/prompts/wrong-conclusion.txt",
-                "target_prompt": "bearssl-0.6/ccopy/v2/prompts/target-prompt.txt"
+                "target_prompt": "bearssl-0.6/ccopy/v3/prompts/target-prompt.txt"
             }
         }
     },
@@ -34,6 +30,6 @@
     },
     "final_report": {
         "prefix": "bearssl-0.6/ccopy/v2/final_report",
-        "run_name": "ccopy_v2"
+        "run_name": "ccopy_v3"
     }
 }

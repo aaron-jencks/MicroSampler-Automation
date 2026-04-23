@@ -16,7 +16,13 @@
     },
     "llm": {
         "templates": {
-            "prefix": "bearssl-0.6/ccopy/v2/prompts"
+            "files": {
+                "instructions": "bearssl-0.6/ccopy/v2/prompts/instructions-prompt.txt",
+                "initial_message": "bearssl-0.6/ccopy/v2/prompts/initial-prompt.txt",
+                "stuck_message": "bearssl-0.6/ccopy/v2/prompts/stuck-prompt.txt",
+                "wrong_conclusion_message": "bearssl-0.6/ccopy/v2/prompts/wrong-conclusion.txt",
+                "target_prompt": "bearssl-0.6/ccopy/v2/prompts/target-prompt.txt"
+            }
         }
     },
     "logging": {
