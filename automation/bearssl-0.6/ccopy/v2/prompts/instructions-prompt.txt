@@ -97,7 +97,7 @@ If you find a certain aspect of your task difficult and you think that there's s
 
 The algorithm that you are classifying is described below:
 
-[[template:target-prompt.txt]]
+[[template:target_prompt]]
 
 Before you begin, it may be helpful to do this in 3 stages.
 

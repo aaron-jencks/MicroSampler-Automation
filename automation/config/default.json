@@ -35,12 +35,12 @@
     "llm": {
         "model": "gpt-5.3-codex",
         "templates": {
-            "prefix": "prompts",
             "files": {
-                "instructions": "instructions-prompt.txt",
-                "initial_message": "initial-prompt.txt",
-                "stuck_message": "stuck-prompt.txt",
-                "wrong_conclusion_message": "wrong-conclusion.txt"
+                "instructions": "prompts/instructions-prompt.txt",
+                "initial_message": "prompts/initial-prompt.txt",
+                "stuck_message": "prompts/stuck-prompt.txt",
+                "wrong_conclusion_message": "prompts/wrong-conclusion.txt",
+                "target_prompt": "prompts/target-prompt.txt"
             }
         },
         "api_key": "",
