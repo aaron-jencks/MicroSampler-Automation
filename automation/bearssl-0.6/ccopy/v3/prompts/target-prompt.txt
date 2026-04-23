@@ -17,6 +17,18 @@ br_ccopy(uint32_t ctl, void *dst, const void *src, size_t len)
 }
 ```
 
+This code does not make use of the dummy buffer provided by the trial context, so you should ignore it. The function will be called as follows:
+
+```
+... (
+    trial_context_t ctx
+) {
+    ...
+    br_ccopy(*ctx.key, ctx.dest, ctx.data, *ctx.data_len);
+    ...
+}
+```
+
 If you want to look at the project source code, it will be included in the workbench in the [[config:workbench:source:prefix]] directory. It will be stored in the `bearssl` directory. This is a read-only copy, it is not used to build the harness, modifying these files will do nothing.
 
 The actual function can be found in [[config:workbench:source:prefix]]/bearssl/codec/ccopy.c for your perusal.
