@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
-from building import RunResult
+from building import RunResult, deploy_harness, build_harness, verify_legal_code, RunConfiguration
 from prompting.actions import LLMActionError, LLMActionResponse
 from tools.args import SimulationArgs
 from workbench import get_workbench_path
@@ -112,3 +112,43 @@ def get_simulation_dataframe(ctx: Dict, run_name: str) -> Optional[pd.DataFrame]
                 })
 
     return pd.DataFrame(rows)
+
+
+def write_attack_source(ctx: Dict, src: str) -> LLMActionResponse:
+    if not verify_legal_code(ctx, src):
+        return LLMActionResponse(None, LLMActionError(
+            "illegal attack code", (
+                "the attack code you wrote does not pass preliminary validation "
+                "you may have unallowed local references."
+            )), None)
+    file_name = Path(ctx['harness']['prefix']) / ctx['harness']['target']
+    with open(file_name, mode='w+') as fp:
+        fp.write(src)
+    build_status = build_harness(ctx)
+    if build_status.return_code != 0:
+        return LLMActionResponse(None, LLMActionError(
+            "build failed",
+            f"stdout:\n```\n{build_status.stdout}\n```\nstderr:\n```\n{build_status.stderr}\n```"
+        ), None)
+    return LLMActionResponse()
+
+
+def run_simulation(ctx: Dict, kwargs: SimulationArgs) -> LLMActionResponse:
+    build_result = build_harness(ctx)
+    if build_result.return_code != 0:
+        return LLMActionResponse(
+            "",
+            LLMActionError(
+                "build failed",
+                build_result.stderr
+            ),
+            None
+        )
+    config = RunConfiguration(
+        kwargs.global_iterations,
+        kwargs.inner_iterations,
+        kwargs.run_name,
+        kwargs.random_seed,
+    )
+    results = deploy_harness(ctx, config)
+    return handle_simulation_output(ctx, kwargs, results)

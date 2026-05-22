@@ -30,8 +30,8 @@ class RunResult:
 
 @dataclass
 class BuildResult:
-    stdout: Optional[str]
-    stderr: Optional[str]
+    stdout: str
+    stderr: str
     return_code: int
 
 

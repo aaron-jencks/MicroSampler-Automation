@@ -21,9 +21,9 @@ class LLMConclusion:
 
 @dataclass
 class LLMActionResponse:
-    response_message: Optional[str]
-    error: Optional[LLMActionError]
-    conclusion: Optional[LLMConclusion]
+    response_message: Optional[str] = None
+    error: Optional[LLMActionError] = None
+    conclusion: Optional[LLMConclusion] = None
 
 
 default_action_response = LLMActionResponse(None, None, None)
