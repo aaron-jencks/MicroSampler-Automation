@@ -19,6 +19,7 @@ class Agent:
         self.system_prompt = system_prompt
         self.output_format = output_format
         self.thread_id = str(uuid.uuid4())
+        self.dry_run = False
         if ctx['llm']['api_key'] != '':
             self.model = ChatOpenAI(
                 model=ctx['llm']['model'],
