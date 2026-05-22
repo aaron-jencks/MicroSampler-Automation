@@ -1,38 +1,16 @@
-from dataclasses import dataclass
 import logging
 import os
 from pathlib import Path
 import re
 import shutil
 import subprocess as sp
-from typing import Optional, Dict, List
+from typing import Dict, List
 
-logger = logging.getLogger(__name__)
-
-
-@dataclass
-class RunConfiguration:
-    global_iterations: int
-    inner_iterations: int
-    run_name: str
-    random_seed: int
+from simulation.exceptions import BuildError
+from simulation.struct import BuildResult, RunConfiguration, RunResult
 
 
-@dataclass
-class RunResult:
-    stdout: Optional[str]
-    stderr: Optional[str]
-    output_files: Optional[List[str]]
-    errored: bool
-    timedout: bool
-    return_code: int
-
-
-@dataclass
-class BuildResult:
-    stdout: str
-    stderr: str
-    return_code: int
+logger = logging.getLogger(__file__)
 
 
 def verify_legal_code(ctx: Dict, contents: str) -> bool:
@@ -65,15 +43,7 @@ def deploy_harness(ctx: Dict, configuration: RunConfiguration) -> List[RunResult
     logger.info("Deploying harness...")
     build_output = build_harness(ctx)
     if build_output.return_code != 0:
-        logger.error(f"Build harness failed with code {build_output.return_code}:\nstderr: {build_output.stderr}\nstdout: {build_output.stdout}")
-        return [RunResult(
-            stderr=build_output.stderr,
-            stdout=build_output.stdout,
-            errored=True,
-            timedout=False,
-            return_code=build_output.return_code,
-            output_files=[],
-        )]
+        raise BuildError(build_output)
     logger.info("Staging Deployment...")
     deploy_path = Path(ctx["harness"]["deployment_prefix"])
     os.makedirs(deploy_path, exist_ok=True)
