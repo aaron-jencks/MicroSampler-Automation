@@ -32,6 +32,11 @@
             }
         }
     },
+    "interpreter": {
+        "venv_path": "workbench/.venv",
+        "requirements_path": "config/definitions/venv_requirements.txt",
+        "timeout": 300
+    },
     "llm": {
         "model": "gpt-5.3-codex",
         "templates": {
