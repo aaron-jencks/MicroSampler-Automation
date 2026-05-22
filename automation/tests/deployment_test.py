@@ -1,6 +1,5 @@
-import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 import unittest
 
 from cascade_config import CascadeConfig
