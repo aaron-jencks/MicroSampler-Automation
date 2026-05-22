@@ -5,6 +5,7 @@ import unittest
 
 from cascade_config import CascadeConfig
 
+from simulation.api.ccopy import CCopyDeploymentController
 from simulation.struct import RunConfiguration
 from simulation.utils import write_attack_source, run_simulation
 
@@ -24,8 +25,8 @@ class BuildingDeploymentCase(unittest.TestCase):
         config = load_configs()
         with open(ATTACK_STUB) as f:
             attack_source = f.read()
-        write_attack_source(config, attack_source)
-        run_simulation(config, RunConfiguration(
+        controller = CCopyDeploymentController(config)
+        controller.deploy_test_case(attack_source, config=RunConfiguration(
             1, 1, "unit-test", 42
         ))
 
