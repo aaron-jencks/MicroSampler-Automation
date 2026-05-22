@@ -7,7 +7,6 @@ from cascade_config import CascadeConfig
 
 from simulation.api.ccopy import CCopyDeploymentController
 from simulation.struct import RunConfiguration
-from simulation.utils import write_attack_source, run_simulation
 
 
 ATTACK_STUB = Path("smoke_data/attack-stub.c")
