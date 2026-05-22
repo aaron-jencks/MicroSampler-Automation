@@ -1,4 +1,8 @@
 cascade-config
+deepagents
+langchain
+langchain-openai
+langgraph
 markdown
 matplotlib
 numpy
