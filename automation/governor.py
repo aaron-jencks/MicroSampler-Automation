@@ -1,18 +1,22 @@
 import argparse
+from dataclasses import dataclass
 import datetime as dt
+from enum import Enum
 import logging
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List, Optional, Type
 
+import pandas as pd
 from cascade_config import CascadeConfig
-from openai import OpenAI
+from pydantic import BaseModel
 
-from reporting.default import create_default_report_sections
-from reporting.logger import ReportLog
-from prompting.client import OpenAIClient
+from agents import Hypothesis, Implementation, Summarization
+# from reporting.default import create_default_report_sections
+# from reporting.logger import ReportLog
+from prompting.client import Agent
+from prompting.templates import TemplateController
+from simulation.api.ccopy import CCopyDeploymentController
 from templates import add_default_template_tools_to_client
-from tools.defs import add_default_tools_to_client
-from workbench import reset_workbench
 
 
 logging.basicConfig(level=logging.INFO)
@@ -45,127 +49,106 @@ def load_configs(cfgs: List[Path], default: Path) -> Dict:
     return conf.parse()
 
 
-def setup_model_client(ctx: Dict, reporter: ReportLog) -> OpenAIClient:
-    if ctx["llm"]["api_key"] != "":
-        inner_client = OpenAI(api_key=ctx["llm"]["api_key"])
-    else:
-        inner_client = OpenAI()
-    client = OpenAIClient(inner_client, "instructions", reporter)
-    add_default_tools_to_client(ctx, client, reporter)
-    add_default_template_tools_to_client(ctx, client)
-    return client
+class LoopState(Enum):
+    HYPOTHESIS = 0
+    CODE_GEN = 1
+    SIMULATION = 2
+    ANALYSIS = 3
+    SUMMARIZATION = 4
+
+
+def create_agent_from_config(
+        ctx: Dict, template_controller: TemplateController,
+        name: str, output_format: Type[BaseModel],
+        dry: bool = False
+) -> Agent:
+    agent_definition = ctx["agents"][name]
+    system_prompt_path = agent_definition["templates"]["system"]
+    with open(system_prompt_path, 'r') as fp:
+        system_prompt = template_controller.process_template(ctx, fp.read())
+    return Agent(
+        ctx, name, output_format,
+        system_prompt, agent_definition["templates"],
+        dry
+    )
+
+
+@dataclass
+class LoopContext:
+    iteration: int = 1
+    loop_state: LoopState = LoopState.HYPOTHESIS
+    current_summarization: Optional[Summarization] = None
+    current_hypothesis: Optional[Hypothesis] = None
+    current_implementation: Optional[Implementation] = None
+    current_results: Optional[pd.DataFrame] = None
 
 
 def main(ctx: Dict, dry: bool = False):
-    reset_workbench(ctx, True)
+    # reporter = ReportLog()
+    # create_default_report_sections(ctx, reporter)
 
-    reporter = ReportLog()
-    create_default_report_sections(ctx, reporter)
+    template_controller = TemplateController()
+    add_default_template_tools_to_client(ctx, template_controller)
 
-    client = setup_model_client(ctx, reporter)
-    if dry:
-        client.dry_run = True
+    deployment_controller = CCopyDeploymentController(ctx)
 
-    logger.info(f"using instruction prompt:\n\n{client.load_model_template(ctx)}")
-
-    with open(Path(ctx["llm"]["templates"]["prefix"]) / ctx["llm"]["templates"]["files"]["initial_message"], 'r') as fp:
-        current_message = client.generate_preprocessed_template(ctx, fp.read())
+    agents = {
+        LoopState.HYPOTHESIS: create_agent_from_config(ctx, template_controller, "hypothesis", Hypothesis, dry),
+        LoopState.CODE_GEN: create_agent_from_config(ctx, template_controller, "implementation", Implementation, dry),
+        LoopState.SUMMARIZATION: create_agent_from_config(ctx, template_controller, "summarization", Summarization, dry),
+    }
 
     logger.info("starting prompting loop...")
-    iteration = 1
-    conclusion = None
-    stuck_count = 0
+    current_state = LoopContext()
+    # conclusion = None
     while True:
-        logger.info("starting prompting iteration {}".format(iteration))
+        if current_state.loop_state == LoopState.HYPOTHESIS:
+            logger.info("starting hypothesis forming for iteration {}".format(current_state.iteration))
+            agent = agents[current_state.loop_state]
+            prompt = template_controller.process_template(
+                ctx,
+                agent.get_agent_prompt("input"),
+                current_state.current_summarization.model_dump() if current_state.current_summarization is not None else None,
+            )
+            current_state.current_hypothesis = agent.prompt_model(ctx, prompt)
+            current_state.loop_state = LoopState.CODE_GEN
+        elif current_state.loop_state == LoopState.CODE_GEN:
+            logger.info("starting attack generation for iteration {}".format(current_state.iteration))
+            agent = agents[current_state.loop_state]
+            prompt = template_controller.process_template(
+                ctx,
+                agent.get_agent_prompt("input"),
+                current_state.current_hypothesis.model_dump()
+            )
+            current_state.current_implementation = agent.prompt_model(ctx, prompt)
+            current_state.loop_state = LoopState.SIMULATION
+        elif current_state.loop_state == LoopState.SIMULATION:
+            logger.info("starting simulation for iteration {}".format(current_state.iteration))
+            current_state.current_results = deployment_controller.deploy_test_case(
+                current_state.current_implementation.attack_code,
+                config=current_state.current_hypothesis.run_configuration
+            )
+            current_state.loop_state = LoopState.ANALYSIS
+        elif current_state.loop_state == LoopState.ANALYSIS:
+            logger.info("starting analysis for iteration {}".format(current_state.iteration))
+            # TODO abstract analysis code here
+            # TODO early stopping happens here
+            current_state.loop_state = LoopState.SUMMARIZATION
+        elif current_state.loop_state == LoopState.SUMMARIZATION:
+            logger.info("starting summarization for iteration {}".format(current_state.iteration))
+            agent = agents[current_state.loop_state]
+            prompt = template_controller.process_template(
+                ctx,
+                agent.get_agent_prompt("input"),
+                # TODO define analysis results
+            )
+            current_state.current_implementation = agent.prompt_model(ctx, prompt)
+            current_state.loop_state = LoopState.HYPOTHESIS
+            current_state.iteration += 1
 
-        responses = client.prompt_model(ctx, current_message)
-        if dry:
-            logger.info("dry run requested, exiting...")
-            return
-        if len(responses) == 0:
-            logger.warning("llm didn't do anything")
-            stuck_count += 1
-            if stuck_count >= 5:
-                current_message = input("The model is really stuck, please do something: ")
-            else:
-                with open(Path(ctx["llm"]["templates"]["prefix"]) / ctx["llm"]["templates"]["files"]["stuck_message"], 'r') as fp:
-                    current_message = client.generate_preprocessed_template(ctx, fp.read())
-            continue
-        stuck_count = 0
-
-        tool_responses = []
-        messages = []
-        errors = []
-        for item_ctx, response in responses:
-            msg_body = {
-                "type": "function_call_output",
-                "call_id": item_ctx.call_id,
-                "output": ""
-            }
-            item_ctx_str = f"{item_ctx.name}"
-            message_string = ""
-            error_string = ""
-            if response.error is not None:
-                error_string = f"{response.error.name}: {response.error.description}"
-            if response.conclusion is not None:
-                conclusion = response.conclusion
-                if ctx["expected_conclusion"]["enabled"]:
-                    valid = True
-                    if conclusion.constant_time != ctx["expected_conclusion"]["is_constant"]:
-                        logger.warning("llm made wrong conclusion")
-                        with open(Path(ctx["llm"]["templates"]["prefix"]) /
-                                  ctx["llm"]["templates"]["files"]["wrong_conclusion_message"], 'r') as fp:
-                            msg_body["output"] = client.generate_preprocessed_template(ctx, fp.read())
-                            reporter.log_transcript(f"system corrected conclusion")
-                            valid = False
-                    if valid and ctx["expected_conclusion"]["manual_verify"]:
-                        logger.info("generating temporary report")
-                        reporter.generate_report(ctx)
-                        correct = input("Is the model correct in its conclusion (y/n)? ")
-                        if correct.lower() == "y":
-                            break
-                        elif correct.lower() == "n" or correct == "":
-                            feedback = input("What is your feedback to the model: ")
-                            msg_body["output"] = (f"The user did not agree with your conclusion, "
-                                                  f"here is their feedback: {feedback}\n\n"
-                                                  f"Please make a suggestion indicating how this could be corrected "
-                                                  f"next time and then address this and then call `make_conclusion` "
-                                                  f"again.")
-                            reporter.log_transcript(f"user intervened: {feedback}")
-                            valid = False
-                        else:
-                            raise Exception("Invalid input")
-                    if valid:
-                        break
-                    else:
-                        conclusion = None
-                        tool_responses.append(msg_body)
-                        continue
-                else:
-                    break
-            if response.response_message is not None:
-                message_string = f"{item_ctx_str}:\n\n{response.response_message}"
-            if response.error is None and response.response_message is None:
-                message_string = "No output"
-            if message_string != "":
-                msg_body["output"] = f"Output:\n\n{message_string}"
-                messages.append(f"{item_ctx_str}: {message_string}")
-            if error_string != "":
-                if message_string != "":
-                    msg_body["output"] += "\n\n"
-                msg_body["output"] += f"Error:\n\n{error_string}"
-                errors.append(f"{item_ctx_str}: {error_string}")
-            tool_responses.append(msg_body)
-
-        if conclusion is not None:
-            break
-
-        current_message = tool_responses
-        iteration += 1
-
-    logger.info(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
-    logger.info(f"Reasoning: {conclusion.reasoning}")
-    reporter.generate_report(ctx)
+    # logger.info(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
+    # logger.info(f"Reasoning: {conclusion.reasoning}")
+    # reporter.generate_report(ctx)
 
 
 if __name__ == "__main__":
