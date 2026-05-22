@@ -18,7 +18,7 @@ def load_configs() -> Dict:
     return conf.parse()
 
 
-class BuildingDeploymentCase(unittest.TestCase):
+class BuildingDeploymentTestCase(unittest.TestCase):
     def test_deployment(self):
         config = load_configs()
         with open(ATTACK_STUB) as f:
