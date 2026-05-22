@@ -1,13 +1,13 @@
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Callable
+from typing import Any, Dict, List, Callable, Optional
 
 
 logger = logging.getLogger(__file__)
 
 
-TemplateFeature = Callable[[Dict, Any, str, List[str], Dict[str, Any]], str]
+TemplateFeature = Callable[[Dict, Any, str, List[str], Optional[Dict[str, Any]]], str]
 
 
 class TemplateController:
@@ -18,7 +18,7 @@ class TemplateController:
         logger.info(f"creating template tool: {tag_name}")
         self.template_tools[tag_name] = handler
 
-    def process_template(self, ctx: Dict, content: str, kwargs: Dict[str, Any]) -> str:
+    def process_template(self, ctx: Dict, content: str, kwargs: Optional[Dict[str, Any]] = None) -> str:
         def replace_tags(m: re.Match) -> str:
             tag_name = m.group('tag')
             if tag_name not in self.template_tools:
