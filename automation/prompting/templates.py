@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Callable
 logger = logging.getLogger(__file__)
 
 
-TemplateFeature = Callable[[Dict, Any, str, List[str]], str]
+TemplateFeature = Callable[[Dict, Any, str, List[str], Dict[str, Any]], str]
 
 
 class TemplateController:
@@ -18,13 +18,16 @@ class TemplateController:
         logger.info(f"creating template tool: {tag_name}")
         self.template_tools[tag_name] = handler
 
-    def process_template(self, ctx: Dict, content: str) -> str:
+    def process_template(self, ctx: Dict, content: str, kwargs: Dict[str, Any]) -> str:
         def replace_tags(m: re.Match) -> str:
             tag_name = m.group('tag')
             if tag_name not in self.template_tools:
                 raise RuntimeError(f"Unrecognized tag name: {tag_name}")
             arguments = m.group('arguments')
-            return self.template_tools[tag_name](ctx, self, tag_name, arguments[1:].split(':') if len(arguments) > 1 else [])
+            return self.template_tools[tag_name](
+                ctx, self,
+                tag_name, arguments[1:].split(':') if len(arguments) > 1 else [], kwargs
+            )
 
         processed_content = re.sub(
             r'\[\[(?P<tag>[^\]:]+)(?P<arguments>(:[^\]:]+)*)]]',
