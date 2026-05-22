@@ -51,6 +51,30 @@
         "api_key": "",
         "report_name": "conclusion.md"
     },
+    "agents": {
+        "hypothesis": {
+            "model": "gpt-5.4",
+            "templates": {
+                "system": "prompts/hypothesis/system-prompt.txt",
+                "input": "prompts/hypothesis/feedback-prompt.txt",
+                "initial": "prompts/hypothesis/initial-prompt.txt"
+            }
+        },
+        "implementation": {
+            "model": "gpt-5.3-codex",
+            "templates": {
+                "system": "prompts/implementation/system-prompt.txt",
+                "input": "prompts/implementation/feedback-prompt.txt"
+            }
+        },
+        "summarization": {
+            "model": "gpt-5.4",
+            "templates": {
+                "system": "prompts/summarization/system-prompt.txt",
+                "input": "prompts/summarization/feedback-prompt.txt"
+            }
+        }
+    },
     "logging": {
         "prefix": "logs",
         "output": "v2_output.log"
