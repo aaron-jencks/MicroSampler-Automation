@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from scipy.stats import ttest_ind
 
@@ -38,23 +40,26 @@ def generate_global_distribution_table(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def generate_global_welch_ttest_table(df: pd.DataFrame) -> pd.DataFrame:
+def generate_welch_ttest_table(df: pd.DataFrame) -> pd.DataFrame:
     class_zero = df[df["class"] == 0]["duration"]
     class_one = df[df["class"] == 1]["duration"]
     statistic, pvalue = perform_welch_test(class_zero, class_one)
+    s0 = int(class_zero.shape[0])
+    s1 = int(class_one.shape[0])
+    c0m = class_zero.mean()
+    c1m = class_one.mean()
     rows = [[
-        int(class_zero.shape[0]),
-        int(class_one.shape[0]),
-        class_zero.mean(),
-        class_one.mean(),
+        s0, s1,
+        c0m, c1m,
         statistic,
         pvalue,
         pvalue < 0.05,
+        min(-np.log10(max(pvalue, 1e-300)) / 10, 1.0) * (abs(c0m - c1m) / (c0m + c1m)) * (1.0 - (abs(s0 - s1) / (s0 + s1))) * 100
     ]]
     return pd.DataFrame(
         rows,
         columns=["Class 0 Samples", "Class 1 Samples", "Class 0 Mean", "Class 1 Mean", "T-Statistic", "P-Value",
-                 "Significant (p < 0.05)"]
+                 "Significant (p < 0.05)", "Score"]
     )
 
 
@@ -83,24 +88,11 @@ def generate_iteration_welch_ttest_table(df: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for iteration in sorted(df["inner_iteration"].unique()):
         subset = df[df["inner_iteration"] == iteration]
-        class_zero = subset[subset["class"] == 0]["duration"]
-        class_one = subset[subset["class"] == 1]["duration"]
-        statistic, pvalue = perform_welch_test(class_zero, class_one)
-        rows.append([
-            int(iteration),
-            int(class_zero.shape[0]),
-            int(class_one.shape[0]),
-            class_zero.mean(),
-            class_one.mean(),
-            statistic,
-            pvalue,
-            pvalue < 0.05,
-        ])
-    return pd.DataFrame(
-        rows,
-        columns=["Iteration", "Class 0 Samples", "Class 1 Samples", "Class 0 Mean", "Class 1 Mean", "T-Statistic",
-                 "P-Value", "Significant (p < 0.05)"]
-    )
+        wdf = generate_welch_ttest_table(subset)
+        wdf["Iteration"] = [iteration] * len(wdf)
+        wdf["Score"] *= (1 - np.e**(-iteration / 30))  # apply iteration component to score
+        rows.append(wdf)
+    return pd.concat(rows, ignore_index=True)
 
 
 def _format_value(value: Any) -> str:
@@ -128,3 +120,32 @@ def dataframe_to_markdown(df: pd.DataFrame) -> str:
         separator_row,
         *body_rows,
     ])
+
+
+@dataclass
+class StatisticalAnalysisResults:
+    global_distribution: pd.DataFrame
+    iteration_distribution: pd.DataFrame
+    iteration_welch_ttest_data: pd.DataFrame
+    global_welch_ttest_data: pd.DataFrame
+    global_score: float
+    iteration_score: float
+
+
+"""
+I'm arbitrarily choosing tau based on visual information, there is no mathematical proof there.
+"""
+
+
+def generate_statistical_analysis(df: pd.DataFrame) -> StatisticalAnalysisResults:
+    result = StatisticalAnalysisResults(
+        generate_global_distribution_table(df),
+        generate_iteration_distribution_table(df),
+        generate_iteration_welch_ttest_table(df),
+        generate_welch_ttest_table(df),
+        0.0,
+        0.0,
+    )
+    result.iteration_score = result.iteration_welch_ttest_data["Score"].mean()
+    result.global_score = result.global_welch_ttest_data["Score"].mean()
+    return result

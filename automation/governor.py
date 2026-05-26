@@ -16,6 +16,7 @@ from agents import Hypothesis, Implementation, Summarization
 from prompting.client import Agent
 from prompting.templates import TemplateController
 from simulation.api.ccopy import CCopyDeploymentController
+from stats import StatisticalAnalysisResults, generate_statistical_analysis
 from templates import add_default_template_tools_to_client
 
 
@@ -55,6 +56,7 @@ class LoopState(Enum):
     SIMULATION = 2
     ANALYSIS = 3
     SUMMARIZATION = 4
+    CONCLUSION = 5
 
 
 def create_agent_from_config(
@@ -80,6 +82,7 @@ class LoopContext:
     current_summarization: Optional[Summarization] = None
     current_hypothesis: Optional[Hypothesis] = None
     current_implementation: Optional[Implementation] = None
+    current_stats: Optional[StatisticalAnalysisResults] = None
     current_results: Optional[pd.DataFrame] = None
 
 
@@ -131,8 +134,12 @@ def main(ctx: Dict, dry: bool = False):
             current_state.loop_state = LoopState.ANALYSIS
         elif current_state.loop_state == LoopState.ANALYSIS:
             logger.info("starting analysis for iteration {}".format(current_state.iteration))
-            # TODO abstract analysis code here
+            current_state.current_stats = generate_statistical_analysis(current_state.current_results)
             # TODO early stopping happens here
+            if current_state.current_stats.iteration_score > 0.95:
+                logger.info(f"analysis hit threshold with a score of {current_state.current_stats.iteration_score:0.4f}")
+                current_state.current_state = LoopState.CONCLUSION
+                continue
             current_state.loop_state = LoopState.SUMMARIZATION
         elif current_state.loop_state == LoopState.SUMMARIZATION:
             logger.info("starting summarization for iteration {}".format(current_state.iteration))
@@ -141,10 +148,17 @@ def main(ctx: Dict, dry: bool = False):
                 ctx,
                 agent.get_agent_prompt("input"),
                 # TODO define analysis results
+                {
+                    "current_hypothesis": current_state.current_hypothesis.model_dump(),
+                    **current_state.current_results.to_dict()  # should probably also include hypothesis as well.
+                }
             )
             current_state.current_implementation = agent.prompt_model(ctx, prompt)
             current_state.loop_state = LoopState.HYPOTHESIS
             current_state.iteration += 1
+        elif current_state.loop_state == LoopState.CONCLUSION:
+            logger.info("exiting loop")
+            break
 
     # logger.info(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
     # logger.info(f"Reasoning: {conclusion.reasoning}")
