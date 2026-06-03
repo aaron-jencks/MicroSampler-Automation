@@ -56,8 +56,7 @@
             "model": "gpt-5.4",
             "templates": {
                 "system": "prompts/hypothesis/system-prompt.txt",
-                "input": "prompts/hypothesis/feedback-prompt.txt",
-                "initial": "prompts/hypothesis/initial-prompt.txt"
+                "input": "prompts/hypothesis/feedback-prompt.txt"
             }
         },
         "implementation": {
