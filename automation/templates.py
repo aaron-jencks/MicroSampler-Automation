@@ -56,7 +56,7 @@ def template_insert_runtime_data(ctx: Dict, client: TemplateController, tag_name
     current = kwargs
     for key in args:
         current = current[key]
-    return repr(current)
+    return str(current)
 
 
 def format_type(t) -> str:
