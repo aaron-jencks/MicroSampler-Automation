@@ -15,23 +15,23 @@ Your job is to convert a hypothesis into executable test code or harness modific
 
 You are tasked with writing C code that essentially tries to manipulate the unit under test (UUT) into violating its own constant-time guarantee. To do so, you must write code that satisfies the given interface and execution paradigm. Below is the relevant source code from the test harness that you can use as reference:
 
-[[source:harness/encryption_util.h]]
+[[source:bearssl-0.6/ccopy/v2/harness/encryption_util.h]]
 
-[[source:harness/encryption_util.c]]
+[[source:bearssl-0.6/ccopy/v2/harness/encryption_util.c]]
 
-[[source:harness/error.h]]
+[[source:bearssl-0.6/ccopy/v2/harness/error.h]]
 
-[[source:harness/error.c]]
+[[source:bearssl-0.6/ccopy/v2/harness/error.c]]
 
-[[source:harness/context.h]]
+[[source:bearssl-0.6/ccopy/v2/harness/context.h]]
 
-[[source:harness/context.c]]
+[[source:bearssl-0.6/ccopy/v2/harness/context.c]]
 
 These files define the data structures that will be passed into your functions as well as how they will be initialized and how errors are handled. You may use the `encryption_util.h` functions as well as the `error.h` functions. You can include them with `#include "encryption_util.h"` and `#include "error.h"` respectively. You can use these to get additional information, as well as maintain state between the function calls. It should be noted, however, that the `global_context_t` `state` member cannot be modified by the `trial_` functions, it is restricted to writing by the `global_` functions.
 
 Below is the interface functions that you need to implement:
 
-[[source:harness/skeleton.h]]
+[[source:bearssl-0.6/ccopy/v2/harness/skeleton.h]]
 
 You do not have to implement every function if you don't want, but they do all have to have bodies. You can just leave the bodies empty if you wish. You may reference header files in your file, but they should be limited to:
 
