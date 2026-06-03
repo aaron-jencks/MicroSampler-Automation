@@ -7,14 +7,9 @@ import pandas as pd
 
 from simulation.building import RunResult, deploy_harness, build_harness, verify_legal_code, RunConfiguration
 from simulation.exceptions import SimulationTimeoutError, SimulationFailureError, BuildError, IllegalCodeError
-from workbench import get_workbench_path
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_data_directory(ctx: Dict, run_name: str) -> Path:
-    return get_workbench_path(ctx) / ctx["workbench"]["data_directory"] / run_name
 
 
 def handle_simulation_output(
