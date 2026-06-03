@@ -114,7 +114,7 @@ def main(ctx: Dict, dry: bool = False):
                 ctx,
                 agent.get_agent_prompt("input"),
                 {
-                    "summarization": current_state.current_summarization if current_state.current_summarization is not None else None,
+                    "summary": current_state.current_summarization if current_state.current_summarization is not None else None,
                 }
             )
             current_state.current_hypothesis = agent.prompt_model(ctx, prompt)

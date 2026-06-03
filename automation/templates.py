@@ -156,6 +156,27 @@ Global: {kwargs['stats'].global_score}
 Iteration: {kwargs['stats'].iteration_score}"""
 
 
+def template_insert_summary(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+    if "summary" not in kwargs or kwargs["summary"] is None:
+        return "None"
+    result = f"""## Summary:
+{kwargs['summary'].summary}
+
+## Suggestions:
+
+{kwargs['summary'].suggestion}
+
+## Failure Reasons:
+
+{kwargs['summary'].failure_reason}
+
+## Implementation Bugs:
+"""
+    for bug in kwargs['summary'].bugs:
+        result += f"- {bug}\n"
+    return result
+
+
 def add_default_template_tools_to_client(ctx: Dict, client: TemplateController):
     client.create_template_tool("source", template_insert_file)
     client.create_template_tool("template", template_insert_template)
@@ -166,3 +187,4 @@ def add_default_template_tools_to_client(ctx: Dict, client: TemplateController):
     client.create_template_tool("hypothesis", template_insert_hypothesis)
     client.create_template_tool("sim_feedback", template_insert_simulation_feedback)
     client.create_template_tool("results", template_insert_simulation_results)
+    client.create_template_tool("summary", template_insert_summary)
