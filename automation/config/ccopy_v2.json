@@ -28,6 +28,26 @@
             }
         }
     },
+    "agents": {
+        "hypothesis": {
+            "templates": {
+                "system": "bearssl-0.6/ccopy/v2/prompts/hypothesis/system-prompt.txt",
+                "input": "bearssl-0.6/ccopy/v2/prompts/hypothesis/feedback-prompt.txt"
+            }
+        },
+        "implementation": {
+            "templates": {
+                "system": "bearssl-0.6/ccopy/v2/prompts/implementation/system-prompt.txt",
+                "input": "bearssl-0.6/ccopy/v2/prompts/implementation/feedback-prompt.txt"
+            }
+        },
+        "summarization": {
+            "templates": {
+                "system": "bearssl-0.6/ccopy/v2/prompts/summarization/system-prompt.txt",
+                "input": "bearssl-0.6/ccopy/v2/prompts/summarization/feedback-prompt.txt"
+            }
+        }
+    },
     "logging": {
         "prefix": "bearssl-0.6/ccopy/v2/logs",
         "output": "ccopy_v2_output.log"
