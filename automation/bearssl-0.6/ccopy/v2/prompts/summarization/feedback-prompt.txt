@@ -1,6 +1,6 @@
 # Current hypothesis:
 
-[[runtime_data:current_hypothesis]]
+[[hypothesis]]
 
 # Current Implementation
 

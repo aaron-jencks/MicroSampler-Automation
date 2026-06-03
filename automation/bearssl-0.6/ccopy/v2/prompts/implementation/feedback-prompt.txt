@@ -2,7 +2,7 @@ Please implement code for the following experiment:
 
 # Current hypothesis:
 
-[[runtime_data:current_hypothesis]]
+[[hypothesis]]
 
 # Previous Simulation Feedback
 
