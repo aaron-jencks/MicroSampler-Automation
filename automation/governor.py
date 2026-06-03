@@ -153,7 +153,7 @@ def main(ctx: Dict, dry: bool = False):
             # TODO early stopping happens here
             if current_state.current_stats.iteration_score > 0.95:
                 logger.info(f"analysis hit threshold with a score of {current_state.current_stats.iteration_score:0.4f}")
-                current_state.current_state = LoopState.CONCLUSION
+                current_state.loop_state = LoopState.CONCLUSION
                 continue
             current_state.loop_state = LoopState.SUMMARIZATION
         elif current_state.loop_state == LoopState.SUMMARIZATION:
