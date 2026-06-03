@@ -169,7 +169,7 @@ def main(ctx: Dict, dry: bool = False):
                     "feedback": current_state.simulation_feedback
                 }
             )
-            current_state.current_implementation = agent.prompt_model(ctx, prompt)
+            current_state.current_summarization = agent.prompt_model(ctx, prompt)
             current_state.loop_state = LoopState.HYPOTHESIS
             current_state.iteration += 1
         elif current_state.loop_state == LoopState.CONCLUSION:
