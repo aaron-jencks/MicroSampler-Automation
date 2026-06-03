@@ -15,13 +15,14 @@ logger = logging.getLogger(__file__)
 
 class Agent:
     def __init__(
-            self, ctx: Dict,
+            self, ctx: Dict, model: str,
             name: str, output_format: Type[BaseModel],
             system_prompt: str,
             templates: Dict[str, Path],
             dry_run: bool = False
     ):
         self.ctx = ctx
+        self.model = model
         self.name = name
         self.system_prompt = system_prompt
         self.output_format = output_format
@@ -30,12 +31,12 @@ class Agent:
         self.templates = templates
         if ctx['llm']['api_key'] != '':
             self.model = ChatOpenAI(
-                model=ctx['llm']['model'],
+                model=model,
                 api_key=ctx['llm']['api_key'],
             )
         else:
             self.model = ChatOpenAI(
-                model=ctx['llm']['model'],
+                model=model,
             )
         self.agent = create_agent(
             model=self.model,

@@ -70,7 +70,8 @@ def create_agent_from_config(
     with open(system_prompt_path, 'r') as fp:
         system_prompt = template_controller.process_template(ctx, fp.read())
     return Agent(
-        ctx, name, output_format,
+        ctx, agent_definition["model"],
+        name, output_format,
         system_prompt, agent_definition["templates"],
         dry
     )
