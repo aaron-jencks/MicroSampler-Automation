@@ -1,9 +1,23 @@
-Please implement code for the following experiment:
+# Implementation Request
 
-# Current hypothesis:
+Implement the current hypothesis as one complete attack.c source file.
+
+The hypothesis below is the controlling specification for this attempt. Follow it as directly as possible.
+
+# Current Hypothesis
 
 [[hypothesis]]
 
-# Previous Simulation Feedback
+# Simulation Feedback From Previous Attempt
 
 [[sim_feedback]]
+
+# Task
+
+Write the attack_code implementation for this hypothesis.
+
+If simulation feedback is `None`, this is the first implementation attempt for the current hypothesis.
+
+If simulation feedback is present, repair the implementation according to that feedback while preserving the hypothesis strategy unless the feedback makes the strategy impossible.
+
+Use the changes field to summarize what you implemented or repaired.

@@ -1,3 +1,13 @@
-# Summary From Last Run:
+# Previous Run Summary
+
+The summary below is the only feedback from the previous experiment.
+
+If it is `None`, this is the first iteration. Choose a simple, concrete initial strategy that the Implementation Agent can implement through the lifecycle hooks.
+
+If it contains a prior summary, use it to refine the next strategy. Pay particular attention to the suggestion, failure reason, and implementation bugs.
 
 [[summary]]
+
+# Task
+
+Produce the next implementation-guiding hypothesis.

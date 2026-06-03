@@ -1,10 +1,16 @@
-# Current hypothesis:
+# Summarization Request
+
+Interpret the latest experiment and produce guidance for the next hypothesis.
+
+Use the hypothesis, implementation, results, and simulation feedback below as the complete record for this run.
+
+# Current Hypothesis
 
 [[hypothesis]]
 
 # Current Implementation
 
-```
+```c
 [[runtime_data:implementation]]
 ```
 
@@ -15,3 +21,32 @@
 # Simulation Feedback
 
 [[sim_feedback]]
+
+# Task
+
+Produce a concise interpretation for the Hypothesis Agent.
+
+If Results is not `None`, treat this as a completed timing experiment:
+
+* Compare the global score and iteration score.
+* Identify whether the result is promising, weak, noisy, borderline, or inconsistent.
+* Explain what the class means, p-values, sample balance, and score imply.
+* Decide whether the next hypothesis should strengthen the same strategy, increase run counts, control noise, adjust the class-to-condition mapping, or try a different mechanism.
+* Put only real implementation-behavior issues in `bugs`.
+
+If Results is `None`, treat this as a runtime or simulation failure:
+
+* Do not discuss statistical significance.
+* Use Simulation Feedback to identify what prevented analysis.
+* Recommend a safer or simpler next strategy.
+* Put concrete runtime-level issues in `bugs`.
+
+In `description`, summarize what happened and how to read the outcome.
+
+In `suggestion`, give direct guidance for the next hypothesis. Make it specific enough that the next Hypothesis Agent can choose a better implementation-guiding strategy without seeing the raw data.
+
+In `failure_reason`, explain the main reason this run did not yet produce a strong enough useful result. If the run was promising, explain what still needs confirmation or improvement.
+
+In `bugs`, list concrete implementation issues to avoid or repair. Use an empty list if there are no implementation-behavior issues.
+
+Do not produce final conclusions about whether the target is constant-time.
