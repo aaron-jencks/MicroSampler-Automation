@@ -160,7 +160,7 @@ def template_insert_summary(ctx: Dict, client: TemplateController, tag_name: str
     if "summary" not in kwargs or kwargs["summary"] is None:
         return "None"
     result = f"""## Summary:
-{kwargs['summary'].summary}
+{kwargs['summary'].description}
 
 ## Suggestions:
 
