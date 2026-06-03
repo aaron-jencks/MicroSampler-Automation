@@ -136,6 +136,8 @@ def main(ctx: Dict, dry: bool = False):
         elif current_state.loop_state == LoopState.SIMULATION:
             logger.info("starting simulation for iteration {}".format(current_state.iteration))
             current_state.current_results = None
+            current_state.current_stats = None
+            current_state.simulation_feedback = None
             try:
                 current_state.current_results = deployment_controller.deploy_test_case(
                     current_state.current_implementation.attack_code,
@@ -167,10 +169,12 @@ def main(ctx: Dict, dry: bool = False):
                 {
                     "current_hypothesis": current_state.current_hypothesis,
                     "stats": current_state.current_stats,  # should probably also include hypothesis as well.
-                    "feedback": current_state.simulation_feedback
+                    "feedback": current_state.simulation_feedback,
+                    "implementation": current_state.current_implementation.attack_code,
                 }
             )
             current_state.current_summarization = agent.prompt_model(ctx, prompt)
+            current_state.simulation_feedback = None
             current_state.loop_state = LoopState.HYPOTHESIS
             current_state.iteration += 1
         elif current_state.loop_state == LoopState.CONCLUSION:

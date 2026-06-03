@@ -2,6 +2,12 @@
 
 [[runtime_data:current_hypothesis]]
 
+# Current Implementation
+
+```
+[[runtime_data:implementation]]
+```
+
 # Results
 
 [[results]]
