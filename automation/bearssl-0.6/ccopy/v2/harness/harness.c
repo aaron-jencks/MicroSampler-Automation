@@ -25,7 +25,7 @@ void generate_json_output(global_context_t ctx, uint64_t* durations, uint32_t* k
         printf("\n\t\t{\n\t\t\t\"iteration\": %zu,\n\t\t\t\"durations\": [", i);
         for(size_t ki = 0; ki < 32; ki++) {
             uint32_t bit = (uint32_t)((keys[i] >> ki) & 0x1);
-            printf("\n\t\t\t\t{ \"bit\": %zu, \"class\": %u, \"key\": %u, \"duration\": %lu }", ki, bit, keys[i], durations[i]);
+            printf("\n\t\t\t\t{ \"bit\": %zu, \"class\": %u, \"key\": %u, \"duration\": %lu }", ki, bit, keys[i], durations[i*32+ki]);
             if(ki < 31) printf(",");
         }
         printf("\n\t\t\t]\n\t\t}");
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 
     size_t total_bit_iterations = iterations * 32;
     uint64_t* iteration_durations = malloc(sizeof(uint64_t) * total_bit_iterations);
-    uint32_t* iteration_keys = malloc(sizeof(uint32_t) * total_bit_iterations);
+    uint32_t* iteration_keys = malloc(sizeof(uint32_t) * iterations);
 
     global_context_t global_context = create_global_context(iterations, seed);
     global_setup(&global_context);
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
             );
             trial_inner_setup(&run_context, &trial_context);
             helper_start(&run_context);
-            iteration_durations[i] = timed_call_uut(trial_context);
+            iteration_durations[i*32+ki] = timed_call_uut(trial_context);
             helper_stop(&run_context);
             destroy_trial_context(trial_context);
         }
