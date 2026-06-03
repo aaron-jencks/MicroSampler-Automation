@@ -9,7 +9,7 @@ from simulation.building import RunResult, deploy_harness, build_harness, verify
 from simulation.exceptions import SimulationTimeoutError, SimulationFailureError, BuildError, IllegalCodeError
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__file__)
 
 
 def handle_simulation_output(

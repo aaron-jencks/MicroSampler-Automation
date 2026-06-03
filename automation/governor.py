@@ -16,6 +16,7 @@ from agents import Hypothesis, Implementation, Summarization
 from prompting.client import Agent
 from prompting.templates import TemplateController
 from simulation.api.ccopy import CCopyDeploymentController
+from simulation.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
 from stats import StatisticalAnalysisResults, generate_statistical_analysis
 from templates import add_default_template_tools_to_client
 
@@ -84,6 +85,7 @@ class LoopContext:
     current_implementation: Optional[Implementation] = None
     current_stats: Optional[StatisticalAnalysisResults] = None
     current_results: Optional[pd.DataFrame] = None
+    simulation_feedback: Optional[str] = None
 
 
 def main(ctx: Dict, dry: bool = False):
@@ -111,7 +113,9 @@ def main(ctx: Dict, dry: bool = False):
             prompt = template_controller.process_template(
                 ctx,
                 agent.get_agent_prompt("input"),
-                current_state.current_summarization.model_dump() if current_state.current_summarization is not None else None,
+                {
+                    "summarization": current_state.current_summarization if current_state.current_summarization is not None else None,
+                }
             )
             current_state.current_hypothesis = agent.prompt_model(ctx, prompt)
             current_state.loop_state = LoopState.CODE_GEN
@@ -121,17 +125,28 @@ def main(ctx: Dict, dry: bool = False):
             prompt = template_controller.process_template(
                 ctx,
                 agent.get_agent_prompt("input"),
-                current_state.current_hypothesis.model_dump()
+                {
+                    "current_hypothesis": current_state.current_hypothesis,
+                    "feedback": current_state.simulation_feedback
+                }
             )
             current_state.current_implementation = agent.prompt_model(ctx, prompt)
             current_state.loop_state = LoopState.SIMULATION
         elif current_state.loop_state == LoopState.SIMULATION:
             logger.info("starting simulation for iteration {}".format(current_state.iteration))
-            current_state.current_results = deployment_controller.deploy_test_case(
-                current_state.current_implementation.attack_code,
-                config=current_state.current_hypothesis.run_configuration
-            )
-            current_state.loop_state = LoopState.ANALYSIS
+            current_state.current_results = None
+            try:
+                current_state.current_results = deployment_controller.deploy_test_case(
+                    current_state.current_implementation.attack_code,
+                    config=current_state.current_hypothesis.run_configuration
+                )
+                current_state.loop_state = LoopState.ANALYSIS
+            except (IllegalCodeError, BuildError) as e:
+                current_state.simulation_feedback = str(e)
+                current_state.loop_state = LoopState.CODE_GEN
+            except (SimulationTimeoutError, SimulationFailureError) as e:
+                current_state.simulation_feedback = str(e)
+                current_state.loop_state = LoopState.SUMMARIZATION
         elif current_state.loop_state == LoopState.ANALYSIS:
             logger.info("starting analysis for iteration {}".format(current_state.iteration))
             current_state.current_stats = generate_statistical_analysis(current_state.current_results)
@@ -149,8 +164,9 @@ def main(ctx: Dict, dry: bool = False):
                 agent.get_agent_prompt("input"),
                 # TODO define analysis results
                 {
-                    "current_hypothesis": current_state.current_hypothesis.model_dump(),
-                    **current_state.current_results.to_dict()  # should probably also include hypothesis as well.
+                    "current_hypothesis": current_state.current_hypothesis,
+                    "stats": current_state.current_stats,  # should probably also include hypothesis as well.
+                    "feedback": current_state.simulation_feedback
                 }
             )
             current_state.current_implementation = agent.prompt_model(ctx, prompt)

@@ -20,3 +20,4 @@ class Summarization(BaseModel):
     description: str = Field(description="Summarization of the statistics from the simulation output")
     suggestion: str = Field(description="Suggestion for what to test for in the next run")
     failure_reason: str = Field(description="Reason why the run did not output a significant leakage")
+    bugs: List[str] = Field(description="List of bugs that need to be fixed for the next run")
