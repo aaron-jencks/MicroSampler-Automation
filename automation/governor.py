@@ -1,7 +1,6 @@
 import argparse
 from dataclasses import dataclass
 import datetime as dt
-from enum import Enum
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Type
