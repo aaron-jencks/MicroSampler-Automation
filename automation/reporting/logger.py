@@ -50,6 +50,8 @@ class ReportLog:
         </html>
         """
 
-        fpath = get_report_directory(ctx) / ctx["final_report"]["file"]
+        fpath = prefix / ctx["final_report"]["file"]
         with open(fpath, 'w+') as fp:
             fp.write(full_html)
+
+        logger.info(f"wrote report to {fpath}")
