@@ -17,6 +17,7 @@ from prompting.client import Agent
 from prompting.templates import TemplateController
 from simulation.api.ccopy import CCopyDeploymentController
 from simulation.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
+from states import LoopState
 from stats import StatisticalAnalysisResults, generate_statistical_analysis
 from templates import add_default_template_tools_to_client
 
@@ -49,15 +50,6 @@ def load_configs(cfgs: List[Path], default: Path) -> Dict:
     for cfg in cfgs:
         conf.add_json(cfg)
     return conf.parse()
-
-
-class LoopState(Enum):
-    HYPOTHESIS = 0
-    CODE_GEN = 1
-    SIMULATION = 2
-    ANALYSIS = 3
-    SUMMARIZATION = 4
-    CONCLUSION = 5
 
 
 def create_agent_from_config(
@@ -145,9 +137,11 @@ def main(ctx: Dict, dry: bool = False):
                 )
                 current_state.loop_state = LoopState.ANALYSIS
             except (IllegalCodeError, BuildError) as e:
+                logger.info("code was illegal or did not build successfully")
                 current_state.simulation_feedback = str(e)
                 current_state.loop_state = LoopState.CODE_GEN
             except (SimulationTimeoutError, SimulationFailureError) as e:
+                logger.info("simulation timed out or failed")
                 current_state.simulation_feedback = str(e)
                 current_state.loop_state = LoopState.SUMMARIZATION
         elif current_state.loop_state == LoopState.ANALYSIS:
