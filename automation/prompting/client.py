@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, Type
 import uuid
 
 from langchain.agents import create_agent
+from langchain.agents.middleware import SummarizationMiddleware
 from langchain.agents.structured_output import ToolStrategy
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
@@ -11,6 +12,31 @@ from pydantic import BaseModel
 
 
 logger = logging.getLogger(__file__)
+
+
+def _get_context_compaction_config(ctx: Dict[str, Any]) -> Dict[str, Any]:
+    return ctx.get("llm", {}).get("context_compaction", {})
+
+
+def _create_context_compaction_middleware(ctx: Dict[str, Any], model: ChatOpenAI):
+    config = _get_context_compaction_config(ctx)
+    if not config.get("enabled", True):
+        return []
+
+    trigger_tokens = int(config.get("trigger_tokens", 80000))
+    keep_messages = int(config.get("keep_messages", 12))
+    trim_tokens_to_summarize = config.get("trim_tokens_to_summarize", 4000)
+    if trim_tokens_to_summarize is not None:
+        trim_tokens_to_summarize = int(trim_tokens_to_summarize)
+
+    return [
+        SummarizationMiddleware(
+            model=model,
+            trigger=("tokens", trigger_tokens),
+            keep=("messages", keep_messages),
+            trim_tokens_to_summarize=trim_tokens_to_summarize,
+        )
+    ]
 
 
 class Agent:
@@ -41,6 +67,7 @@ class Agent:
         self.agent = create_agent(
             model=self.model,
             system_prompt=system_prompt,
+            middleware=_create_context_compaction_middleware(ctx, self.model),
             response_format=ToolStrategy(self.output_format),
             checkpointer=InMemorySaver(),
         )

@@ -39,6 +39,12 @@
     },
     "llm": {
         "model": "gpt-5.4",
+        "context_compaction": {
+            "enabled": true,
+            "trigger_tokens": 80000,
+            "keep_messages": 12,
+            "trim_tokens_to_summarize": 4000
+        },
         "templates": {
             "files": {
                 "instructions": "prompts/instructions-prompt.txt",
