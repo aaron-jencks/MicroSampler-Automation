@@ -36,7 +36,7 @@ class ReportLog:
 
         self.sections.sort(key=lambda s: s.index)
 
-        builder += "\n\n".join([s.generate_section(ctx) for s in self.sections])
+        builder += "\n\n".join([s.generate_section(ctx, self.events) for s in self.sections])
 
         full_html = f"""<!DOCTYPE html>
         <html>

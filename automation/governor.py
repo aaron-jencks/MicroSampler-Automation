@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from agents import Hypothesis, Implementation, Summarization
 from reporting.default.events import HypothesisEvent, ImplementationEvent, SimulationDeploymentEvent, \
     ImplementationErrorEvent, SimulationErrorEvent, AnalysisEvent, SummarizationEvent, ConclusionEvent
+from reporting.default.sections import create_default_report_sections
 from reporting.logger import ReportLog
 from prompting.client import Agent
 from prompting.templates import TemplateController
@@ -84,6 +85,8 @@ class LoopContext:
 
 def main(ctx: Dict, dry: bool = False):
     reporter = ReportLog()
+    for section in create_default_report_sections():
+        reporter.add_section(section)
 
     template_controller = TemplateController()
     add_default_template_tools_to_client(ctx, template_controller)
