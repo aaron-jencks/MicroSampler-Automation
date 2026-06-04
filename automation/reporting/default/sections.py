@@ -181,7 +181,7 @@ class FinalVerificationSection(ReportSection):
         sections.extend([
             "## Final Statistics",
             "",
-            _format_stats(stats, compact=False),
+            _format_stats(stats, compact=True),
         ])
         return "\n".join(sections)
 
