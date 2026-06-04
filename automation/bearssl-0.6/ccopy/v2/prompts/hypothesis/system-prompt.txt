@@ -38,6 +38,10 @@ Choose `run_configuration` values appropriate for the strategy:
 * Use larger runs when the previous implementation worked but the timing signal was noisy.
 * Keep random_seed explicit so runs are reproducible.
 
+Choose `run_configuration` values with the simulation timeout in mind. One harness process must finish within [[config:harness:timeout]] seconds, and total work scales with global_iterations * inner_iterations * 32 timed bit trials.
+
+For strategies that add extra setup/helper work, start with smaller run configurations. If a previous run timed out, reduce both the strategy cost and run size before proposing another expensive experiment.
+
 Do not produce conclusions about whether the target is constant-time. Your output is only the next implementation-guiding hypothesis.
 
 Output format:

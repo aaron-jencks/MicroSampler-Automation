@@ -85,6 +85,8 @@ The source should:
 * Keep implementation complexity proportional to the hypothesis.
 * Prefer deterministic behavior unless the hypothesis specifically requires otherwise.
 
+Runtime is part of correctness. The implementation should keep the full harness process within the configured timeout of [[config:harness:timeout]] seconds. Account for the fact that lifecycle hooks may run many times across global_iterations * inner_iterations * 32 bit trials, and steer any added work so it remains bounded and proportional to the hypothesis.
+
 If previous simulation feedback reports a build error, runtime failure, timeout, or implementation bug, prioritize fixing that issue before adding new behavior.
 
 If the hypothesis is ambiguous, choose the simplest implementation that faithfully maps class 0 and class 1 to the hypothesized condition.
