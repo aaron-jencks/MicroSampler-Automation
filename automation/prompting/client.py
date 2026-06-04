@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Type
+from typing import Any, Dict, Optional, Type
 import uuid
 
 from langchain.agents import create_agent
@@ -50,6 +50,7 @@ class Agent:
             return template.read()
 
     def prompt_model(self, ctx: Dict, prompt: str) -> Optional[BaseModel]:
+        logger.info(f"prompting {self.name} agent with {prompt}")
         if self.dry_run:
             return None
         response = self.agent.invoke(
