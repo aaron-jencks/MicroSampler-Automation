@@ -28,8 +28,8 @@ class SimulationEvent(ReportEvent):
 
 
 class SimulationDeploymentEvent(SimulationEvent):
-    def __init__(self, iteration: int, payload: RunConfiguration):
-        super().__init__(iteration, "deployment", payload)
+    def __init__(self, iteration: int):
+        super().__init__(iteration, "deployment", None)
 
 
 class SimulationErrorEvent(SimulationEvent):

@@ -11,8 +11,9 @@ from cascade_config import CascadeConfig
 from pydantic import BaseModel
 
 from agents import Hypothesis, Implementation, Summarization
-# from reporting.default import create_default_report_sections
-# from reporting.logger import ReportLog
+from reporting.default.events import HypothesisEvent, ImplementationEvent, SimulationDeploymentEvent, \
+    ImplementationErrorEvent, SimulationErrorEvent, AnalysisEvent, SummarizationEvent, ConclusionEvent
+from reporting.logger import ReportLog
 from prompting.client import Agent
 from prompting.templates import TemplateController
 from simulation.api.ccopy import CCopyDeploymentController
@@ -82,8 +83,7 @@ class LoopContext:
 
 
 def main(ctx: Dict, dry: bool = False):
-    # reporter = ReportLog()
-    # create_default_report_sections(ctx, reporter)
+    reporter = ReportLog()
 
     template_controller = TemplateController()
     add_default_template_tools_to_client(ctx, template_controller)
@@ -98,7 +98,6 @@ def main(ctx: Dict, dry: bool = False):
 
     logger.info("starting prompting loop...")
     current_state = LoopContext()
-    # conclusion = None
     while True:
         if current_state.loop_state == LoopState.HYPOTHESIS:
             logger.info("starting hypothesis forming for iteration {}".format(current_state.iteration))
@@ -111,6 +110,7 @@ def main(ctx: Dict, dry: bool = False):
                 }
             )
             current_state.current_hypothesis = agent.prompt_model(ctx, prompt)
+            reporter.log(HypothesisEvent(current_state.iteration, current_state.current_hypothesis))
             current_state.loop_state = LoopState.CODE_GEN
         elif current_state.loop_state == LoopState.CODE_GEN:
             logger.info("starting attack generation for iteration {}".format(current_state.iteration))
@@ -124,6 +124,7 @@ def main(ctx: Dict, dry: bool = False):
                 }
             )
             current_state.current_implementation = agent.prompt_model(ctx, prompt)
+            reporter.log(ImplementationEvent(current_state.iteration, current_state.current_implementation))
             current_state.loop_state = LoopState.SIMULATION
         elif current_state.loop_state == LoopState.SIMULATION:
             logger.info("starting simulation for iteration {}".format(current_state.iteration))
@@ -135,18 +136,22 @@ def main(ctx: Dict, dry: bool = False):
                     current_state.current_implementation.attack_code,
                     config=current_state.current_hypothesis.run_configuration
                 )
+                reporter.log(SimulationDeploymentEvent(current_state.iteration))
                 current_state.loop_state = LoopState.ANALYSIS
             except (IllegalCodeError, BuildError) as e:
                 logger.info("code was illegal or did not build successfully")
+                reporter.log(ImplementationErrorEvent(current_state.iteration, e))
                 current_state.simulation_feedback = str(e)
                 current_state.loop_state = LoopState.CODE_GEN
             except (SimulationTimeoutError, SimulationFailureError) as e:
                 logger.info("simulation timed out or failed")
+                reporter.log(SimulationErrorEvent(current_state.iteration, e))
                 current_state.simulation_feedback = str(e)
                 current_state.loop_state = LoopState.SUMMARIZATION
         elif current_state.loop_state == LoopState.ANALYSIS:
             logger.info("starting analysis for iteration {}".format(current_state.iteration))
             current_state.current_stats = generate_statistical_analysis(current_state.current_results)
+            reporter.log(AnalysisEvent(current_state.iteration, current_state.current_stats))
             # TODO early stopping happens here
             if current_state.current_stats.iteration_score > 0.95:
                 logger.info(f"analysis hit threshold with a score of {current_state.current_stats.iteration_score:0.4f}")
@@ -168,16 +173,16 @@ def main(ctx: Dict, dry: bool = False):
                 }
             )
             current_state.current_summarization = agent.prompt_model(ctx, prompt)
+            reporter.log(SummarizationEvent(current_state.iteration, current_state.current_summarization))
             current_state.simulation_feedback = None
             current_state.loop_state = LoopState.HYPOTHESIS
             current_state.iteration += 1
         elif current_state.loop_state == LoopState.CONCLUSION:
             logger.info("exiting loop")
+            reporter.log(ConclusionEvent(current_state.iteration, current_state.current_stats))
             break
 
-    # logger.info(f"Conclusion: the algorithm {'is' if conclusion.constant_time else 'is NOT'} constant-time")
-    # logger.info(f"Reasoning: {conclusion.reasoning}")
-    # reporter.generate_report(ctx)
+    reporter.generate_report(ctx)
 
 
 if __name__ == "__main__":
