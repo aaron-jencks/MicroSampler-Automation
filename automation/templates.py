@@ -2,11 +2,13 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, List, get_origin, get_args
 
+import pandas as pd
 from pydantic import BaseModel
 
 from agents import Hypothesis, Implementation, Summarization
 from prompting.templates import TemplateController
 from simulation.struct import RunConfiguration
+from stats import dataframe_to_markdown
 
 logger = logging.getLogger(__file__)
 
@@ -128,32 +130,106 @@ def template_insert_simulation_feedback(ctx: Dict, client: TemplateController, t
     return kwargs['feedback']
 
 
+def _format_float(value: Any) -> str:
+    if pd.isna(value):
+        return "N/A"
+    return f"{float(value):.6f}"
+
+
+def _summarize_iteration_welch(iteration_welch: pd.DataFrame) -> str:
+    required = {"Iteration", "Score", "P-Value", "Significant (p < 0.05)", "Class 0 Mean", "Class 1 Mean"}
+    if iteration_welch.empty or not required.issubset(iteration_welch.columns):
+        return "Iteration Welch summary unavailable."
+
+    score = iteration_welch["Score"]
+    significant = iteration_welch["Significant (p < 0.05)"].astype(bool)
+    top_by_score = iteration_welch.sort_values("Score", ascending=False).head(20)
+
+    mean_diff_df = iteration_welch.copy()
+    mean_diff_df["Abs Mean Difference"] = (
+        mean_diff_df["Class 0 Mean"] - mean_diff_df["Class 1 Mean"]
+    ).abs()
+    mean_diff_df = mean_diff_df.sort_values("Abs Mean Difference", ascending=False).head(10)
+    mean_diff_columns = [
+        "Iteration",
+        "Class 0 Samples",
+        "Class 1 Samples",
+        "Class 0 Mean",
+        "Class 1 Mean",
+        "P-Value",
+        "Score",
+        "Abs Mean Difference",
+    ]
+    mean_diff_columns = [c for c in mean_diff_columns if c in mean_diff_df.columns]
+
+    return f"""## Iteration Welch Summary
+
+Inner iterations analyzed: {int(iteration_welch["Iteration"].nunique())}
+Significant iterations: {int(significant.sum())} / {int(len(iteration_welch))}
+Max score: {_format_float(score.max())}
+Mean score: {_format_float(score.mean())}
+Median score: {_format_float(score.median())}
+95th percentile score: {_format_float(score.quantile(0.95))}
+
+## Top Iterations By Score
+
+{dataframe_to_markdown(top_by_score)}
+
+## Iterations With Largest Class Mean Difference
+
+{dataframe_to_markdown(mean_diff_df[mean_diff_columns])}"""
+
+
+def _summarize_iteration_distribution(iteration_distribution: pd.DataFrame) -> str:
+    if iteration_distribution.empty or "Samples" not in iteration_distribution.columns:
+        return "Iteration distribution summary unavailable."
+
+    lines = [
+        "## Iteration Distribution Summary",
+        "",
+        f"Minimum class samples in any iteration/class bucket: {int(iteration_distribution['Samples'].min())}",
+        f"Maximum class samples in any iteration/class bucket: {int(iteration_distribution['Samples'].max())}",
+    ]
+
+    required = {"Iteration", "Class", "Mean"}
+    if required.issubset(iteration_distribution.columns):
+        pivot = iteration_distribution.pivot(index="Iteration", columns="Class", values="Mean")
+        if 0 in pivot.columns and 1 in pivot.columns:
+            mean_diff = (pivot[0] - pivot[1]).abs().rename("Abs Mean Difference").reset_index()
+            top_diff = mean_diff.sort_values("Abs Mean Difference", ascending=False).head(10)
+            lines.extend([
+                "",
+                "## Iteration Distribution Mean-Difference Summary",
+                "",
+                dataframe_to_markdown(top_diff),
+            ])
+
+    return "\n".join(lines)
+
+
 def template_insert_simulation_results(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if "stats" not in kwargs or kwargs["stats"] is None:
         return "None"
+    stats = kwargs["stats"]
     return f"""## Distribution Information:
 ### Global Distribution:
 
-{kwargs['stats'].global_distribution.to_markdown(index=False)}
-
-### Iteration Distribution:
-
-{kwargs['stats'].iteration_distribution.to_markdown(index=False)}
+{dataframe_to_markdown(stats.global_distribution)}
 
 ## Significance Tests:
 
 ### Global Welch T-Tests:
 
-{kwargs['stats'].global_welch_ttest_data.to_markdown(index=False)}
-
-### Iteration Welch T-Tests:
-
-{kwargs['stats'].iteration_welch_ttest_data.to_markdown(index=False)}
+{dataframe_to_markdown(stats.global_welch_ttest_data)}
 
 ## Performance Scores:
 
-Global: {kwargs['stats'].global_score}
-Iteration: {kwargs['stats'].iteration_score}"""
+Global: {stats.global_score}
+Iteration: {stats.iteration_score}
+
+{_summarize_iteration_welch(stats.iteration_welch_ttest_data)}
+
+{_summarize_iteration_distribution(stats.iteration_distribution)}"""
 
 
 def template_insert_summary(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
