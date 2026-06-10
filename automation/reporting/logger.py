@@ -1,6 +1,8 @@
+from datetime import datetime, timezone
 import logging
+from pathlib import Path
 import shutil
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from reporting.events import ReportEvent
 from reporting.sections import ReportSection
@@ -8,6 +10,13 @@ from reporting.utils import get_report_directory
 
 
 logger = logging.getLogger(__name__)
+
+
+def generate_timestamped_report_file_name(ctx: Dict) -> Tuple[Path, Path]:
+    dname = get_report_directory(ctx)
+    fname = dname / ctx["final_report"]["file"]
+    dstring = datetime.now(tz=timezone.utc).strftime("%m_%d_%Y_%H_%M_%S")
+    return dname, fname.with_stem(f"{fname.stem}_{dstring}")
 
 
 class ReportLog:
@@ -23,9 +32,9 @@ class ReportLog:
         self.events.append(d)
 
     def generate_report(self, ctx: Dict):
-        logger.info(f'generating report to {ctx["final_report"]["file"]}')
+        prefix, output_fname = generate_timestamped_report_file_name(ctx)
+        logger.info(f'generating report to {output_fname.resolve()}')
 
-        prefix = get_report_directory(ctx)
         if ctx["final_report"]["clear_report_area"] and prefix.exists():
             shutil.rmtree(prefix)
             prefix.mkdir(parents=True, exist_ok=True)
@@ -50,8 +59,7 @@ class ReportLog:
         </html>
         """
 
-        fpath = prefix / ctx["final_report"]["file"]
-        with open(fpath, 'w+') as fp:
+        with open(output_fname, 'w+') as fp:
             fp.write(full_html)
 
-        logger.info(f"wrote report to {fpath}")
+        logger.info(f"wrote report to {output_fname.resolve()}")
