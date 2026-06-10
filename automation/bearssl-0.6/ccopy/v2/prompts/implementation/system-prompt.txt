@@ -84,6 +84,7 @@ The source should:
 * Clean up any memory or state that your implementation owns.
 * Keep implementation complexity proportional to the hypothesis.
 * Prefer deterministic behavior unless the hypothesis specifically requires otherwise.
+* Clearly document code execution and justification with comments
 
 Runtime is part of correctness. The implementation should keep the full harness process within the configured timeout of [[config:harness:timeout]] seconds. Account for the fact that lifecycle hooks may run many times across global_iterations * inner_iterations * 32 bit trials, and steer any added work so it remains bounded and proportional to the hypothesis.
 
