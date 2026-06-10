@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, List, get_origin, get_args
 import pandas as pd
 from pydantic import BaseModel
 
-from agents import Hypothesis, Implementation, Summarization
+from agents.responses import Hypothesis, Implementation, Summarization
 from prompting.templates import TemplateController
 from simulation.struct import RunConfiguration
 from stats import dataframe_to_markdown

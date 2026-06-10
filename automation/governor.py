@@ -79,27 +79,27 @@ def main(ctx: Dict, dry: bool = False):
 
     q_context = GovernorContext()
     q = QSM(
-        initial_state=LoopState.HYPOTHESIS.value(),
+        initial_state=LoopState.HYPOTHESIS.value,
         initial_context=q_context,
     )
-    q.state_map[LoopState.HYPOTHESIS.value()] = HypothesisState(
+    q.state_map[LoopState.HYPOTHESIS.value] = HypothesisState(
         ctx,
         create_agent_from_config(ctx, template_controller, "hypothesis", Hypothesis, dry),
         reporter, template_controller
     )
-    q.state_map[LoopState.CODE_GEN.value()] = ImplementationState(
+    q.state_map[LoopState.CODE_GEN.value] = ImplementationState(
         ctx,
         create_agent_from_config(ctx, template_controller, "implementation", Implementation, dry),
         reporter, template_controller
     )
-    q.state_map[LoopState.SIMULATION.value()] = SimulationState(ctx, reporter, deployment_controller)
-    q.state_map[LoopState.ANALYSIS.value()] = AnalysisState(ctx, reporter)
-    q.state_map[LoopState.SUMMARIZATION.value()] = SummarizationState(
+    q.state_map[LoopState.SIMULATION.value] = SimulationState(ctx, reporter, deployment_controller)
+    q.state_map[LoopState.ANALYSIS.value] = AnalysisState(ctx, reporter)
+    q.state_map[LoopState.SUMMARIZATION.value] = SummarizationState(
         ctx,
         create_agent_from_config(ctx, template_controller, "summarization", Summarization, dry),
         reporter, template_controller
     )
-    q.state_map[LoopState.CONCLUSION.value()] = ConclusionState(ctx, reporter)
+    q.state_map[LoopState.CONCLUSION.value] = ConclusionState(ctx, reporter)
 
     logger.info("starting prompting loop...")
     q.loop()

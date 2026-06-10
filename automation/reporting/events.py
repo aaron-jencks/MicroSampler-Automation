@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from states import LoopState
+from agents.defs import LoopState
 
 
 class ReportEvent:

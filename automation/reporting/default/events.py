@@ -1,9 +1,8 @@
 from typing import Any
 
-from agents import Hypothesis, Implementation, Summarization
+from agents.responses import Hypothesis, Implementation, Summarization
+from agents.defs import LoopState
 from reporting.events import ReportEvent
-from simulation.struct import RunConfiguration
-from states import LoopState
 from stats import StatisticalAnalysisResults
 
 

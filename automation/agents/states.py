@@ -25,7 +25,7 @@ class GovernorLoopState(State, ABC):
 
     @staticmethod
     def append_loop_state(ctx: StateContext, loop_state: LoopState):
-        ctx.queue.append(loop_state.value())
+        ctx.queue.append(loop_state.value)
 
 
 class AgentLoopState(GovernorLoopState, ABC):

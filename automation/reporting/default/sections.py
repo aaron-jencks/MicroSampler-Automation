@@ -3,12 +3,12 @@ from typing import Dict, Iterable, List, Optional
 
 import pandas as pd
 
-from agents import Hypothesis, Implementation, Summarization
+from agents.responses import Hypothesis, Implementation, Summarization
+from agents.defs import LoopState
 from reporting.default.events import AnalysisEvent, ConclusionEvent, ImplementationErrorEvent, SimulationErrorEvent
 from reporting.events import ReportEvent
 from reporting.sections import ReportSection
 from reporting.tables import MarkdownTableBuilder
-from states import LoopState
 from stats import StatisticalAnalysisResults
 
 
