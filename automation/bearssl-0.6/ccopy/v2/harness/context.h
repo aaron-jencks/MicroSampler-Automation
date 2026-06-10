@@ -18,7 +18,6 @@ typedef struct {
     uint32_t * const dummy;     // The dummy output buffer
     uint32_t * const data;      // The data to copy
     size_t * const data_len;    // The number of bytes in the data buffer
-    const uint32_t * const key; // The key to use
 } trial_context_t;
 
 typedef struct {
@@ -30,16 +29,14 @@ typedef struct {
 typedef struct {
     const global_context_t* const global_ctx;   // read-only global state may have user-defined state in the state variable
     const size_t iteration;                     // defines which iteration this is
-    const uint32_t key;                         // the full key being used for this iteration
     void* state;                                // modifiable bench state that can be modified during the iteration
 } bench_context_t;
 
 
 /// @brief Used by the harness to initialize the parameters to be passed to the UUT.
-/// @param key The key to be used in the trial
 /// @param data_size The number of elements that the array should contain
 /// @return Returns an initialized struct that can be passed to the trial_ functions and the UUT.
-trial_context_t create_default_trial_context(const uint32_t key, size_t data_size);
+trial_context_t create_default_trial_context(size_t data_size);
 
 /// @brief Used by the harness to reset things like buffer state before each UUT call.
 /// @param ctx The trial context to reset
@@ -54,9 +51,8 @@ global_context_t create_global_context(const size_t iterations, const unsigned i
 
 /// @brief creates an iteration context for the client
 /// @param global_ctx a read-only copy of the global context
-/// @param key the random key being used for this iteration
 /// @param iteration the current iteration
 /// @return an iteration context ready to be used by the client
-bench_context_t create_context(global_context_t* global_ctx, const uint32_t key, const size_t iteration);
+bench_context_t create_context(global_context_t* global_ctx, const size_t iteration);
 
 #endif

@@ -15,7 +15,6 @@ void destroy_trial_context(trial_context_t ctx) {
     free(ctx.dest);
     free(ctx.dummy);
     free(ctx.data);
-    free(ctx.key);
     free(ctx.data_len);
 }
 
@@ -56,17 +55,16 @@ int main(int argc, char** argv) {
 
     for(size_t i = 0; i < iterations; i++) {
         iteration_keys[i] = (uint32_t)GENERATE_RANDOM_KEY;
-        bench_context_t run_context = create_context(&global_context, iteration_keys[i], i);
+        bench_context_t run_context = create_context(&global_context, i);
         trial_setup(&run_context);
         for(size_t ki = 0; ki < 32; ki++) {
             uint32_t bit = (uint32_t)((iteration_keys[i] >> ki) & 0x1);
             trial_context_t trial_context = create_default_trial_context(
-                bit,
                 BUFFER_SIZE
             );
             trial_inner_setup(&run_context, &trial_context);
             helper_start(&run_context);
-            iteration_durations[i*32+ki] = timed_call_uut(trial_context);
+            iteration_durations[i*32+ki] = timed_call_uut(bit, trial_context);
             helper_stop(&run_context);
             destroy_trial_context(trial_context);
         }
