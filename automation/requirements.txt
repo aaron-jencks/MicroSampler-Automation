@@ -9,6 +9,7 @@ numpy
 openai
 pandas
 pydantic
+qstate
 scipy
 tabulate
 tqdm

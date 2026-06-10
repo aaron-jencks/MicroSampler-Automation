@@ -1,25 +1,22 @@
 import argparse
-from dataclasses import dataclass
 import datetime as dt
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Type
 
-import pandas as pd
 from cascade_config import CascadeConfig
 from pydantic import BaseModel
+from qsm import QSM
 
-from agents import Hypothesis, Implementation, Summarization
-from reporting.default.events import HypothesisEvent, ImplementationEvent, SimulationDeploymentEvent, \
-    ImplementationErrorEvent, SimulationErrorEvent, AnalysisEvent, SummarizationEvent, ConclusionEvent
+from agents.responses import Hypothesis, Implementation, Summarization
+from agents.defs import LoopState, GovernorContext
+from agents.states import HypothesisState, ImplementationState, SimulationState, AnalysisState, SummarizationState, \
+    ConclusionState
 from reporting.default.sections import create_default_report_sections
 from reporting.logger import ReportLog
 from prompting.client import Agent
 from prompting.templates import TemplateController
 from simulation.api.ccopy import CCopyDeploymentController
-from simulation.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
-from states import LoopState
-from stats import StatisticalAnalysisResults, generate_statistical_analysis
 from templates import add_default_template_tools_to_client
 
 
@@ -70,18 +67,6 @@ def create_agent_from_config(
     )
 
 
-@dataclass
-class LoopContext:
-    iteration: int = 1
-    loop_state: LoopState = LoopState.HYPOTHESIS
-    current_summarization: Optional[Summarization] = None
-    current_hypothesis: Optional[Hypothesis] = None
-    current_implementation: Optional[Implementation] = None
-    current_stats: Optional[StatisticalAnalysisResults] = None
-    current_results: Optional[pd.DataFrame] = None
-    simulation_feedback: Optional[str] = None
-
-
 def main(ctx: Dict, dry: bool = False):
     reporter = ReportLog()
     for section in create_default_report_sections():
@@ -92,97 +77,32 @@ def main(ctx: Dict, dry: bool = False):
 
     deployment_controller = CCopyDeploymentController(ctx)
 
-    agents = {
-        LoopState.HYPOTHESIS: create_agent_from_config(ctx, template_controller, "hypothesis", Hypothesis, dry),
-        LoopState.CODE_GEN: create_agent_from_config(ctx, template_controller, "implementation", Implementation, dry),
-        LoopState.SUMMARIZATION: create_agent_from_config(ctx, template_controller, "summarization", Summarization, dry),
-    }
+    q_context = GovernorContext()
+    q = QSM(
+        initial_state=LoopState.HYPOTHESIS.value(),
+        initial_context=q_context,
+    )
+    q.state_map[LoopState.HYPOTHESIS.value()] = HypothesisState(
+        ctx,
+        create_agent_from_config(ctx, template_controller, "hypothesis", Hypothesis, dry),
+        reporter, template_controller
+    )
+    q.state_map[LoopState.CODE_GEN.value()] = ImplementationState(
+        ctx,
+        create_agent_from_config(ctx, template_controller, "implementation", Implementation, dry),
+        reporter, template_controller
+    )
+    q.state_map[LoopState.SIMULATION.value()] = SimulationState(ctx, reporter, deployment_controller)
+    q.state_map[LoopState.ANALYSIS.value()] = AnalysisState(ctx, reporter)
+    q.state_map[LoopState.SUMMARIZATION.value()] = SummarizationState(
+        ctx,
+        create_agent_from_config(ctx, template_controller, "summarization", Summarization, dry),
+        reporter, template_controller
+    )
+    q.state_map[LoopState.CONCLUSION.value()] = ConclusionState(ctx, reporter)
 
     logger.info("starting prompting loop...")
-    current_state = LoopContext()
-    while True:
-        if current_state.loop_state == LoopState.HYPOTHESIS:
-            logger.info("starting hypothesis forming for iteration {}".format(current_state.iteration))
-            agent = agents[current_state.loop_state]
-            prompt = template_controller.process_template(
-                ctx,
-                agent.get_agent_prompt("input"),
-                {
-                    "summary": current_state.current_summarization if current_state.current_summarization is not None else None,
-                }
-            )
-            current_state.current_hypothesis = agent.prompt_model(ctx, prompt)
-            reporter.log(HypothesisEvent(current_state.iteration, current_state.current_hypothesis))
-            current_state.loop_state = LoopState.CODE_GEN
-        elif current_state.loop_state == LoopState.CODE_GEN:
-            logger.info("starting attack generation for iteration {}".format(current_state.iteration))
-            agent = agents[current_state.loop_state]
-            prompt = template_controller.process_template(
-                ctx,
-                agent.get_agent_prompt("input"),
-                {
-                    "current_hypothesis": current_state.current_hypothesis,
-                    "feedback": current_state.simulation_feedback
-                }
-            )
-            current_state.current_implementation = agent.prompt_model(ctx, prompt)
-            reporter.log(ImplementationEvent(current_state.iteration, current_state.current_implementation))
-            current_state.loop_state = LoopState.SIMULATION
-        elif current_state.loop_state == LoopState.SIMULATION:
-            logger.info("starting simulation for iteration {}".format(current_state.iteration))
-            current_state.current_results = None
-            current_state.current_stats = None
-            current_state.simulation_feedback = None
-            try:
-                current_state.current_results = deployment_controller.deploy_test_case(
-                    current_state.current_implementation.attack_code,
-                    config=current_state.current_hypothesis.run_configuration
-                )
-                reporter.log(SimulationDeploymentEvent(current_state.iteration))
-                current_state.loop_state = LoopState.ANALYSIS
-            except (IllegalCodeError, BuildError) as e:
-                logger.info("code was illegal or did not build successfully")
-                reporter.log(ImplementationErrorEvent(current_state.iteration, e))
-                current_state.simulation_feedback = str(e)
-                current_state.loop_state = LoopState.CODE_GEN
-            except (SimulationTimeoutError, SimulationFailureError) as e:
-                logger.info("simulation timed out or failed")
-                reporter.log(SimulationErrorEvent(current_state.iteration, e))
-                current_state.simulation_feedback = str(e)
-                current_state.loop_state = LoopState.SUMMARIZATION
-        elif current_state.loop_state == LoopState.ANALYSIS:
-            logger.info("starting analysis for iteration {}".format(current_state.iteration))
-            current_state.current_stats = generate_statistical_analysis(current_state.current_results)
-            reporter.log(AnalysisEvent(current_state.iteration, current_state.current_stats))
-            # TODO early stopping happens here
-            if current_state.current_stats.iteration_score > 0.95:
-                logger.info(f"analysis hit threshold with a score of {current_state.current_stats.iteration_score:0.4f}")
-                current_state.loop_state = LoopState.CONCLUSION
-                continue
-            current_state.loop_state = LoopState.SUMMARIZATION
-        elif current_state.loop_state == LoopState.SUMMARIZATION:
-            logger.info("starting summarization for iteration {}".format(current_state.iteration))
-            agent = agents[current_state.loop_state]
-            prompt = template_controller.process_template(
-                ctx,
-                agent.get_agent_prompt("input"),
-                # TODO define analysis results
-                {
-                    "current_hypothesis": current_state.current_hypothesis,
-                    "stats": current_state.current_stats,  # should probably also include hypothesis as well.
-                    "feedback": current_state.simulation_feedback,
-                    "implementation": current_state.current_implementation.attack_code,
-                }
-            )
-            current_state.current_summarization = agent.prompt_model(ctx, prompt)
-            reporter.log(SummarizationEvent(current_state.iteration, current_state.current_summarization))
-            current_state.simulation_feedback = None
-            current_state.loop_state = LoopState.HYPOTHESIS
-            current_state.iteration += 1
-        elif current_state.loop_state == LoopState.CONCLUSION:
-            logger.info("exiting loop")
-            reporter.log(ConclusionEvent(current_state.iteration, current_state.current_stats))
-            break
+    q.loop()
 
     reporter.generate_report(ctx)
 
