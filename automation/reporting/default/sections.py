@@ -5,6 +5,7 @@ import pandas as pd
 
 from agents.responses import Hypothesis, Implementation, Summarization
 from agents.defs import LoopState
+from config import BaseConfig
 from reporting.default.events import AnalysisEvent, ConclusionEvent, ImplementationErrorEvent, SimulationErrorEvent
 from reporting.events import ReportEvent
 from reporting.sections import ReportSection
@@ -110,7 +111,7 @@ class TimelineSection(ReportSection):
     def __init__(self, index: int = 0):
         super().__init__(index, "Timeline")
 
-    def body(self, ctx: Dict, events: List[ReportEvent]) -> str:
+    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         if len(events) == 0:
             return "No report events were recorded."
 
@@ -153,7 +154,7 @@ class FinalVerificationSection(ReportSection):
     def __init__(self, index: int = 1):
         super().__init__(index, "Final Verification")
 
-    def body(self, ctx: Dict, events: List[ReportEvent]) -> str:
+    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         stats_event = self._find_final_stats_event(events)
         if stats_event is None or not isinstance(stats_event.payload, StatisticalAnalysisResults):
             return "No final statistics are available."

@@ -3,6 +3,7 @@ from typing import Dict, List
 
 import markdown
 
+from config import BaseConfig
 from reporting.events import ReportEvent
 
 
@@ -12,10 +13,10 @@ class ReportSection(ABC):
         self.index = index
 
     @abstractmethod
-    def body(self, ctx: Dict, events: List[ReportEvent]) -> str:
+    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         pass
 
-    def generate_section(self, ctx: Dict, events: List[ReportEvent]) -> str:
+    def generate_section(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         builder = f"<details>\n<summary>{self.name}</summary>\n\n"
         builder += markdown.markdown(self.body(ctx, events), extensions=['tables', 'fenced_code'])
         builder += "\n\n</details>"

@@ -6,6 +6,7 @@ import pandas as pd
 from pydantic import BaseModel
 
 from agents.responses import Hypothesis, Implementation, Summarization
+from config import BaseConfig
 from prompting.templates import TemplateController
 from simulation.struct import RunConfiguration
 from stats import dataframe_to_markdown
@@ -13,7 +14,7 @@ from stats import dataframe_to_markdown
 logger = logging.getLogger(__file__)
 
 
-def template_insert_file(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_file(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
     file_path = Path(args[0])
@@ -24,7 +25,7 @@ def template_insert_file(ctx: Dict, client: TemplateController, tag_name: str, a
     return f"{file_path.name if len(args) == 2 and args[1] else str(file_path)}\n```\n{data}\n```"
 
 
-def template_insert_template(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_template(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
     file_path = Path(ctx["llm"]["templates"]["files"][args[0]])
@@ -36,7 +37,7 @@ def template_insert_template(ctx: Dict, client: TemplateController, tag_name: st
     return processed_template
 
 
-def template_insert_config_value(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_config_value(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
     current = ctx
@@ -45,14 +46,14 @@ def template_insert_config_value(ctx: Dict, client: TemplateController, tag_name
     return repr(current)
 
 
-def template_insert_allowed_references(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_allowed_references(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     result = []
     for reference in ctx["harness"]["allowed_references"]:
         result.append(f"- {reference}")
     return '\n'.join(result)
 
 
-def template_insert_runtime_data(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_runtime_data(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
     current = kwargs
@@ -101,7 +102,7 @@ model_map = {
 }
 
 
-def template_insert_model(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_model(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
     return describe_model(model_map[args[0]])
@@ -115,7 +116,7 @@ def format_run_configuration(run_configuration: RunConfiguration) -> str:
             f"Random Seed: {run_configuration.random_seed}")
 
 
-def template_insert_hypothesis(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_hypothesis(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     hyp = kwargs["current_hypothesis"]
     hypothesis_string = f"Hypothesis: {hyp.hypothesis}\n\nPrevious Implementation Feedback:\n\n"
     for bug in hyp.previous_implementation_bugs:
@@ -124,7 +125,7 @@ def template_insert_hypothesis(ctx: Dict, client: TemplateController, tag_name: 
     return hypothesis_string
 
 
-def template_insert_simulation_feedback(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_simulation_feedback(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if "feedback" not in kwargs or kwargs["feedback"] is None:
         return "None"
     return kwargs['feedback']
@@ -207,7 +208,7 @@ def _summarize_iteration_distribution(iteration_distribution: pd.DataFrame) -> s
     return "\n".join(lines)
 
 
-def template_insert_simulation_results(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_simulation_results(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if "stats" not in kwargs or kwargs["stats"] is None:
         return "None"
     stats = kwargs["stats"]
@@ -232,7 +233,7 @@ Iteration: {stats.iteration_score}
 {_summarize_iteration_distribution(stats.iteration_distribution)}"""
 
 
-def template_insert_summary(ctx: Dict, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+def template_insert_summary(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if "summary" not in kwargs or kwargs["summary"] is None:
         return "None"
     result = f"""## Summary:
@@ -253,7 +254,7 @@ def template_insert_summary(ctx: Dict, client: TemplateController, tag_name: str
     return result
 
 
-def add_default_template_tools_to_client(ctx: Dict, client: TemplateController):
+def add_default_template_tools_to_client(ctx: BaseConfig, client: TemplateController):
     client.create_template_tool("source", template_insert_file)
     client.create_template_tool("template", template_insert_template)
     client.create_template_tool("config", template_insert_config_value)

@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def setup_logging(ctx: Dict):
+def setup_logging(ctx: BaseConfig):
     formatter = logging.Formatter(
         "%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
     )
@@ -52,7 +52,7 @@ def load_configs(cfgs: List[Path], default: Path) -> Dict:
 
 
 def create_agent_from_config(
-        ctx: Dict, template_controller: TemplateController,
+        ctx: BaseConfig, template_controller: TemplateController,
         name: str, output_format: Type[BaseModel],
         dry: bool = False
 ) -> Agent:
@@ -68,7 +68,7 @@ def create_agent_from_config(
     )
 
 
-def main(ctx: Dict, dry: bool = False):
+def main(ctx: BaseConfig, dry: bool = False):
     reporter = ReportLog()
     for section in create_default_report_sections():
         reporter.add_section(section)

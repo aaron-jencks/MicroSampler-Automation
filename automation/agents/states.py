@@ -1,10 +1,10 @@
 from abc import ABC
 import logging
-from typing import Dict
 
 from qsm import State, StateContext
 
 from agents.defs import LoopState, AgentLoopContext
+from config import BaseConfig
 from prompting.client import Agent
 from prompting.templates import TemplateController
 from reporting.default.events import HypothesisEvent, ImplementationEvent, SimulationDeploymentEvent, \
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class GovernorLoopState(State, ABC):
-    def __init__(self, ctx: Dict, reporter: ReportLog):
+    def __init__(self, ctx: BaseConfig, reporter: ReportLog):
         super().__init__()
         self.config = ctx
         self.reporter = reporter
@@ -29,7 +29,7 @@ class GovernorLoopState(State, ABC):
 
 
 class AgentLoopState(GovernorLoopState, ABC):
-    def __init__(self, ctx: Dict, agent: Agent, reporter: ReportLog, template_controller: TemplateController):
+    def __init__(self, ctx: BaseConfig, agent: Agent, reporter: ReportLog, template_controller: TemplateController):
         super().__init__(ctx, reporter)
         self.agent = agent
         self.template_controller = template_controller
@@ -67,7 +67,7 @@ class ImplementationState(AgentLoopState):
 
 
 class SimulationState(GovernorLoopState):
-    def __init__(self, ctx: Dict, reporter: ReportLog, deployment_controller: DeploymentController):
+    def __init__(self, ctx: BaseConfig, reporter: ReportLog, deployment_controller: DeploymentController):
         super().__init__(ctx, reporter)
         self.deployment_controller = deployment_controller
 

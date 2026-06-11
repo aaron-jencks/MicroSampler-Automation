@@ -3,11 +3,12 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Callable, Optional
 
+from config import BaseConfig
 
 logger = logging.getLogger(__file__)
 
 
-TemplateFeature = Callable[[Dict, Any, str, List[str], Optional[Dict[str, Any]]], str]
+TemplateFeature = Callable[[BaseConfig, Any, str, List[str], Optional[Dict[str, Any]]], str]
 
 
 class TemplateController:
@@ -18,7 +19,7 @@ class TemplateController:
         logger.info(f"creating template tool: {tag_name}")
         self.template_tools[tag_name] = handler
 
-    def process_template(self, ctx: Dict, content: str, kwargs: Optional[Dict[str, Any]] = None) -> str:
+    def process_template(self, ctx: BaseConfig, content: str, kwargs: Optional[Dict[str, Any]] = None) -> str:
         def replace_tags(m: re.Match) -> str:
             tag_name = m.group('tag')
             if tag_name not in self.template_tools:
@@ -38,7 +39,7 @@ class TemplateController:
 
         return processed_content
 
-    def load_model_template(self, ctx: Dict, name: str) -> str:
+    def load_model_template(self, ctx: BaseConfig, name: str) -> str:
         fp = Path(ctx["llm"]["templates"]["prefix"]) / ctx["llm"]["templates"]["files"][name]
         with open(fp, 'r') as f:
             template = f.read()

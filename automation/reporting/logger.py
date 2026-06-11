@@ -2,8 +2,9 @@ from datetime import datetime, timezone
 import logging
 from pathlib import Path
 import shutil
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
+from config import BaseConfig
 from reporting.events import ReportEvent
 from reporting.sections import ReportSection
 from reporting.utils import get_report_directory
@@ -12,7 +13,7 @@ from reporting.utils import get_report_directory
 logger = logging.getLogger(__name__)
 
 
-def generate_timestamped_report_file_name(ctx: Dict) -> Tuple[Path, Path]:
+def generate_timestamped_report_file_name(ctx: BaseConfig) -> Tuple[Path, Path]:
     dname = get_report_directory(ctx)
     fname = dname / ctx["final_report"]["file"]
     dstring = datetime.now(tz=timezone.utc).strftime("%m_%d_%Y_%H_%M_%S")
@@ -31,7 +32,7 @@ class ReportLog:
     def log(self, d: ReportEvent):
         self.events.append(d)
 
-    def generate_report(self, ctx: Dict):
+    def generate_report(self, ctx: BaseConfig):
         prefix, output_fname = generate_timestamped_report_file_name(ctx)
         logger.info(f'generating report to {output_fname.resolve()}')
 

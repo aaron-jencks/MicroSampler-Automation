@@ -1,10 +1,11 @@
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 import pandas as pd
 
+from config import BaseConfig
 from simulation.building import RunResult, deploy_harness, build_harness, verify_legal_code, RunConfiguration
 from simulation.exceptions import SimulationTimeoutError, SimulationFailureError, BuildError, IllegalCodeError
 
@@ -13,7 +14,7 @@ logger = logging.getLogger(__file__)
 
 
 def handle_simulation_output(
-        ctx: Dict, args: RunConfiguration,
+        ctx: BaseConfig, args: RunConfiguration,
         outputs: List[RunResult]
 ) -> pd.DataFrame:
     logger.info('parsing run output')
@@ -43,7 +44,7 @@ def handle_simulation_output(
     return pd.DataFrame(output_rows)
 
 
-def write_attack_source(ctx: Dict, src: str):
+def write_attack_source(ctx: BaseConfig, src: str):
     if not verify_legal_code(ctx, src):
         raise IllegalCodeError(src)
     file_name = Path(ctx['harness']['prefix']) / ctx['harness']['target']
@@ -54,7 +55,7 @@ def write_attack_source(ctx: Dict, src: str):
         raise BuildError(build_status)
 
 
-def run_simulation(ctx: Dict, config: RunConfiguration) -> pd.DataFrame:
+def run_simulation(ctx: BaseConfig, config: RunConfiguration) -> pd.DataFrame:
     build_result = build_harness(ctx)
     if build_result.return_code != 0:
         raise BuildError(build_result)

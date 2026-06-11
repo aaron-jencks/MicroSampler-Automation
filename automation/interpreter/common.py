@@ -2,8 +2,9 @@ from dataclasses import dataclass
 import logging
 from pathlib import Path
 import subprocess as sp
-from typing import Dict, Optional
+from typing import Optional
 
+from config import BaseConfig
 
 logger = logging.getLogger(__file__)
 
@@ -17,7 +18,7 @@ class InterpreterResult:
 
 
 class PythonInterpreter:
-    def __init__(self, ctx: Dict):
+    def __init__(self, ctx: BaseConfig):
         self.ctx = ctx
 
     def _get_venv_path(self) -> Path:

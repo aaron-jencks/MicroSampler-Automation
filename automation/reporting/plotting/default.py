@@ -6,11 +6,12 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
+from config import BaseConfig
 from reporting.plotting.defs import PlotGenerator
 
 
 class TimingScatterGenerator(PlotGenerator):
-    def generate_plot(self, ctx: Dict, df: pd.DataFrame):
+    def generate_plot(self, ctx: BaseConfig, df: pd.DataFrame):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
         runs = df["run_name"].unique()
         cmap = plt.cm.get_cmap('tab10', len(runs))
@@ -75,7 +76,7 @@ class TimingDistributionGenerator(PlotGenerator):
         ax.axvline(mean - std, linestyle=":", label=f"-1σ = {mean - std:.2f}")
         ax.legend()
 
-    def generate_plot(self, ctx: Dict, df: DataFrame):
+    def generate_plot(self, ctx: BaseConfig, df: DataFrame):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
         self._create_histogram(ax1, df[(df["class"] == 0) & (df["inner_iteration"] == self.iteration)]["duration"])
         self._create_histogram(ax2, df[(df["class"] == 1) & (df["inner_iteration"] == self.iteration)]["duration"])
@@ -98,7 +99,7 @@ class GlobalTimingDistributionGenerator(PlotGenerator):
         ax.axvline(mean - std, linestyle=":", label=f"-1σ = {mean - std:.2f}")
         ax.legend()
 
-    def generate_plot(self, ctx: Dict, df: DataFrame):
+    def generate_plot(self, ctx: BaseConfig, df: DataFrame):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
         self._create_histogram(ax1, df[df["class"] == 0]["duration"])
         self._create_histogram(ax2, df[df["class"] == 1]["duration"])
@@ -116,7 +117,7 @@ class TimingDistributionBoxGenerator(PlotGenerator):
         super().__init__(fname)
         self.iteration = iteration
 
-    def generate_plot(self, ctx: Dict, df: DataFrame):
+    def generate_plot(self, ctx: BaseConfig, df: DataFrame):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
         ax1.boxplot(df[(df["class"] == 0) & (df["inner_iteration"] == self.iteration)]["duration"])
         ax2.boxplot(df[(df["class"] == 1) & (df["inner_iteration"] == self.iteration)]["duration"])
@@ -130,7 +131,7 @@ class TimingDistributionBoxGenerator(PlotGenerator):
 
 
 class GlobalTimingDistributionBoxGenerator(PlotGenerator):
-    def generate_plot(self, ctx: Dict, df: DataFrame):
+    def generate_plot(self, ctx: BaseConfig, df: DataFrame):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
         ax1.boxplot(df[df["class"] == 0]["duration"])
         ax2.boxplot(df[df["class"] == 1]["duration"])
@@ -144,7 +145,7 @@ class GlobalTimingDistributionBoxGenerator(PlotGenerator):
 
 
 class GlobalTimingIterationHeatmapGenerator(PlotGenerator):
-    def generate_plot(self, ctx: Dict, df: DataFrame):
+    def generate_plot(self, ctx: BaseConfig, df: DataFrame):
         heatmap_df_0 = df[df["class"] == 0].pivot_table(
             index="duration",
             columns="inner_iteration",

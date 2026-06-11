@@ -1,14 +1,13 @@
-from typing import Dict
-
 import pandas as pd
 
+from config import BaseConfig
 from simulation.api.common import DeploymentController
 from simulation.struct import RunConfiguration
 from simulation.utils import write_attack_source, run_simulation
 
 
 class CCopyDeploymentController(DeploymentController):
-    def __init__(self, ctx: Dict):
+    def __init__(self, ctx: BaseConfig):
         self.ctx = ctx
 
     def deploy_test_case(self, code: str, **kwargs) -> pd.DataFrame:

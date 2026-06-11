@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional, Type
+from typing import Dict, Optional, Type
 import uuid
 
 from langchain.agents import create_agent
@@ -10,38 +10,29 @@ from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
 
+from config import BaseConfig
 
 logger = logging.getLogger(__file__)
 
 
-def _get_context_compaction_config(ctx: Dict[str, Any]) -> Dict[str, Any]:
-    return ctx.get("llm", {}).get("context_compaction", {})
-
-
-def _create_context_compaction_middleware(ctx: Dict[str, Any], model: ChatOpenAI):
-    config = _get_context_compaction_config(ctx)
-    if not config.get("enabled", True):
+def _create_context_compaction_middleware(ctx: BaseConfig, model: ChatOpenAI):
+    config = ctx.llm.context_compaction
+    if not config.enabled:
         return []
-
-    trigger_tokens = int(config.get("trigger_tokens", 80000))
-    keep_messages = int(config.get("keep_messages", 12))
-    trim_tokens_to_summarize = config.get("trim_tokens_to_summarize", 4000)
-    if trim_tokens_to_summarize is not None:
-        trim_tokens_to_summarize = int(trim_tokens_to_summarize)
 
     return [
         SummarizationMiddleware(
             model=model,
-            trigger=("tokens", trigger_tokens),
-            keep=("messages", keep_messages),
-            trim_tokens_to_summarize=trim_tokens_to_summarize,
+            trigger=("tokens", config.trigger_tokens),
+            keep=("messages", config.keep_messages),
+            trim_tokens_to_summarize=config.trim_tokens_to_summarize,
         )
     ]
 
 
 class Agent:
     def __init__(
-            self, ctx: Dict, model: str,
+            self, ctx: BaseConfig, model: str,
             name: str, output_format: Type[BaseModel],
             system_prompt: str,
             templates: Dict[str, Path],
@@ -76,7 +67,7 @@ class Agent:
         with open(self.templates[name], 'r') as template:
             return template.read()
 
-    def prompt_model(self, ctx: Dict, prompt: str) -> Optional[BaseModel]:
+    def prompt_model(self, ctx: BaseConfig, prompt: str) -> Optional[BaseModel]:
         logger.info(f"prompting {self.name} agent with {prompt}")
         if self.dry_run:
             return None

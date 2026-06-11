@@ -4,8 +4,9 @@ from pathlib import Path
 import re
 import shutil
 import subprocess as sp
-from typing import Dict, List
+from typing import List
 
+from config import BaseConfig
 from simulation.exceptions import BuildError
 from simulation.struct import BuildResult, RunConfiguration, RunResult
 
@@ -13,7 +14,7 @@ from simulation.struct import BuildResult, RunConfiguration, RunResult
 logger = logging.getLogger(__file__)
 
 
-def verify_legal_code(ctx: Dict, contents: str) -> bool:
+def verify_legal_code(ctx: BaseConfig, contents: str) -> bool:
     acceptable_references = set(ctx["harness"]["allowed_references"])
     for m in re.finditer(r"#include \"(?P<filename>.*?)\"", contents):
         if m.group("filename") not in acceptable_references:
@@ -21,7 +22,7 @@ def verify_legal_code(ctx: Dict, contents: str) -> bool:
     return True
 
 
-def build_harness(ctx: Dict) -> BuildResult:
+def build_harness(ctx: BaseConfig) -> BuildResult:
     harness_prefix = Path(ctx["harness"]["prefix"])
     logger.info(f"Building harness in: {harness_prefix}")
     logger.info(f"Fetching UUT source code...")
@@ -39,7 +40,7 @@ def build_harness(ctx: Dict) -> BuildResult:
     )
 
 
-def deploy_harness(ctx: Dict, configuration: RunConfiguration) -> List[RunResult]:
+def deploy_harness(ctx: BaseConfig, configuration: RunConfiguration) -> List[RunResult]:
     logger.info("Deploying harness...")
     build_output = build_harness(ctx)
     if build_output.return_code != 0:

@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict
 
 from pandas import DataFrame
+
+from config import BaseConfig
 
 
 class PlotGenerator(ABC):
@@ -10,5 +11,5 @@ class PlotGenerator(ABC):
         self.fname = fname
 
     @abstractmethod
-    def generate_plot(self, ctx: Dict, data: DataFrame):
+    def generate_plot(self, ctx: BaseConfig, data: DataFrame):
         pass
