@@ -1,47 +1,9 @@
 {
-    "expected_conclusion": {
-        "enabled": true
-    },
     "harness": {
         "prefix": "bearssl-0.6/ccopy/v2/harness",
         "deployment_prefix": "bearssl-0.6/ccopy/v3/deploy",
         "uut": {
             "prefix": "bearssl-0.6/ccopy/v3/uut"
-        }
-    },
-    "workbench": {
-        "prefix": "bearssl-0.6/ccopy/v3/workbench",
-        "source": {
-            "contents": {
-                "bearssl": "../apps/bearssl-0.6/src"
-            }
-        }
-    },
-    "llm": {
-        "templates": {
-            "files": {
-                "target_prompt": "bearssl-0.6/ccopy/v3/prompts/target-prompt.txt"
-            }
-        }
-    },
-    "agents": {
-        "hypothesis": {
-            "templates": {
-                "system": "bearssl-0.6/ccopy/v2/prompts/hypothesis/system-prompt.txt",
-                "input": "bearssl-0.6/ccopy/v2/prompts/hypothesis/feedback-prompt.txt"
-            }
-        },
-        "implementation": {
-            "templates": {
-                "system": "bearssl-0.6/ccopy/v2/prompts/implementation/system-prompt.txt",
-                "input": "bearssl-0.6/ccopy/v2/prompts/implementation/feedback-prompt.txt"
-            }
-        },
-        "summarization": {
-            "templates": {
-                "system": "bearssl-0.6/ccopy/v2/prompts/summarization/system-prompt.txt",
-                "input": "bearssl-0.6/ccopy/v2/prompts/summarization/feedback-prompt.txt"
-            }
         }
     },
     "logging": {

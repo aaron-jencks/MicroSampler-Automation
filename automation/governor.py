@@ -12,6 +12,7 @@ from agents.responses import Hypothesis, Implementation, Summarization
 from agents.defs import LoopState, GovernorContext
 from agents.states import HypothesisState, ImplementationState, SimulationState, AnalysisState, SummarizationState, \
     ConclusionState
+from config import BaseConfig, parse_args
 from reporting.default.sections import create_default_report_sections
 from reporting.logger import ReportLog
 from prompting.client import Agent
@@ -109,15 +110,12 @@ def main(ctx: Dict, dry: bool = False):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument('config', nargs='*', type=Path, help='the config files to use')
-    ap.add_argument('--default-config', type=Path, default=Path('./config/default.json'), help='the default configuration file to use')
     ap.add_argument("--dry-run", action="store_true", help='indicates to exit after generating the first prompts')
     ap.add_argument('--run-name', type=str, default=None, help='the name of the run to use, overrides the one in the config file')
-    args = ap.parse_args()
+    args, cfg = parse_args(ap)
 
-    cfg = load_configs(args.config, args.default_config)
     if args.run_name is not None:
-        cfg['final_report']['run_name'] = args.run_name
+        cfg.final_report.run_name = args.run_name
 
     setup_logging(cfg)
     main(cfg, args.dry_run)
