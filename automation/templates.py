@@ -256,7 +256,7 @@ def template_insert_summary(ctx: BaseConfig, client: TemplateController, tag_nam
 
 def add_default_template_tools_to_client(ctx: BaseConfig, client: TemplateController):
     client.create_template_tool("source", template_insert_file)
-    client.create_template_tool("template", template_insert_template)
+    # client.create_template_tool("template", template_insert_template)
     client.create_template_tool("config", template_insert_config_value)
     client.create_template_tool("allowed_references", template_insert_allowed_references)
     client.create_template_tool("runtime_data", template_insert_runtime_data)
