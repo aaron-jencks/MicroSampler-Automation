@@ -1,0 +1,39 @@
+@startuml
+
+object "Hypothesis Agent" {
+Creates an experiment design to achieve the desired goal
+}
+
+object "Implementation Agent" {
+Creates the test case code that is passed to the simulation
+}
+
+object "Summarization Agent" {
+Summarizes the analysis results to further guide the next implementation\n\nCombines data from Analysis, Hypothesis, and Implementation
+}
+
+object Simulation {
+Runs the test case and outputs raw results
+}
+
+object Analysis {
+Analyzes the raw results and produces statistics
+}
+
+"Hypothesis Agent" -> "Implementation Agent" : "1. Guides implementation"
+"Implementation Agent" --> Simulation : "2. Designs code for"
+Simulation ..> "Implementation Agent" : "Build failures"
+Simulation --> Analysis : "3. Passes raw results to"
+"Summarization Agent" <- Analysis : "4. Creates statistics data for"
+"Hypothesis Agent" <-- "Summarization Agent" : "5. Guides next experiment"
+
+"Hypothesis Agent" ..> "Summarization Agent"
+"Implementation Agent" ..> "Summarization Agent"
+
+object Conclusion {
+The execution ends here
+}
+
+Analysis --> Conclusion : "If early stopping criteria is met"
+
+@enduml
