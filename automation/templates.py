@@ -40,7 +40,7 @@ def template_insert_file(ctx: BaseConfig, client: TemplateController, tag_name: 
 def template_insert_config_value(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if len(args) < 1:
         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
-    current = ctx
+    current = ctx.model_dump()
     for key in args:
         current = current[key]
     return repr(current)

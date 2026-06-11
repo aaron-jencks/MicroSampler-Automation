@@ -45,11 +45,7 @@ class LLMConfig(BaseModel):
 
 class AgentConfig(BaseModel):
     model: str = "gpt-5.4"
-    template_prefix: Path
-    templates: Dict[str, str] = {
-        "system": "system-prompt.txt",
-        "input": "feedback-prompt.txt",
-    }
+    templates: Dict[str, Path]
 
 
 class LogConfig(BaseModel):
@@ -71,14 +67,23 @@ class BaseConfig(BaseModel):
     llm: LLMConfig = LLMConfig()
     agents: Dict[str, AgentConfig] = {
         "hypothesis": AgentConfig(
-            template_prefix=Path("bearssl-0.6/ccopy/v2/prompts/hypothesis/")
+            templates={
+                "system": Path("bearssl-0.6/ccopy/v2/prompts/hypothesis/system-prompt.txt"),
+                "input": Path("bearssl-0.6/ccopy/v2/prompts/hypothesis/feedback-prompt.txt"),
+            }
         ),
         "implementation": AgentConfig(
-            template_prefix=Path("bearssl-0.6/ccopy/v2/prompts/implementation/")
+            templates={
+                "system": Path("bearssl-0.6/ccopy/v2/prompts/implementation/system-prompt.txt"),
+                "input": Path("bearssl-0.6/ccopy/v2/prompts/implementation/feedback-prompt.txt"),
+            }
         ),
         "summarization": AgentConfig(
-            template_prefix=Path("bearssl-0.6/ccopy/v2/prompts/summarization/")
-        )
+            templates={
+                "system": Path("bearssl-0.6/ccopy/v2/prompts/summarization/system-prompt.txt"),
+                "input": Path("bearssl-0.6/ccopy/v2/prompts/summarization/feedback-prompt.txt"),
+            }
+        ),
     }
     logging: LogConfig = LogConfig()
     final_report: FinalReportConfig = FinalReportConfig()
