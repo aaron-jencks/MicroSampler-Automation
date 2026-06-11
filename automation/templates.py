@@ -25,16 +25,16 @@ def template_insert_file(ctx: BaseConfig, client: TemplateController, tag_name: 
     return f"{file_path.name if len(args) == 2 and args[1] else str(file_path)}\n```\n{data}\n```"
 
 
-def template_insert_template(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
-    if len(args) < 1:
-        raise RuntimeError(f"Expected at least one argument, got {len(args)}")
-    file_path = Path(ctx["llm"]["templates"]["files"][args[0]])
-    if not file_path.exists():
-        raise FileNotFoundError(file_path)
-    with open(file_path, "r") as file:
-        data = file.read()
-    processed_template = client.process_template(ctx, data)
-    return processed_template
+# def template_insert_template(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+#     if len(args) < 1:
+#         raise RuntimeError(f"Expected at least one argument, got {len(args)}")
+#     file_path = Path(ctx.llm.templates.files[args[0]])
+#     if not file_path.exists():
+#         raise FileNotFoundError(file_path)
+#     with open(file_path, "r") as file:
+#         data = file.read()
+#     processed_template = client.process_template(ctx, data)
+#     return processed_template
 
 
 def template_insert_config_value(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
@@ -48,7 +48,7 @@ def template_insert_config_value(ctx: BaseConfig, client: TemplateController, ta
 
 def template_insert_allowed_references(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     result = []
-    for reference in ctx["harness"]["allowed_references"]:
+    for reference in ctx.harness.allowed_references:
         result.append(f"- {reference}")
     return '\n'.join(result)
 

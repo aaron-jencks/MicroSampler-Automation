@@ -25,6 +25,12 @@ class HarnessConfig(BaseModel):
     uut: UUTConfig = UUTConfig()
 
 
+class InterpreterConfig(BaseModel):
+    venv_path: Path = Path("bearssl-0.6/ccopy/v2/interpreter/venv/")
+    requirements_path: Path = Path("config/definitions/requirements.txt")
+    timeout: int = 60
+
+
 class LLMCompactionConfig(BaseModel):
     enabled: bool = True
     trigger_tokens: int = 300000
@@ -61,6 +67,7 @@ class FinalReportConfig(BaseModel):
 
 class BaseConfig(BaseModel):
     harness: HarnessConfig = HarnessConfig()
+    interpreter: InterpreterConfig = InterpreterConfig()
     llm: LLMConfig = LLMConfig()
     agents: Dict[str, AgentConfig] = {
         "hypothesis": AgentConfig(

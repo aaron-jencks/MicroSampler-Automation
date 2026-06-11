@@ -46,10 +46,10 @@ class Agent:
         self.thread_id = str(uuid.uuid4())
         self.dry_run = dry_run
         self.templates = templates
-        if ctx['llm']['api_key'] != '':
+        if ctx.llm.api_key != '':
             self.model = ChatOpenAI(
                 model=model,
-                api_key=ctx['llm']['api_key'],
+                api_key=ctx.llm.api_key,
             )
         else:
             self.model = ChatOpenAI(

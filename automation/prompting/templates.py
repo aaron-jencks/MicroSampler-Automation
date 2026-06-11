@@ -1,6 +1,5 @@
 import logging
 import re
-from pathlib import Path
 from typing import Any, Dict, List, Callable, Optional
 
 from config import BaseConfig
@@ -38,9 +37,3 @@ class TemplateController:
         )
 
         return processed_content
-
-    def load_model_template(self, ctx: BaseConfig, name: str) -> str:
-        fp = Path(ctx["llm"]["templates"]["prefix"]) / ctx["llm"]["templates"]["files"][name]
-        with open(fp, 'r') as f:
-            template = f.read()
-        return self.process_template(ctx, template)

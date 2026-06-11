@@ -1,6 +1,5 @@
 import json
 import logging
-from pathlib import Path
 from typing import List
 
 import pandas as pd
@@ -25,7 +24,7 @@ def handle_simulation_output(
         output = outputs[iteration]
         if output.errored:
             if output.timedout:
-                raise SimulationTimeoutError(output, ctx["harness"]["timeout"])
+                raise SimulationTimeoutError(output, ctx.harness.timeout)
             else:
                 raise SimulationFailureError(output)
         raw_data = json.loads(output.stdout)
@@ -47,7 +46,7 @@ def handle_simulation_output(
 def write_attack_source(ctx: BaseConfig, src: str):
     if not verify_legal_code(ctx, src):
         raise IllegalCodeError(src)
-    file_name = Path(ctx['harness']['prefix']) / ctx['harness']['target']
+    file_name = ctx.harness.prefix / ctx.harness.target
     with open(file_name, mode='w+') as fp:
         fp.write(src)
     build_status = build_harness(ctx)

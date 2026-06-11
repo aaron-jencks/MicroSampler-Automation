@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def generate_timestamped_report_file_name(ctx: BaseConfig) -> Tuple[Path, Path]:
     dname = get_report_directory(ctx)
-    fname = dname / ctx["final_report"]["file"]
+    fname = dname / ctx.final_report.file
     dstring = datetime.now(tz=timezone.utc).strftime("%m_%d_%Y_%H_%M_%S")
     return dname, fname.with_stem(f"{fname.stem}_{dstring}")
 
@@ -36,13 +36,13 @@ class ReportLog:
         prefix, output_fname = generate_timestamped_report_file_name(ctx)
         logger.info(f'generating report to {output_fname.resolve()}')
 
-        if ctx["final_report"]["clear_report_area"] and prefix.exists():
+        if ctx.final_report.clear_report_area and prefix.exists():
             shutil.rmtree(prefix)
             prefix.mkdir(parents=True, exist_ok=True)
-        plots_prefix = prefix / ctx["final_report"]["plots_prefix"]
+        plots_prefix = prefix / ctx.final_report.plots_prefix
         plots_prefix.mkdir(parents=True, exist_ok=True)
 
-        builder = f"<h1>{ctx['final_report']['run_name']} Final Report</h1>\n\n"
+        builder = f"<h1>{ctx.final_report.run_name} Final Report</h1>\n\n"
 
         self.sections.sort(key=lambda s: s.index)
 

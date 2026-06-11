@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess as sp
@@ -15,7 +14,7 @@ logger = logging.getLogger(__file__)
 
 
 def verify_legal_code(ctx: BaseConfig, contents: str) -> bool:
-    acceptable_references = set(ctx["harness"]["allowed_references"])
+    acceptable_references = set(ctx.harness.allowed_references)
     for m in re.finditer(r"#include \"(?P<filename>.*?)\"", contents):
         if m.group("filename") not in acceptable_references:
             return False
@@ -23,10 +22,10 @@ def verify_legal_code(ctx: BaseConfig, contents: str) -> bool:
 
 
 def build_harness(ctx: BaseConfig) -> BuildResult:
-    harness_prefix = Path(ctx["harness"]["prefix"])
+    harness_prefix = ctx.harness.prefix
     logger.info(f"Building harness in: {harness_prefix}")
     logger.info(f"Fetching UUT source code...")
-    shutil.copy(Path(ctx["harness"]["uut"]["prefix"]) / ctx["harness"]["uut"]["file"], harness_prefix)
+    shutil.copy(ctx.harness.uut.prefix / ctx.harness.uut.file, harness_prefix)
     logger.info("Building harness...")
     make_output = sp.run(
         ["make", "clean", "harness"],
@@ -46,16 +45,16 @@ def deploy_harness(ctx: BaseConfig, configuration: RunConfiguration) -> List[Run
     if build_output.return_code != 0:
         raise BuildError(build_output)
     logger.info("Staging Deployment...")
-    deploy_path = Path(ctx["harness"]["deployment_prefix"])
+    deploy_path = ctx.harness.deployment_prefix
     os.makedirs(deploy_path, exist_ok=True)
-    shutil.copy(Path(ctx["harness"]["prefix"]) / ctx["harness"]["executable"], deploy_path)
+    shutil.copy(ctx.harness.prefix / ctx.harness.executable, deploy_path)
     logger.info("Running UUT...")
     result_list = []
     for iteration in range(configuration.global_iterations):
         result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0, output_files=[])
         try:
             commands = [
-                f"./{ctx['harness']['executable']}",
+                f"./{ctx.harness.executable}",
                 str(configuration.inner_iterations),
                 str(configuration.random_seed),
             ]
@@ -64,7 +63,7 @@ def deploy_harness(ctx: BaseConfig, configuration: RunConfiguration) -> List[Run
                 commands,
                 cwd=deploy_path,
                 capture_output=True,
-                timeout=ctx["harness"]["timeout"]
+                timeout=ctx.harness.timeout
             )
             result.stderr = run_output.stderr.decode(errors="ignore")
             result.stdout = run_output.stdout.decode(errors="ignore")

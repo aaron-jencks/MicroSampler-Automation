@@ -30,7 +30,7 @@ def setup_logging(ctx: BaseConfig):
         "%(asctime)s [%(name)s] [%(levelname)s] %(message)s"
     )
 
-    log_path = Path(ctx["logging"]["prefix"]) / ctx["logging"]["output"]
+    log_path = Path(ctx.logging.prefix) / ctx.logging.output
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path = log_path.with_stem(log_path.stem + "_" + dt.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
@@ -56,7 +56,7 @@ def create_agent_from_config(
         name: str, output_format: Type[BaseModel],
         dry: bool = False
 ) -> Agent:
-    agent_definition = ctx["agents"][name]
+    agent_definition = ctx.agents[name]
     system_prompt_path = agent_definition["templates"]["system"]
     with open(system_prompt_path, 'r') as fp:
         system_prompt = template_controller.process_template(ctx, fp.read())

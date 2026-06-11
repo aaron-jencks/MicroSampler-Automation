@@ -22,7 +22,7 @@ class PythonInterpreter:
         self.ctx = ctx
 
     def _get_venv_path(self) -> Path:
-        return Path(self.ctx["interpreter"]["venv_path"])
+        return Path(self.ctx.interpreter.venv_path)
 
     def _get_python_path(self) -> Path:
         return self._get_venv_path() / "bin" / "python"
@@ -38,7 +38,7 @@ class PythonInterpreter:
             except sp.CalledProcessError as e:
                 raise RuntimeError(f"failed to create venv:\n{e}")
             pip_path = p / "bin" / "pip"
-            requirements_path = Path(self.ctx["interpreter"]["requirements_path"])
+            requirements_path = Path(self.ctx.interpreter.requirements_path)
             try:
                 sp.run([str(pip_path.resolve()), "install", "-r", str(requirements_path.resolve())], capture_output=True, check=True)
             except sp.CalledProcessError as e:
@@ -58,7 +58,7 @@ class PythonInterpreter:
                 [str(python_path.resolve()), "-"],
                 input=code,
                 text=True,
-                capture_output=True, timeout=self.ctx["interpreter"]["timeout"]
+                capture_output=True, timeout=self.ctx.interpreter.timeout
             )
             logger.info(f"interpreter finished with exit code: {result.returncode}")
             return InterpreterResult(
