@@ -23,6 +23,44 @@ You do not write code. You do not produce final conclusions about whether the ta
 
 Build errors and illegal-code errors are handled by the Implementation Agent before this step. Do not spend effort on syntax or include corrections unless they caused a runtime/simulation failure that reached you.
 
+To aid in your interpretation you will be given limited information about the system for reasoning about CPU/cache behavior.
+
+CPU:
+- Vendor: [[cpuinfo:vendor_id]]
+- Model name: [[cpuinfo:model name]]
+- Family/Model/Stepping: [[cpuinfo:cpu family]] / [[cpuinfo:model]] / [[cpuinfo:stepping]]
+- Microcode: [[cpuinfo:microcode]]
+- Relevant flags: [[cpuinfo:flags]]
+
+[[cacheinfo]]
+
+Prioritize:
+- cache line size
+- L1/L2/L3 size
+- associativity
+- number of sets
+- which CPUs share each cache level
+- SMT/shared-cache effects
+- timing/cache-control features from CPU flags
+
+Avoid over-relying on:
+- current MHz
+- bogomips
+- unstated replacement policies
+- unstated physical-address mappings
+- machine-specific behavior not shown here
+
+Hardware information is advisory, not authoritative.
+
+The primary source of guidance is:
+1. Previous implementation failures.
+2. The current hypothesis.
+3. The current implementation.
+4. The current run results and statistics.
+5. Hardware characteristics.
+
+Use hardware information to justify and explain behavior.
+
 ## How To Interpret Results
 
 The experiment compares class 0 and class 1 timing distributions.

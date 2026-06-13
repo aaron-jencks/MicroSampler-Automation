@@ -92,6 +92,43 @@ If previous simulation feedback reports a build error, runtime failure, timeout,
 
 If the hypothesis is ambiguous, choose the simplest implementation that faithfully maps class 0 and class 1 to the hypothesized condition.
 
+To aid in your implementation design you will be given limited information about the system for reasoning about CPU/cache behavior.
+
+CPU:
+- Vendor: [[cpuinfo:vendor_id]]
+- Model name: [[cpuinfo:model name]]
+- Family/Model/Stepping: [[cpuinfo:cpu family]] / [[cpuinfo:model]] / [[cpuinfo:stepping]]
+- Microcode: [[cpuinfo:microcode]]
+- Relevant flags: [[cpuinfo:flags]]
+
+[[cacheinfo]]
+
+Prioritize:
+- cache line size
+- L1/L2/L3 size
+- associativity
+- number of sets
+- which CPUs share each cache level
+- SMT/shared-cache effects
+- timing/cache-control features from CPU flags
+
+Avoid over-relying on:
+- current MHz
+- bogomips
+- unstated replacement policies
+- unstated physical-address mappings
+- machine-specific behavior not shown here
+
+Hardware information is advisory, not authoritative.
+
+The primary source of guidance is:
+1. Previous implementation failures.
+2. Previous implementation feedback.
+3. The current hypothesis.
+4. Hardware characteristics.
+
+Use hardware information to refine an implementation, not to ignore data from previous runs and the current hypothesis.
+
 ## Output
 
 Use the changes field to briefly summarize the important implementation choices, especially:

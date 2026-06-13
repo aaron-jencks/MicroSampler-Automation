@@ -10,8 +10,34 @@ from config import BaseConfig
 from prompting.templates import TemplateController
 from simulation.struct import RunConfiguration
 from stats import dataframe_to_markdown
+from system import get_cache_information, read_cpuinfo
 
 logger = logging.getLogger(__file__)
+
+
+def template_insert_cpuinfo(ctx: BaseConfig, client: TemplateController, tab_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+    if len(args) < 1:
+        raise RuntimeError(f"Expected at least one argument, got {len(args)}")
+    current = read_cpuinfo(ctx)
+    for key in args:
+        current = current[key]
+    return str(current)
+
+
+def template_insert_cache_info(ctx: BaseConfig, client: TemplateController, tab_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
+    caches = get_cache_information(ctx)
+    lines = ["CPU Cache Heirarchy:"]
+    for cache in caches:
+        lines.append(f"- {cache.name}:")
+        lines.append(f"\t- Level: {cache.level}")
+        lines.append(f"\t- Type: {cache.type}")
+        lines.append(f"\t- Size: {cache.size}")
+        lines.append(f"\t- Coherency Line Size: {cache.coherency_line_size}")
+        lines.append(f"\t- Associativity: {cache.ways_of_associativity}")
+        lines.append(f"\t- Sets: {cache.number_of_sets}")
+        lines.append(f"\t- Shared CPUS: {cache.shared_cpu_list}")
+
+    return "\n".join(lines)
 
 
 def template_insert_file(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
@@ -265,3 +291,5 @@ def add_default_template_tools_to_client(ctx: BaseConfig, client: TemplateContro
     client.create_template_tool("sim_feedback", template_insert_simulation_feedback)
     client.create_template_tool("results", template_insert_simulation_results)
     client.create_template_tool("summary", template_insert_summary)
+    client.create_template_tool("cacheinfo", template_insert_cache_info)
+    client.create_template_tool("cpuinfo", template_insert_cpuinfo)

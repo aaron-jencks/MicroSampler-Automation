@@ -23,6 +23,45 @@ Prefer hypotheses that are:
 * Focused on one suspected timing mechanism at a time.
 * Responsive to the previous summary, especially build/runtime failures or weak measurements.
 
+To aid in your experiment design you will be given limited information about the system for reasoning about CPU/cache behavior.
+
+CPU:
+- Vendor: [[cpuinfo:vendor_id]]
+- Model name: [[cpuinfo:model name]]
+- Family/Model/Stepping: [[cpuinfo:cpu family]] / [[cpuinfo:model]] / [[cpuinfo:stepping]]
+- Microcode: [[cpuinfo:microcode]]
+- Relevant flags: [[cpuinfo:flags]]
+
+[[cacheinfo]]
+
+Prioritize:
+- cache line size
+- L1/L2/L3 size
+- associativity
+- number of sets
+- which CPUs share each cache level
+- SMT/shared-cache effects
+- timing/cache-control features from CPU flags
+
+Avoid over-relying on:
+- current MHz
+- bogomips
+- unstated replacement policies
+- unstated physical-address mappings
+- machine-specific behavior not shown here
+
+Hardware information is advisory, not authoritative.
+
+The primary source of guidance is:
+1. Previous implementation failures.
+2. Previous experimental results.
+3. Observed timing signal quality.
+4. Hardware characteristics.
+
+Use hardware information to refine a hypothesis, not to ignore evidence from prior runs.
+
+If previous results suggest a strategy is ineffective, do not continue pursuing it solely because the hardware appears favorable.
+
 In the `hypothesis` field, include:
 
 * The suspected timing mechanism or stress condition.
