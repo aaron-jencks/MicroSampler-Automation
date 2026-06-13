@@ -17,6 +17,7 @@ from reporting.default.sections import create_default_report_sections
 from reporting.logger import ReportLog
 from prompting.client import Agent
 from prompting.templates import TemplateController
+from prompting.tools import AgentToolRegistry, create_default_agent_tool_registry
 from simulation.api.ccopy import CCopyDeploymentController
 from templates import add_default_template_tools_to_client
 
@@ -54,16 +55,19 @@ def load_configs(cfgs: List[Path], default: Path) -> Dict:
 def create_agent_from_config(
         ctx: BaseConfig, template_controller: TemplateController,
         name: str, output_format: Type[BaseModel],
+        tool_registry: AgentToolRegistry,
         dry: bool = False
 ) -> Agent:
     agent_definition = ctx.agents[name]
     system_prompt_path = agent_definition.templates["system"]
     with open(system_prompt_path, 'r') as fp:
         system_prompt = template_controller.process_template(ctx, fp.read())
+    tools = tool_registry.create_tools(ctx, agent_definition.tools)
     return Agent(
         ctx, agent_definition.model,
         name, output_format,
         system_prompt, agent_definition.templates,
+        tools,
         dry
     )
 
@@ -77,6 +81,7 @@ def main(ctx: BaseConfig, dry: bool = False):
     add_default_template_tools_to_client(ctx, template_controller)
 
     deployment_controller = CCopyDeploymentController(ctx)
+    tool_registry = create_default_agent_tool_registry()
 
     q = QSM.from_config_file(
         ctx.governor_qsm_path,
@@ -84,9 +89,9 @@ def main(ctx: BaseConfig, dry: bool = False):
         reporter=reporter,
         template_controller=template_controller,
         deployment_controller=deployment_controller,
-        hypothesis_agent=create_agent_from_config(ctx, template_controller, "hypothesis", Hypothesis, dry),
-        implementation_agent=create_agent_from_config(ctx, template_controller, "implementation", Implementation, dry),
-        summarization_agent=create_agent_from_config(ctx, template_controller, "summarization", Summarization, dry),
+        hypothesis_agent=create_agent_from_config(ctx, template_controller, "hypothesis", Hypothesis, tool_registry, dry),
+        implementation_agent=create_agent_from_config(ctx, template_controller, "implementation", Implementation, tool_registry, dry),
+        summarization_agent=create_agent_from_config(ctx, template_controller, "summarization", Summarization, tool_registry, dry),
     )
 
     logger.info("starting prompting loop...")

@@ -9,6 +9,8 @@ LDLIBS ?=-lpthread -lm
 BUILD_DIR ?= build
 HARNESS := harness
 ATTACK_IMPL := attack.c
+ATTACK_ASM := $(BUILD_DIR)/attack.s
+ATTACK_ASMFLAGS ?= -S -fverbose-asm -masm=intel
 
 SOURCES=codec/ccopy.c int/i31_tmont.c int/i31_montmul.c int/i31_modpow.c int/i31_ninv31.c int/i31_muladd.c util/util.c int/i31_sub.c int/i31_add.c int/i32_div32.c
 UUT_SOURCES := $(addprefix $(BEARSSL_SRC_ROOT)/,$(SOURCES))
@@ -46,6 +48,7 @@ $(BUILD_DIR)/timing.o: timing.c timing.h | $(BUILD_DIR)
 
 $(BUILD_DIR)/attack.o: $(ATTACK_IMPL) skeleton.h context.h encryption_util.h error.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(ATTACK_ASMFLAGS) $< -o $(ATTACK_ASM)
 
 $(BUILD_DIR)/fileio.o: fileio.c fileio.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@

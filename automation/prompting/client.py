@@ -1,11 +1,12 @@
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Type
+from typing import Dict, Optional, Sequence, Type
 import uuid
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import SummarizationMiddleware
 from langchain.agents.structured_output import ToolStrategy
+from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import BaseModel
@@ -36,6 +37,7 @@ class Agent:
             name: str, output_format: Type[BaseModel],
             system_prompt: str,
             templates: Dict[str, Path],
+            tools: Optional[Sequence[BaseTool]] = None,
             dry_run: bool = False
     ):
         self.ctx = ctx
@@ -46,6 +48,7 @@ class Agent:
         self.thread_id = str(uuid.uuid4())
         self.dry_run = dry_run
         self.templates = templates
+        self.tools = list(tools or [])
         if ctx.llm.api_key is not None:
             self.model = ChatOpenAI(
                 model=model,
@@ -57,6 +60,7 @@ class Agent:
             )
         self.agent = create_agent(
             model=self.model,
+            tools=self.tools,
             system_prompt=system_prompt,
             middleware=_create_context_compaction_middleware(ctx, self.model),
             response_format=ToolStrategy(self.output_format),

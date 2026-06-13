@@ -85,6 +85,8 @@ class DeploymentController(ABC):
 
 The governor calls `deploy_test_case` from the simulation state. For the ccopy examples, `CCopyDeploymentController` validates and writes the generated `attack.c`, builds the harness, runs the configured number of harness processes, parses the JSON timing output, and returns a dataframe.
 
+The ccopy harness also emits compiler assembly for the deployed attack. The `attack.o` Makefile rule compiles `build/attack.s` with the same `CFLAGS` and `CPPFLAGS` used for `attack.o`, plus assembly-only flags. During deployment, `deploy_harness` copies that file to `ctx.harness.deployment_prefix / ctx.harness.assembly_file`, beside the deployed harness executable. This gives later agent states a stable read-only view of the generated attack assembly for the same build that was run.
+
 The statistics pipeline expects timing data with columns like:
 
 ```text
@@ -145,6 +147,7 @@ System prompts are rendered when agents are created. Input prompts are rendered 
 - A model name from config.
 - A rendered system prompt.
 - A set of prompt template paths.
+- Optional runtime tools selected by config.
 - A Pydantic response model used as the structured output format.
 - Its own LangGraph checkpoint thread.
 - Optional context compaction controlled by `ctx.llm.context_compaction`.
@@ -163,7 +166,7 @@ class Review(BaseModel):
     recommendation: str
 ```
 
-Then create prompt templates for it, add a config entry with its model and template paths, and instantiate it with `create_agent_from_config`:
+Then create prompt templates for it, add a config entry with its model, template paths, and optional runtime tools, and instantiate it with `create_agent_from_config`:
 
 ```python
 review_agent = create_agent_from_config(
@@ -178,6 +181,10 @@ review_agent = create_agent_from_config(
 In normal use, the new agent also needs a state that renders its input prompt, calls `agent.prompt_model`, stores the structured response in `GovernorContext`, logs a report event, and appends the next state to the queue. This keeps the agent interface reusable while letting the state machine decide when and why the agent runs.
 
 Model choice and prompt paths are config-driven, so collaborators can iterate on prompt engineering without rewriting the agent wrapper.
+
+Runtime tools are separate from prompt-template tags. Prompt-template tags run before a prompt is sent and are registered on `TemplateController`. Runtime tools are LangChain tools passed to `create_agent`, so the model may call them during its turn. Tool names are configured per agent with `AgentConfig.tools`, resolved through `prompting.tools.AgentToolRegistry`, and unknown tool names fail during agent construction.
+
+The default summarization agent is configured with `read_attack_assembly`. That tool reads only the deployed `attack.s` path from config and raises `MissingAttackAssemblyError` if the file is absent. It does not run `make`, spawn subprocesses, or accept model-supplied file paths.
 
 ### Reports
 

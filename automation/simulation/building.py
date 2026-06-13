@@ -48,6 +48,7 @@ def deploy_harness(ctx: BaseConfig, configuration: RunConfiguration) -> List[Run
     deploy_path = ctx.harness.deployment_prefix
     os.makedirs(deploy_path, exist_ok=True)
     shutil.copy(ctx.harness.prefix / ctx.harness.executable, deploy_path)
+    shutil.copy(ctx.harness.prefix / "build" / ctx.harness.assembly_file, deploy_path)
     logger.info("Running UUT...")
     result_list = []
     for iteration in range(configuration.global_iterations):

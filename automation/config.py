@@ -15,6 +15,7 @@ class HarnessConfig(BaseModel):
     prefix: Path = Path("bearssl-0.6/ccopy/v2/harness/")
     executable: str = "harness"
     target: str = "attack.c"
+    assembly_file: str = "attack.s"
     deployment_prefix: Path = Path("bearssl-0.6/ccopy/v2/deploy/")
     timeout: int = 60
     allowed_references: List[str] = [
@@ -46,6 +47,7 @@ class LLMConfig(BaseModel):
 class AgentConfig(BaseModel):
     model: str = "gpt-5.4"
     templates: Dict[str, Path]
+    tools: List[str] = []
 
 
 class LogConfig(BaseModel):
@@ -83,7 +85,8 @@ class BaseConfig(BaseModel):
             templates={
                 "system": Path("bearssl-0.6/ccopy/v2/prompts/summarization/system-prompt.txt"),
                 "input": Path("bearssl-0.6/ccopy/v2/prompts/summarization/feedback-prompt.txt"),
-            }
+            },
+            tools=["read_attack_assembly"]
         ),
     }
     logging: LogConfig = LogConfig()
