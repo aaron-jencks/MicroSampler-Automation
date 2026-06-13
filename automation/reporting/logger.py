@@ -15,9 +15,11 @@ logger = logging.getLogger(__name__)
 
 def generate_timestamped_report_file_name(ctx: BaseConfig) -> Tuple[Path, Path]:
     dname = get_report_directory(ctx)
-    fname = dname / ctx.final_report.file
     dstring = datetime.now(tz=timezone.utc).strftime("%m_%d_%Y_%H_%M_%S")
-    return dname, fname.with_stem(f"{fname.stem}_{dstring}")
+    dname = dname.with_name(f"{dname.name}_{dstring}")
+    dname.mkdir(parents=True, exist_ok=True)
+    fname = dname / ctx.final_report.file
+    return dname, fname
 
 
 class ReportLog:
