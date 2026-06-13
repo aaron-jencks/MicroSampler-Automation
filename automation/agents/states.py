@@ -112,7 +112,7 @@ class AnalysisState(GovernorLoopState):
 class SummarizationState(AgentLoopState):
     def execute(self, ctx: AgentLoopContext):
         logger.info("starting summarization for iteration {}".format(ctx.context.iteration))
-        ctx.context.current_hypothesis = self.prompt_model(
+        ctx.context.current_summarization = self.prompt_model(
             "input",
             current_hypothesis=ctx.context.current_hypothesis,
             feedback=ctx.context.simulation_feedback,
