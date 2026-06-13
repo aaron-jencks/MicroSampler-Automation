@@ -2,8 +2,11 @@ from pathlib import Path
 
 from langchain_core.tools import BaseTool, tool
 
+from agents.defs import GovernorContext
 from config import BaseConfig
 from prompting.tools import AgentToolRegistry
+from reporting.default.events import ToolCallEvent
+from reporting.logger import ReportLog
 
 
 class MissingAttackAssemblyError(Exception):
@@ -14,10 +17,14 @@ class MissingAttackAssemblyError(Exception):
         )
 
 
-def create_read_attack_assembly_tool(ctx: BaseConfig) -> BaseTool:
+def create_read_attack_assembly_tool(
+        ctx: BaseConfig, state_context: GovernorContext, reporter: ReportLog,
+        name: str
+) -> BaseTool:
     @tool
     def read_attack_assembly() -> str:
         """Read the deployed attack.s assembly for the latest deployed attack implementation."""
+        reporter.log(ToolCallEvent(state_context.iteration, name))
         path = ctx.harness.deployment_prefix / ctx.harness.assembly_file
         if not path.exists():
             raise MissingAttackAssemblyError(path)
@@ -27,7 +34,7 @@ def create_read_attack_assembly_tool(ctx: BaseConfig) -> BaseTool:
     return read_attack_assembly
 
 
-def create_default_agent_tool_registry() -> AgentToolRegistry:
-    registry = AgentToolRegistry()
+def create_default_agent_tool_registry(ctx: BaseConfig, q_state: GovernorContext, reporter: ReportLog) -> AgentToolRegistry:
+    registry = AgentToolRegistry(ctx, q_state, reporter)
     registry.register("read_attack_assembly", create_read_attack_assembly_tool)
     return registry

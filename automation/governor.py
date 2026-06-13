@@ -63,7 +63,7 @@ def create_agent_from_config(
     system_prompt_path = agent_definition.templates["system"]
     with open(system_prompt_path, 'r') as fp:
         system_prompt = template_controller.process_template(ctx, fp.read())
-    tools = tool_registry.create_tools(ctx, agent_definition.tools)
+    tools = tool_registry.create_tools(agent_definition.tools)
     return Agent(
         ctx, agent_definition.model,
         name, output_format,
@@ -81,8 +81,10 @@ def main(ctx: BaseConfig, dry: bool = False):
     template_controller = TemplateController()
     add_default_template_tools_to_client(ctx, template_controller)
 
+    state = GovernorContext()
+
     deployment_controller = CCopyDeploymentController(ctx)
-    tool_registry = create_default_agent_tool_registry()
+    tool_registry = create_default_agent_tool_registry(ctx, state, reporter)
 
     q = QSM.from_config_file(
         ctx.governor_qsm_path,
@@ -94,6 +96,7 @@ def main(ctx: BaseConfig, dry: bool = False):
         implementation_agent=create_agent_from_config(ctx, template_controller, "implementation", Implementation, tool_registry, dry),
         summarization_agent=create_agent_from_config(ctx, template_controller, "summarization", Summarization, tool_registry, dry),
     )
+    q.context = state
 
     logger.info("starting prompting loop...")
     q.loop()
