@@ -9,7 +9,7 @@ numpy
 openai
 pandas
 pydantic
-qstate>=1.1.1
+qstate>=1.2.0
 scipy
 tabulate
 tqdm
