@@ -65,6 +65,7 @@ class BaseConfig(BaseModel):
     harness: HarnessConfig = HarnessConfig()
     interpreter: InterpreterConfig = InterpreterConfig()
     llm: LLMConfig = LLMConfig()
+    governor_qsm_path: Path = Path("config/governor/ccopy_qsm.json")
     agents: Dict[str, AgentConfig] = {
         "hypothesis": AgentConfig(
             templates={

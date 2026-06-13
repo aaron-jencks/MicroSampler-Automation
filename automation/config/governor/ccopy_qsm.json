@@ -1,0 +1,57 @@
+{
+  "initial_state": "hypothesis",
+  "initial_context": {
+    "model": "agents.defs.GovernorContext"
+  },
+  "states": {
+    "hypothesis": {
+      "model": "agents.states.HypothesisState",
+      "kwargs": {
+        "ctx": "$ctx",
+        "agent": "$hypothesis_agent",
+        "reporter": "$reporter",
+        "template_controller": "$template_controller"
+      }
+    },
+    "implementation": {
+      "model": "agents.states.ImplementationState",
+      "kwargs": {
+        "ctx": "$ctx",
+        "agent": "$implementation_agent",
+        "reporter": "$reporter",
+        "template_controller": "$template_controller"
+      }
+    },
+    "simulation": {
+      "model": "agents.states.SimulationState",
+      "kwargs": {
+        "ctx": "$ctx",
+        "reporter": "$reporter",
+        "deployment_controller": "$deployment_controller"
+      }
+    },
+    "analysis": {
+      "model": "agents.states.AnalysisState",
+      "kwargs": {
+        "ctx": "$ctx",
+        "reporter": "$reporter"
+      }
+    },
+    "summarization": {
+      "model": "agents.states.SummarizationState",
+      "kwargs": {
+        "ctx": "$ctx",
+        "agent": "$summarization_agent",
+        "reporter": "$reporter",
+        "template_controller": "$template_controller"
+      }
+    },
+    "conclusion": {
+      "model": "agents.states.ConclusionState",
+      "kwargs": {
+        "ctx": "$ctx",
+        "reporter": "$reporter"
+      }
+    }
+  }
+}
