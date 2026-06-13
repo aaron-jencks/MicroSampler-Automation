@@ -5,6 +5,8 @@ import shutil
 import subprocess as sp
 from typing import List
 
+from tqdm import tqdm
+
 from config import BaseConfig
 from simulation.exceptions import BuildError
 from simulation.struct import BuildResult, RunConfiguration, RunResult
@@ -51,7 +53,7 @@ def deploy_harness(ctx: BaseConfig, configuration: RunConfiguration) -> List[Run
     shutil.copy(ctx.harness.prefix / "build" / ctx.harness.assembly_file, deploy_path)
     logger.info("Running UUT...")
     result_list = []
-    for iteration in range(configuration.global_iterations):
+    for iteration in tqdm(range(configuration.global_iterations), desc="Running Simulations"):
         result = RunResult(stderr=None, stdout=None, errored=False, timedout=False, return_code=0, output_files=[])
         try:
             commands = [
@@ -59,7 +61,7 @@ def deploy_harness(ctx: BaseConfig, configuration: RunConfiguration) -> List[Run
                 str(configuration.inner_iterations),
                 str(configuration.random_seed),
             ]
-            logger.info(f"Running: {' '.join(commands)}")
+            logger.debug(f"Running: {' '.join(commands)}")
             run_output = sp.run(
                 commands,
                 cwd=deploy_path,
@@ -70,9 +72,9 @@ def deploy_harness(ctx: BaseConfig, configuration: RunConfiguration) -> List[Run
             result.stdout = run_output.stdout.decode(errors="ignore")
             result.return_code = run_output.returncode
             result.errored = run_output.returncode != 0
-            logger.info("UUT finished.")
+            logger.debug("UUT finished.")
         except sp.TimeoutExpired:
-            logger.info("UUT timed out.")
+            logger.warning("UUT timed out.")
             result.timedout = True
             result.errored = True
         result_list.append(result)
