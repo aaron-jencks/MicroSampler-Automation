@@ -182,7 +182,7 @@ In normal use, the new agent also needs a state that renders its input prompt, c
 
 Model choice and prompt paths are config-driven, so collaborators can iterate on prompt engineering without rewriting the agent wrapper.
 
-Runtime tools are separate from prompt-template tags. Prompt-template tags run before a prompt is sent and are registered on `TemplateController`. Runtime tools are LangChain tools passed to `create_agent`, so the model may call them during its turn. Tool names are configured per agent with `AgentConfig.tools`, resolved through `prompting.tools.AgentToolRegistry`, and unknown tool names fail during agent construction.
+Runtime tools are separate from prompt-template tags. Prompt-template tags run before a prompt is sent and are registered on `TemplateController`. Runtime tools are LangChain tools passed to `create_agent`, so the model may call them during its turn. Tool names are configured per agent with `AgentConfig.tools`, resolved through `prompting.tools.AgentToolRegistry`, and unknown tool names fail during agent construction. The generic registry lives in `prompting/tools.py`; concrete default tool implementations and registration live in the root-level `tools.py`, mirroring the split between `prompting/templates.py` and root-level `templates.py`.
 
 The default summarization agent is configured with `read_attack_assembly`. That tool reads only the deployed `attack.s` path from config and raises `MissingAttackAssemblyError` if the file is absent. It does not run `make`, spawn subprocesses, or accept model-supplied file paths.
 

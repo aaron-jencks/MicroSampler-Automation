@@ -17,9 +17,10 @@ from reporting.default.sections import create_default_report_sections
 from reporting.logger import ReportLog
 from prompting.client import Agent
 from prompting.templates import TemplateController
-from prompting.tools import AgentToolRegistry, create_default_agent_tool_registry
+from prompting.tools import AgentToolRegistry
 from simulation.api.ccopy import CCopyDeploymentController
 from templates import add_default_template_tools_to_client
+from tools import create_default_agent_tool_registry
 
 
 logging.basicConfig(level=logging.INFO)
