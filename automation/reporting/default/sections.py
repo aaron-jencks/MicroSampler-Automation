@@ -7,7 +7,7 @@ from agents.responses import Hypothesis, Implementation, Summarization
 from agents.defs import LoopState
 from config import BaseConfig
 from reporting.default.events import AnalysisEvent, ConclusionEvent, ImplementationErrorEvent, SimulationErrorEvent
-from reporting.events import ReportEvent
+from reporting.events import ReportEvent, QSMReportEvent
 from reporting.sections import ReportSection
 from reporting.tables import MarkdownTableBuilder
 from stats import StatisticalAnalysisResults
@@ -128,7 +128,10 @@ class TimelineSection(ReportSection):
 
     def _format_event(self, event: ReportEvent) -> str:
         timestamp = event.timestamp.isoformat()
-        header = f"### {event.state.name.title()} - {event.kind} ({timestamp})"
+        if isinstance(event, QSMReportEvent):
+            header = f"### {event.state.name.title()} - {event.kind} ({timestamp})"
+        else:
+            header = f"### {event.kind} ({timestamp})"
         payload = event.payload
 
         if isinstance(payload, Hypothesis):
@@ -143,10 +146,11 @@ class TimelineSection(ReportSection):
             return f"{header}\n\nImplementation did not build or failed code validation.\n\n{_code_block('', str(payload))}"
         if isinstance(event, SimulationErrorEvent):
             return f"{header}\n\nSimulation failed before analysis.\n\n{_code_block('', str(payload))}"
-        if event.state == LoopState.SIMULATION and event.kind == "deployment":
-            return f"{header}\n\nSimulation completed and produced output for analysis."
-        if event.state == LoopState.CONCLUSION:
-            return f"{header}\n\nStopping threshold reached."
+        if isinstance(event, QSMReportEvent):
+            if event.state == LoopState.SIMULATION and event.kind == "deployment":
+                return f"{header}\n\nSimulation completed and produced output for analysis."
+            if event.state == LoopState.CONCLUSION:
+                return f"{header}\n\nStopping threshold reached."
         return f"{header}\n\n{str(payload)}"
 
 
