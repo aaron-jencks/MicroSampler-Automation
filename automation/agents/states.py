@@ -102,8 +102,9 @@ class AnalysisState(GovernorLoopState):
         self.reporter.log(AnalysisEvent(ctx.context.iteration, ctx.context.current_stats))
         # TODO early stopping happens here
         # TODO split this early stopping checking into its own state
+        logger.info(f"Current average score: {ctx.context.current_stats.iteration_score:0.4f}")
         if ctx.context.current_stats.iteration_score > 0.95:
-            logger.info(f"analysis hit threshold with a score of {ctx.context.current_stats.iteration_score:0.4f}")
+            logger.info(f"analysis hit score threshold")
             self.append_loop_state(ctx, LoopState.CONCLUSION)
             return
         self.append_loop_state(ctx, LoopState.SUMMARIZATION)
