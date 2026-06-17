@@ -72,7 +72,7 @@ class Agent:
             return template.read()
 
     def prompt_model(self, ctx: BaseConfig, prompt: str) -> Optional[BaseModel]:
-        logger.info(f"prompting {self.name} agent with {prompt}")
+        logger.debug(f"prompting {self.name} agent with {prompt}")
         if self.dry_run:
             return None
         response = self.agent.invoke(
