@@ -129,6 +129,8 @@ class CCopyRunSimulation(DeploymentState):
     def execute(self, ctx: CCopyLoopContext):
         logger.info("Running UUT...")
         ctx.context.results.clear()
+        ctx.context.pbar = None
+        ctx.context.current_global_iteration = 0
         self.append_deployment_state(ctx, CCopyDeploymentState.RUN_LOOP)
 
 

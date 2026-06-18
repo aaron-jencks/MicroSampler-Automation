@@ -94,6 +94,7 @@ class SimulationState(GovernorLoopState):
                 return
             else:
                 raise ValueError(f"Unknown response from deployment controller: {sim_err}")
+        ctx.context.current_results = self.deployment_controller.context.final_table
         self.append_loop_state(ctx, LoopState.ANALYSIS)
 
 
