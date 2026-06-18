@@ -10,8 +10,7 @@ from prompting.templates import TemplateController
 from reporting.default.events import HypothesisEvent, ImplementationEvent, SimulationDeploymentEvent, \
     ImplementationErrorEvent, SimulationErrorEvent, AnalysisEvent, SummarizationEvent, ConclusionEvent
 from reporting.logger import ReportLog
-from simulation.api.common import DeploymentController
-from simulation.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
+from simulation.ccopy.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
 from stats import generate_statistical_analysis
 
 logger = logging.getLogger(__name__)

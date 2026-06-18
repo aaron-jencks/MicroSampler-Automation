@@ -1,4 +1,4 @@
-from simulation.struct import RunResult, BuildResult
+from .struct import RunResult, BuildResult
 
 
 class IllegalCodeError(Exception):

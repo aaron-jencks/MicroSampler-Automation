@@ -13,7 +13,7 @@ from tqdm import tqdm
 from config import BaseConfig
 from .defs import CCopyLoopContext, CCopyDeploymentState
 from .struct import BuildResult, RunResult
-from ..exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
+from simulation.ccopy.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
 
 
 logger = logging.getLogger(__name__)

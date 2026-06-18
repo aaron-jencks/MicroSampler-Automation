@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from simulation.struct import RunConfiguration
+from simulation.ccopy.struct import RunConfiguration
 
 
 class Hypothesis(BaseModel):

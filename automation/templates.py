@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from agents.responses import Hypothesis, Implementation, Summarization
 from config import BaseConfig
 from prompting.templates import TemplateController
-from simulation.struct import RunConfiguration
+from simulation.ccopy.struct import RunConfiguration
 from stats import dataframe_to_markdown
 from system import get_cache_information, read_cpuinfo
 
