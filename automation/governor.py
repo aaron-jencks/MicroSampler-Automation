@@ -6,7 +6,7 @@ from typing import Dict, List, Type
 
 from cascade_config import CascadeConfig
 from pydantic import BaseModel
-from qsm import QSM
+from qstate import QSM
 
 from agents.responses import Hypothesis, Implementation, Summarization
 from agents.defs import LoopState, GovernorContext

@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 
 import pandas as pd
-from qsm import StateContext
+from qstate import StateContext
 
 from stats import StatisticalAnalysisResults
 from .responses import Hypothesis, Implementation, Summarization

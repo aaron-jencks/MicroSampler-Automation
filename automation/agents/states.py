@@ -1,7 +1,7 @@
 from abc import ABC
 import logging
 
-from qsm import State, StateContext
+from qstate import State, StateContext
 
 from agents.defs import LoopState, AgentLoopContext
 from config import BaseConfig
