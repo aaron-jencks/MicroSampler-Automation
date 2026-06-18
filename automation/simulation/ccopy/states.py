@@ -80,7 +80,7 @@ class CCopyPrepareDeploymentStage(DeploymentState):
         self.append_deployment_state(ctx, CCopyDeploymentState.RUN_FULL)
 
 
-class CCopyRunDeploymentIteration(DeploymentState):
+class CCopyRunSimulationIteration(DeploymentState):
     def execute(self, ctx: CCopyLoopContext):
         if ctx.context.pbar is None:
             ctx.context.pbar = tqdm(total=ctx.context.configuration.global_iterations, desc="Running Simulations")

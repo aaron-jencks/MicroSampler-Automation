@@ -1,0 +1,50 @@
+{
+  "initial_state": "verify",
+  "initial_context": {
+    "model": "simulation.ccopy.defs.CCopyDeploymentContext"
+  },
+  "states": {
+    "verify": {
+      "model": "simulation.ccopy.states.CCopyVerifyLegalCode",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "write": {
+      "model": "simulation.ccopy.states.CCopyWriteAttack",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "compile": {
+      "model": "simulation.ccopy.states.CCopyCompileHarness",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "prepare": {
+      "model": "simulation.ccopy.states.CCopyPrepareDeploymentStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "run_full": {
+      "model": "simulation.ccopy.states.CCopyRunSimulation",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "run_loop": {
+      "model": "simulation.ccopy.states.CCopyRunSimulationIteration",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "tabulate": {
+      "model": "simulation.ccopy.states.CCopyTabulateResults",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    }
+  }
+}
