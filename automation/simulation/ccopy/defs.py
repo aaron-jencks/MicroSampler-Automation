@@ -21,9 +21,9 @@ class CCopyDeploymentState(Enum):
 
 @dataclass
 class CCopyDeploymentContext:
-    implementation: str
-    configuration: RunConfiguration
-    build_status: BuildResult
+    implementation: Optional[str] = None
+    configuration: Optional[RunConfiguration] = None
+    build_status: Optional[BuildResult] = None
     results: List[RunResult] = field(default_factory=list)
     current_global_iteration: int = 0
     pbar: Optional[tqdm] = None
