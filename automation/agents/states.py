@@ -1,7 +1,7 @@
 from abc import ABC
 import logging
 
-from qstate import State, StateContext
+from qstate import State, StateContext, QSM
 
 from agents.defs import LoopState, AgentLoopContext
 from config import BaseConfig
@@ -67,7 +67,7 @@ class ImplementationState(AgentLoopState):
 
 
 class SimulationState(GovernorLoopState):
-    def __init__(self, ctx: BaseConfig, reporter: ReportLog, deployment_controller: DeploymentController):
+    def __init__(self, ctx: BaseConfig, reporter: ReportLog, deployment_controller: QSM):
         super().__init__(ctx, reporter)
         self.deployment_controller = deployment_controller
 
@@ -76,23 +76,25 @@ class SimulationState(GovernorLoopState):
         ctx.context.current_results = None
         ctx.context.current_stats = None
         ctx.context.simulation_feedback = None
-        try:
-            ctx.context.current_results = self.deployment_controller.deploy_test_case(
-                ctx.context.current_implementation.attack_code,
-                config=ctx.context.current_hypothesis.run_configuration
-            )
-            self.reporter.log(SimulationDeploymentEvent(ctx.context.iteration))
-            self.append_loop_state(ctx, LoopState.ANALYSIS)
-        except (IllegalCodeError, BuildError) as e:
-            logger.info("code was illegal or did not build successfully")
-            self.reporter.log(ImplementationErrorEvent(ctx.context.iteration, e))
-            ctx.context.simulation_feedback = str(e)
-            self.append_loop_state(ctx, LoopState.CODE_GEN)
-        except (SimulationTimeoutError, SimulationFailureError) as e:
-            logger.info("simulation timed out or failed")
-            self.reporter.log(SimulationErrorEvent(ctx.context.iteration, e))
-            ctx.context.simulation_feedback = str(e)
-            self.append_loop_state(ctx, LoopState.SUMMARIZATION)
+        self.deployment_controller.context.implementation = ctx.context.current_implementation.attack_code
+        self.deployment_controller.context.configuration = ctx.context.current_hypothesis.run_configuration
+        sim_err = self.deployment_controller.loop()
+        self.reporter.log(SimulationDeploymentEvent(ctx.context.iteration))
+        if sim_err is not None:
+            ctx.context.simulation_feedback = str(sim_err)
+            if isinstance(sim_err, IllegalCodeError) or isinstance(sim_err, BuildError):
+                logger.info("code was illegal or did not build successfully")
+                self.reporter.log(ImplementationErrorEvent(ctx.context.iteration, sim_err))
+                self.append_loop_state(ctx, LoopState.CODE_GEN)
+                return
+            elif isinstance(sim_err, SimulationTimeoutError) or isinstance(sim_err, SimulationFailureError):
+                logger.info("simulation timed out or failed")
+                self.reporter.log(SimulationErrorEvent(ctx.context.iteration, sim_err))
+                self.append_loop_state(ctx, LoopState.SUMMARIZATION)
+                return
+            else:
+                raise ValueError(f"Unknown response from deployment controller: {sim_err}")
+        self.append_loop_state(ctx, LoopState.ANALYSIS)
 
 
 class AnalysisState(GovernorLoopState):

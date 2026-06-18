@@ -9,9 +9,7 @@ from pydantic import BaseModel
 from qstate import QSM
 
 from agents.responses import Hypothesis, Implementation, Summarization
-from agents.defs import LoopState, GovernorContext
-from agents.states import HypothesisState, ImplementationState, SimulationState, AnalysisState, SummarizationState, \
-    ConclusionState
+from agents.defs import GovernorContext
 from config import BaseConfig, parse_args
 from reporting.default.sections import create_default_report_sections
 from reporting.logger import ReportLog
@@ -83,7 +81,10 @@ def main(ctx: BaseConfig, dry: bool = False):
 
     state = GovernorContext()
 
-    deployment_controller = CCopyDeploymentController(ctx)
+    deployment_controller = QSM.from_config_file(
+        ctx.deployment_qsm_path,
+        ctx=ctx,
+    )
     tool_registry = create_default_agent_tool_registry(ctx, state, reporter)
 
     q = QSM.from_config_file(

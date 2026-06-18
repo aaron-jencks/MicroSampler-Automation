@@ -121,6 +121,7 @@ class CCopyRunSimulationIteration(DeploymentState):
         if ctx.context.current_global_iteration < ctx.context.configuration.global_iterations:
             self.append_deployment_state(ctx, CCopyDeploymentState.RUN_LOOP)
         else:
+            ctx.context.pbar.close()
             self.append_deployment_state(ctx, CCopyDeploymentState.TABULATE)
 
 
