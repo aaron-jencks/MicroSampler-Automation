@@ -3,7 +3,9 @@ import unittest
 
 from qstate import QSM
 
+from agents.defs import GovernorContext
 from config import parse_configs
+from reporting.logger import ReportLog
 from simulation.ccopy.struct import RunConfiguration
 from tools import create_read_attack_assembly_tool
 
@@ -35,7 +37,8 @@ class BuildingDeploymentTestCase(unittest.TestCase):
 
     def test_smoke_attack_compiles_and_assembly_tool_reads_output(self):
         config = self.deploy_attack_fixture()
-        read_attack_assembly = create_read_attack_assembly_tool(config)
+        logger = ReportLog()
+        read_attack_assembly = create_read_attack_assembly_tool(config, GovernorContext(), logger, "deployment_test")
         assembly = read_attack_assembly.invoke({})
 
         self.assertIn(str(config.harness.deployment_prefix / config.harness.assembly_file), assembly)
