@@ -26,6 +26,11 @@ class HarnessConfig(BaseModel):
     uut: UUTConfig = UUTConfig()
 
 
+class MicroSamplerConfig(BaseModel):
+    scripts_prefix: Path = Path("../scripts/")
+    deployment_prefix: Path = Path("../deploy/")
+
+
 class InterpreterConfig(BaseModel):
     venv_path: Path = Path("bearssl-0.6/ccopy/v2/interpreter/venv/")
     requirements_path: Path = Path("config/definitions/requirements.txt")
@@ -64,6 +69,7 @@ class FinalReportConfig(BaseModel):
 
 
 class BaseConfig(BaseModel):
+    microsampler: MicroSamplerConfig = MicroSamplerConfig()
     harness: HarnessConfig = HarnessConfig()
     interpreter: InterpreterConfig = InterpreterConfig()
     llm: LLMConfig = LLMConfig()
