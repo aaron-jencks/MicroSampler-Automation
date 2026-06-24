@@ -1,4 +1,3 @@
-from abc import ABC
 import json
 import logging
 import os
@@ -7,26 +6,15 @@ import shutil
 import subprocess as sp
 
 import pandas as pd
-from qstate import State
 from tqdm import tqdm
 
-from config import BaseConfig
 from .defs import CCopyLoopContext, CCopyDeploymentState
+from .exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
+from ..states import DeploymentState
 from .struct import BuildResult, RunResult
-from simulation.ccopy.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
 
 
 logger = logging.getLogger(__name__)
-
-
-class DeploymentState(State, ABC):
-    def __init__(self, ctx: BaseConfig):
-        super().__init__()
-        self.config = ctx
-
-    @staticmethod
-    def append_deployment_state(ctx: CCopyLoopContext, deployment_state: CCopyDeploymentState):
-        ctx.queue.append(deployment_state.value)
 
 
 class CCopyVerifyLegalCode(DeploymentState):
