@@ -1,5 +1,5 @@
 from abc import ABC
-from enum import Enum
+from enum import StrEnum
 
 from qstate import State, StateContext
 
@@ -12,5 +12,5 @@ class DeploymentState(State, ABC):
         self.config = ctx
 
     @staticmethod
-    def append_deployment_state(ctx: StateContext, state: Enum[str]):
+    def append_deployment_state(ctx: StateContext, state: StrEnum):
         ctx.queue.append(state.value)
