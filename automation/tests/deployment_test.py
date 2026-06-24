@@ -16,7 +16,7 @@ class BuildingDeploymentTestCase(unittest.TestCase):
         config = parse_configs([Path("config/ccopy_v3.json")])
         attack_source = ATTACK_SOURCE.read_text()
 
-        sm = QSM.from_config_file(config.deployment_qsm_path)
+        sm = QSM.from_config_file(config.deployment_qsm_path, ctx=config)
         sm.context.implementation = attack_source
         sm.context.configuration = RunConfiguration(
             1, 1, "unit-test", 42

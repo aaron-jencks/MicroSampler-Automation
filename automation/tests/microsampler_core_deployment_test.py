@@ -8,7 +8,7 @@ from simulation.microsampler.core.defs import MicroSamplerRunConfiguration
 class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
     def test_deploy_attack_fixture(self):
         config = parse_configs([])
-        sm = MicroSamplerCoreDeploymentMachine.from_config_file(config.microsampler.core_deployment_qsm)
+        sm = MicroSamplerCoreDeploymentMachine.from_config_file(config.microsampler.core_deployment_qsm, ctx=config)
         self.assertIsNone(sm.loop_w_config(MicroSamplerRunConfiguration()))
 
 
