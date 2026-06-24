@@ -30,7 +30,7 @@ class MicroSamplerRunConfiguration:
 
 @dataclass
 class MicroSamplerContext:
-    run_config: MicroSamplerRunConfiguration = MicroSamplerRunConfiguration()
+    run_config: MicroSamplerRunConfiguration = field(default_factory=MicroSamplerRunConfiguration)
     current_app_index: int = 0
     current_key_index: int = 0
     log_prefix: Optional[Path] = None
