@@ -26,7 +26,7 @@ class MicroSamplerInitialState(DeploymentState):
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.PREPARE)
 
 
-class MicroSamplerLoopController(DeploymentState):
+class MicroSamplerLoopControllerState(DeploymentState):
     def execute(self, ctx: MicroSamplerLoopContext):
         if ctx.context.current_app_index >= len(ctx.context.run_config.apps):
             return

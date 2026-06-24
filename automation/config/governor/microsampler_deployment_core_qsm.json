@@ -1,0 +1,43 @@
+{
+  "initial_context": {
+    "model": "simulation.microsampler.defs.MicroSamplerContext"
+  },
+  "states": {
+    "initial_state": {
+      "model": "simulation.microsampler.states.MicroSamplerInitialState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "prepare": {
+      "model": "simulation.microsampler.states.MicroSamplerPrepareState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "simulation": {
+      "model": "simulation.microsampler.states.MicroSamplerSimulationState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "parse": {
+      "model": "simulation.microsampler.states.MicroSamplerParseState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "stats": {
+      "model": "simulation.microsampler.states.MicroSamplerStatsState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "loop_check": {
+      "model": "simulation.microsampler.states.MicroSamplerLoopControllerState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    }
+  }
+}
