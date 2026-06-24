@@ -1,9 +1,10 @@
 from pathlib import Path
 import unittest
 
+from qstate import QSM
+
 from config import parse_configs
-from simulation.api.ccopy import CCopyDeploymentController
-from simulation.struct import RunConfiguration
+from simulation.ccopy.struct import RunConfiguration
 from tools import create_read_attack_assembly_tool
 
 
@@ -15,10 +16,12 @@ class BuildingDeploymentTestCase(unittest.TestCase):
         config = parse_configs([Path("config/ccopy_v3.json")])
         attack_source = ATTACK_SOURCE.read_text()
 
-        controller = CCopyDeploymentController(config)
-        controller.deploy_test_case(attack_source, config=RunConfiguration(
+        sm = QSM.from_config_file(config.deployment_qsm_path)
+        sm.context.configuration = RunConfiguration(
             1, 1, "unit-test", 42
-        ))
+        )
+
+        sm.loop()
         return config
 
     def test_deployment_copies_attack_assembly(self):
