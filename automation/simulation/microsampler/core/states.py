@@ -28,13 +28,13 @@ class MicroSamplerInitialState(DeploymentState):
 
 class MicroSamplerLoopControllerState(DeploymentState):
     def execute(self, ctx: MicroSamplerLoopContext):
-        if ctx.context.current_app_index >= len(ctx.context.run_config.apps):
-            return
-
         ctx.context.current_key_index += 1
         if ctx.context.current_key_index >= len(ctx.context.run_config.keys):
             ctx.context.current_key_index = 0
             ctx.context.current_app_index += 1
+
+        if ctx.context.current_app_index >= len(ctx.context.run_config.apps):
+            return
 
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.PREPARE)
 
