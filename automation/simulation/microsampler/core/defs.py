@@ -14,7 +14,6 @@ class MicroSamplerCoreDeploymentState(Enum):
     SIMULATION = "simulation"
     PARSE = "parse"
     STATS = "stats"
-    KILL = "kill"
 
 
 @dataclass
