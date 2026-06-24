@@ -24,7 +24,7 @@ class BuildingDeploymentTestCase(unittest.TestCase):
             1, 1, "unit-test", 42
         )
 
-        sm.loop()
+        self.assertIsNone(sm.loop())
         return config
 
     def test_deployment_copies_attack_assembly(self):
