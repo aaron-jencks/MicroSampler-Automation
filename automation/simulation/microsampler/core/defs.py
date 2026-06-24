@@ -19,7 +19,7 @@ class MicroSamplerCoreDeploymentState(Enum):
 @dataclass
 class MicroSamplerRunConfiguration:
     keys: List[str] = field(default_factory=list)
-    suite: str = "bearssl"
+    suite: str = "bearssl_synthetic"
     apps: List[str] = field(default_factory=list)
     phi: float = 0.9
     alpha: float = 0.1
