@@ -1,40 +1,40 @@
 {
   "initial_context": {
-    "model": "simulation.microsampler.defs.MicroSamplerContext"
+    "model": "simulation.microsampler.core.defs.MicroSamplerContext"
   },
   "states": {
     "initial_state": {
-      "model": "simulation.microsampler.states.MicroSamplerInitialState",
+      "model": "simulation.microsampler.core.states.MicroSamplerInitialState",
       "kwargs": {
         "ctx": "$ctx"
       }
     },
     "prepare": {
-      "model": "simulation.microsampler.states.MicroSamplerPrepareState",
+      "model": "simulation.microsampler.core.states.MicroSamplerPrepareState",
       "kwargs": {
         "ctx": "$ctx"
       }
     },
     "simulation": {
-      "model": "simulation.microsampler.states.MicroSamplerSimulationState",
+      "model": "simulation.microsampler.core.states.MicroSamplerSimulationState",
       "kwargs": {
         "ctx": "$ctx"
       }
     },
     "parse": {
-      "model": "simulation.microsampler.states.MicroSamplerParseState",
+      "model": "simulation.microsampler.core.states.MicroSamplerParseState",
       "kwargs": {
         "ctx": "$ctx"
       }
     },
     "stats": {
-      "model": "simulation.microsampler.states.MicroSamplerStatsState",
+      "model": "simulation.microsampler.core.states.MicroSamplerStatsState",
       "kwargs": {
         "ctx": "$ctx"
       }
     },
     "loop_check": {
-      "model": "simulation.microsampler.states.MicroSamplerLoopControllerState",
+      "model": "simulation.microsampler.core.states.MicroSamplerLoopControllerState",
       "kwargs": {
         "ctx": "$ctx"
       }
