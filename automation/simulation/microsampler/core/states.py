@@ -63,6 +63,7 @@ class MicroSamplerSimulationState(DeploymentState):
                 ],
                 stdout=fp,
                 stderr=sp.STDOUT,
+                cwd=self.config.microsampler.working_directory
             )
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.PARSE)
 
@@ -132,7 +133,11 @@ class MicroSamplerParseState(DeploymentState):
         ])
 
         with open(ctx.context.log_prefix / "launch_parse.log", "w+") as fp:
-            sp.run(args, stdout=fp, stderr=sp.STDOUT)
+            sp.run(
+                args,
+                stdout=fp, stderr=sp.STDOUT,
+                cwd=self.config.microsampler.working_directory
+            )
 
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.STATS)
 
@@ -141,14 +146,16 @@ class MicroSamplerStatsState(DeploymentState):
     def execute(self, ctx: MicroSamplerLoopContext):
         with open(ctx.context.log_prefix / "launch_stats.log", "w+") as fp:
             sp.run([
-                str((self.config.microsampler.scripts_prefix / "do_stats.sh").resolve().absolute()),
-                ctx.context.run_config.keys[ctx.context.current_key_index],
-                ctx.context.run_config.suite,
-                ctx.context.run_config.apps[ctx.context.current_app_index],
-                str(ctx.context.run_config.phi),
-                str(ctx.context.run_config.alpha),
-                str(ctx.context.run_config.window),
-                str(ctx.context.run_config.iterations),
-                ctx.context.run_config.design,
-            ], stdout=fp, stderr=sp.STDOUT)
+                    str((self.config.microsampler.scripts_prefix / "do_stats.sh").resolve().absolute()),
+                    ctx.context.run_config.keys[ctx.context.current_key_index],
+                    ctx.context.run_config.suite,
+                    ctx.context.run_config.apps[ctx.context.current_app_index],
+                    str(ctx.context.run_config.phi),
+                    str(ctx.context.run_config.alpha),
+                    str(ctx.context.run_config.window),
+                    str(ctx.context.run_config.iterations),
+                    ctx.context.run_config.design,
+                ], stdout=fp, stderr=sp.STDOUT,
+                cwd=self.config.microsampler.working_directory
+            )
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.LOOP_CHECK)
