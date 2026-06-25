@@ -11,6 +11,8 @@ from tools import MissingAttackAssemblyError, create_read_attack_assembly_tool
 class AttackAssemblyToolTestCase(unittest.TestCase):
     def test_read_attack_assembly_returns_deployed_assembly(self):
         config = parse_configs([])
+        config.harness.deployment_prefix.mkdir(parents=True, exist_ok=True)
+
         assembly_path = config.harness.deployment_prefix / config.harness.assembly_file
         assembly_path.write_text("helper_start:\n\tret\n")
 
@@ -29,6 +31,8 @@ class AttackAssemblyToolTestCase(unittest.TestCase):
 
     def test_read_attack_assembly_raises_when_missing(self):
         config = parse_configs([])
+        config.harness.deployment_prefix.mkdir(parents=True, exist_ok=True)
+
         assembly_path = config.harness.deployment_prefix / config.harness.assembly_file
         if assembly_path.exists():
             assembly_path.unlink()
