@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import List, Optional
 
@@ -8,7 +8,7 @@ from qstate import StateContext
 from tqdm import tqdm
 
 
-class MicroSamplerCoreDeploymentState(Enum):
+class MicroSamplerCoreDeploymentState(StrEnum):
     LOOP_CHECK = "loop_check"
     PREPARE = "prepare"
     SIMULATION = "simulation"

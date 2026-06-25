@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import List, Optional
 
 import pandas as pd
@@ -9,7 +9,7 @@ from tqdm import tqdm
 from .struct import RunConfiguration, BuildResult, RunResult
 
 
-class CCopyDeploymentState(Enum):
+class CCopyDeploymentState(StrEnum):
     VERIFY = "verify"
     WRITE = "write"
     COMPILE = "compile"
