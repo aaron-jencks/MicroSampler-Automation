@@ -63,6 +63,9 @@ class MicroSamplerSimulationState(DeploymentState):
                 ],
                 stdout=fp,
                 stderr=sp.STDOUT,
+                env={
+                    "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
+                },
                 cwd=self.config.microsampler.working_directory
             )
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.PARSE)
@@ -136,6 +139,9 @@ class MicroSamplerParseState(DeploymentState):
             sp.run(
                 args,
                 stdout=fp, stderr=sp.STDOUT,
+                env={
+                    "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
+                },
                 cwd=self.config.microsampler.working_directory
             )
 
@@ -156,6 +162,9 @@ class MicroSamplerStatsState(DeploymentState):
                     str(ctx.context.run_config.iterations),
                     ctx.context.run_config.design,
                 ], stdout=fp, stderr=sp.STDOUT,
+                env={
+                    "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
+                },
                 cwd=self.config.microsampler.working_directory
             )
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.LOOP_CHECK)
