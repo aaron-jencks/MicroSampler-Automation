@@ -29,7 +29,7 @@ class HarnessConfig(BaseModel):
 class MicroSamplerConfig(BaseModel):
     working_directory: Path = Path("..")
     scripts_prefix: Path = Path("../scripts/")
-    deployment_prefix: Path = Path("../deploy/")
+    deployment_prefix: Path = Path("..")
     core_deployment_qsm: Path = Path("config/governor/microsampler_deployment_core_qsm.json")
 
 
