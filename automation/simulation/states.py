@@ -54,7 +54,8 @@ class SubprocessDeploymentState(DeploymentState, ABC):
             env_overrides: Optional[Dict[str, str]] = None,
             inherit_env: bool = True,
             check_output: bool = False,
-            cwd: Optional[Path] = None
+            cwd: Optional[Path] = None,
+            timeout: Optional[float] = None
     ) -> sp.CompletedProcess:
         env = os.environ.copy() if inherit_env else {}
         if env_overrides:
@@ -74,7 +75,8 @@ class SubprocessDeploymentState(DeploymentState, ABC):
                 args,
                 stdin=stdin, stdout=stdout, stderr=stderr,
                 shell=shell, check=check_output,
-                env=env, cwd=cwd
+                env=env, cwd=cwd,
+                timeout=timeout
             )
         finally:
             if csi:
@@ -95,10 +97,11 @@ class SubprocessDeploymentState(DeploymentState, ABC):
             shell: bool = False,
             env_overrides: Optional[Dict[str, str]] = None,
             inherit_env: bool = True,
-            cwd: Optional[Path] = None
+            cwd: Optional[Path] = None,
+            timeout: Optional[float] = None
     ):
         run_out = self.run_subprocess(
-            args, stdin, stdout, stderr, shell, env_overrides, inherit_env, False, cwd
+            args, stdin, stdout, stderr, shell, env_overrides, inherit_env, False, cwd, timeout
         )
         self.check_subprocess_output(
             ctx, run_out, err, next_state,

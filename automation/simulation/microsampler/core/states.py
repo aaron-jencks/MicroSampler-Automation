@@ -6,12 +6,13 @@ import re
 import shutil
 import subprocess as sp
 from enum import StrEnum
-from typing import Type, Union, Iterable
+from typing import Iterable, Optional, Type, Union
 
 import pandas as pd
 from qstate import StateContext
 from tqdm import tqdm
 
+from config import BaseConfig
 from .defs import MicroSamplerCoreDeploymentState, MicroSamplerLoopContext
 from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError)
 from ...exceptions import SubprocessError
@@ -56,6 +57,10 @@ class MicroSamplerPrepareState(DeploymentState):
 
 
 class MicroSamplerSubprocessState(SubprocessDeploymentState, ABC):
+    def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
+        super().__init__(ctx)
+        self.sp_timeout = sp_timeout
+
     def run_microsampler_checked_subprocess(
             self, ctx: StateContext,
             err: Type[SubprocessError], next_state: StrEnum,
@@ -72,6 +77,7 @@ class MicroSamplerSubprocessState(SubprocessDeploymentState, ABC):
                 "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
             },
             cwd=self.config.microsampler.working_directory,
+            timeout=self.sp_timeout
         )
 
 
