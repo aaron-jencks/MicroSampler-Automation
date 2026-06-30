@@ -4,11 +4,14 @@ import os
 import re
 import shutil
 import subprocess as sp
+from typing import Type
 
 import pandas as pd
+from qstate import StateContext
 from tqdm import tqdm
 
 from .defs import MicroSamplerCoreDeploymentState, MicroSamplerLoopContext
+from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError)
 from ...states import DeploymentState
 
 logger = logging.getLogger(__name__)
@@ -52,7 +55,7 @@ class MicroSamplerPrepareState(DeploymentState):
 class MicroSamplerSimulationState(DeploymentState):
     def execute(self, ctx: MicroSamplerLoopContext):
         with open(ctx.context.log_prefix / "launch_simulation.log", "w+") as fp:
-            sp.run(
+            self.check_subprocess_output(ctx, sp.run(
                 [
                     str((self.config.microsampler.scripts_prefix / "do_simulation.sh").resolve().absolute()),
                     ctx.context.run_config.keys[ctx.context.current_key_index],
@@ -68,8 +71,7 @@ class MicroSamplerSimulationState(DeploymentState):
                     "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
                 },
                 cwd=self.config.microsampler.working_directory
-            )
-        self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.PARSE)
+            ), MicroSamplerSimulationError, MicroSamplerCoreDeploymentState.PARSE)
 
 
 class MicroSamplerParseState(DeploymentState):
@@ -137,7 +139,7 @@ class MicroSamplerParseState(DeploymentState):
         ])
 
         with open(ctx.context.log_prefix / "launch_parse.log", "w+") as fp:
-            sp.run(
+            self.check_subprocess_output(ctx, sp.run(
                 args,
                 stdout=fp, stderr=sp.STDOUT,
                 env={
@@ -145,15 +147,13 @@ class MicroSamplerParseState(DeploymentState):
                     "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
                 },
                 cwd=self.config.microsampler.working_directory
-            )
-
-        self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.STATS)
+            ), MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS)
 
 
 class MicroSamplerStatsState(DeploymentState):
     def execute(self, ctx: MicroSamplerLoopContext):
         with open(ctx.context.log_prefix / "launch_stats.log", "w+") as fp:
-            sp.run([
+            self.check_subprocess_output(ctx, sp.run([
                     str((self.config.microsampler.scripts_prefix / "do_stats.sh").resolve().absolute()),
                     ctx.context.run_config.keys[ctx.context.current_key_index],
                     ctx.context.run_config.suite,
@@ -169,5 +169,4 @@ class MicroSamplerStatsState(DeploymentState):
                     "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
                 },
                 cwd=self.config.microsampler.working_directory
-            )
-        self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.LOOP_CHECK)
+            ), MicroSamplerStatsError, MicroSamplerCoreDeploymentState.LOOP_CHECK)
