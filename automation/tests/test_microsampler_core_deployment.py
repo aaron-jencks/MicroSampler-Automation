@@ -15,9 +15,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 STATE_TIMEOUTS = {
-    MicroSamplerCoreDeploymentState.SIMULATION: 900,
-    MicroSamplerCoreDeploymentState.PARSE: 1200,
-    MicroSamplerCoreDeploymentState.STATS: 1200,
+    MicroSamplerCoreDeploymentState.SIMULATION: 60,
+    MicroSamplerCoreDeploymentState.PARSE: 60,
+    MicroSamplerCoreDeploymentState.STATS: 60,
 }
 
 
@@ -80,7 +80,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         self.assertIsNone(sm.loop_w_config(run_config))
 
         # check log data
-        log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / "ct_ccopy" / str(run_config.iterations) / "0xaa"
+        log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / run_config.suite / "ct_ccopy" / str(run_config.iterations) / "0xaa"
         self.assertEqual(log_prefix, sm.context.log_prefix)
         self.assertTrue(log_prefix.exists())
 
