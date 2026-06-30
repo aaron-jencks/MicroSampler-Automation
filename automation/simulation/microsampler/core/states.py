@@ -50,7 +50,7 @@ class MicroSamplerPrepareState(DeploymentState):
         deployment_prefix = self.config.microsampler.deployment_prefix
         app = ctx.context.run_config.apps[ctx.context.current_app_index]
         key = ctx.context.run_config.keys[ctx.context.current_key_index]
-        ctx.context.log_prefix = deployment_prefix / "logs" / ctx.context.run_config.design / app / str(ctx.context.run_config.iterations) / key
+        ctx.context.log_prefix = deployment_prefix / "logs" / ctx.context.run_config.design / ctx.context.run_config.suite / app / str(ctx.context.run_config.iterations) / key
         ctx.context.log_prefix.mkdir(parents=True, exist_ok=True)
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.SIMULATION)
 
