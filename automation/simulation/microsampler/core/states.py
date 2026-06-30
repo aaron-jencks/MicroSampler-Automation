@@ -83,6 +83,7 @@ class MicroSamplerSubprocessState(SubprocessDeploymentState, ABC):
 
 class MicroSamplerSimulationState(MicroSamplerSubprocessState):
     def execute(self, ctx: MicroSamplerLoopContext):
+        logger.debug("starting microsampler simulation")
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerSimulationError, MicroSamplerCoreDeploymentState.PARSE,
             [
@@ -98,6 +99,7 @@ class MicroSamplerSimulationState(MicroSamplerSubprocessState):
 
 class MicroSamplerParseState(MicroSamplerSubprocessState):
     def execute(self, ctx: MicroSamplerLoopContext):
+        logger.debug("starting microsampler parse")
         key = ctx.context.run_config.keys[ctx.context.current_key_index]
 
         args = [key]
@@ -161,8 +163,6 @@ class MicroSamplerParseState(MicroSamplerSubprocessState):
             suite, app, str(ctx.context.run_config.iterations), ctx.context.run_config.design,
         ])
 
-        logger.info(f"Running parsing with {args}")
-
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS,
             args,
@@ -172,6 +172,7 @@ class MicroSamplerParseState(MicroSamplerSubprocessState):
 
 class MicroSamplerStatsState(MicroSamplerSubprocessState):
     def execute(self, ctx: MicroSamplerLoopContext):
+        logger.debug("starting microsampler stats execution")
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerStatsError, MicroSamplerCoreDeploymentState.LOOP_CHECK,
             [

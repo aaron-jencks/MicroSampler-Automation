@@ -61,15 +61,24 @@ class SubprocessDeploymentState(DeploymentState, ABC):
         if env_overrides:
             env.update(env_overrides)
         csi, cso, cse = False, False, False
+        logging_statement = f"running subprocess:\n{args}"
         if isinstance(stdin, Path):
+            logging_statement += f"\n\tusing stdin: {stdin}"
             stdin = open(stdin, 'r')
             csi = True
         if isinstance(stdout, Path):
+            logging_statement += f"\n\tusing stdout: {stdout}"
             stdout = open(stdout, 'w+')
             cso = True
         if isinstance(stderr, Path):
+            logging_statement += f"\n\tusing stderr: {stderr}"
             stderr = open(stderr, 'w+')
             cse = True
+        if cwd is not None:
+            logging_statement += f"\n\tusing cwd: {cwd}"
+        if timeout is not None:
+            logging_statement += f"\n\tusing timeout: {timeout} secs"
+        logger.debug(logging_statement)
         try:
             sp_out = sp.run(
                 args,

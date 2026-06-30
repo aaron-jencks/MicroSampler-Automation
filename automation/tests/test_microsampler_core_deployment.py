@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import shutil
 import subprocess as sp
@@ -8,6 +9,10 @@ from config import parse_configs
 from simulation.microsampler.core.qsm import MicroSamplerCoreDeploymentMachine
 from simulation.microsampler.core.defs import MicroSamplerRunConfiguration, MicroSamplerCoreDeploymentState
 from simulation.microsampler.core.states import MicroSamplerSubprocessState
+
+
+logging.basicConfig(level=logging.DEBUG)
+
 
 STATE_TIMEOUTS = {
     MicroSamplerCoreDeploymentState.SIMULATION: 900,
