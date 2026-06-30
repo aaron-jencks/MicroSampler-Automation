@@ -12,6 +12,7 @@ from simulation.microsampler.core.defs import MicroSamplerRunConfiguration
 class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
     def check_log_data(self, log_data: str):
         self.assertNotIn("No such file or directory", log_data)
+        self.assertNotIn("ModuleNotFoundError", log_data)
 
     def test_cross_compiler_exists(self):
         self.assertIsNotNone(shutil.which("riscv64-unknown-elf-gcc"), "a riscv64-unknown-elf-gcc cross-compiler is required for microsampler deployment")
