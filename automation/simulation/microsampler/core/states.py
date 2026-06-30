@@ -92,7 +92,9 @@ class MicroSamplerSimulationState(MicroSamplerSubprocessState):
 
 class MicroSamplerParseState(MicroSamplerSubprocessState):
     def execute(self, ctx: MicroSamplerLoopContext):
-        args = []
+        key = ctx.context.run_config.keys[ctx.context.current_key_index]
+
+        args = [key]
 
         suite = ctx.context.run_config.suite
         app = ctx.context.run_config.apps[ctx.context.current_app_index]
