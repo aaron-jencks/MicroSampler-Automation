@@ -6,7 +6,14 @@ import unittest
 
 from config import parse_configs
 from simulation.microsampler.core.qsm import MicroSamplerCoreDeploymentMachine
-from simulation.microsampler.core.defs import MicroSamplerRunConfiguration
+from simulation.microsampler.core.defs import MicroSamplerRunConfiguration, MicroSamplerCoreDeploymentState
+from simulation.microsampler.core.states import MicroSamplerSubprocessState
+
+STATE_TIMEOUTS = {
+    MicroSamplerCoreDeploymentState.SIMULATION: 900,
+    MicroSamplerCoreDeploymentState.PARSE: 1200,
+    MicroSamplerCoreDeploymentState.STATS: 1200,
+}
 
 
 class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
@@ -57,6 +64,9 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
     def test_deploy_attack_fixture(self):
         config = parse_configs([])
         sm = MicroSamplerCoreDeploymentMachine.from_config_file(config.microsampler.core_deployment_qsm, ctx=config)
+        for state, timeout in STATE_TIMEOUTS.items():
+            self.assertIsInstance(sm.state_map[state], MicroSamplerSubprocessState)
+            sm.state_map[state].sp_timeout = timeout
         run_config = MicroSamplerRunConfiguration(
             suite="bearssl_synthetic",
             apps=["v1"],
