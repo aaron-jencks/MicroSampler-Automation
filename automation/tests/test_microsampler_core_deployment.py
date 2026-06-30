@@ -67,6 +67,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         # check log data
         log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / "v1" / str(run_config.iterations) / "0xaa"
         self.assertEqual(log_prefix, sm.context.log_prefix)
+        self.assertTrue(log_prefix.exists())
 
         simulation_log = log_prefix / "launch_simulation.log"
         simulation_log_data = simulation_log.read_text()
