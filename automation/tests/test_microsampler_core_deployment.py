@@ -68,14 +68,14 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
             self.assertIsInstance(sm.state_map[state], MicroSamplerSubprocessState)
             sm.state_map[state].sp_timeout = timeout
         run_config = MicroSamplerRunConfiguration(
-            suite="bearssl_synthetic",
-            apps=["v1"],
+            suite="microbench",
+            apps=["ct_ccopy"],
             keys=["0xaa"]
         )
         self.assertIsNone(sm.loop_w_config(run_config))
 
         # check log data
-        log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / "v1" / str(run_config.iterations) / "0xaa"
+        log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / "ct_ccopy" / str(run_config.iterations) / "0xaa"
         self.assertEqual(log_prefix, sm.context.log_prefix)
         self.assertTrue(log_prefix.exists())
 
