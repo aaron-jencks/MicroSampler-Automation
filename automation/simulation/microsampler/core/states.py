@@ -4,7 +4,8 @@ import os
 import re
 import shutil
 import subprocess as sp
-from typing import Type
+from enum import StrEnum
+from typing import Type, Union, Iterable
 
 import pandas as pd
 from qstate import StateContext
@@ -12,7 +13,8 @@ from tqdm import tqdm
 
 from .defs import MicroSamplerCoreDeploymentState, MicroSamplerLoopContext
 from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError)
-from ...states import DeploymentState
+from ...exceptions import SubprocessError
+from ...states import DeploymentState, SubprocessDeploymentState
 
 logger = logging.getLogger(__name__)
 
@@ -52,33 +54,45 @@ class MicroSamplerPrepareState(DeploymentState):
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.SIMULATION)
 
 
-class MicroSamplerSimulationState(DeploymentState):
-    def execute(self, ctx: MicroSamplerLoopContext):
-        with open(ctx.context.log_prefix / "launch_simulation.log", "w+") as fp:
-            self.check_subprocess_output(ctx, sp.run(
-                [
-                    str((self.config.microsampler.scripts_prefix / "do_simulation.sh").resolve().absolute()),
-                    ctx.context.run_config.keys[ctx.context.current_key_index],
-                    ctx.context.run_config.suite,
-                    ctx.context.run_config.apps[ctx.context.current_app_index],
-                    str(ctx.context.run_config.iterations),
-                    ctx.context.run_config.design,
-                ],
-                stdout=fp,
-                stderr=sp.STDOUT,
-                env={
+class MicroSamplerSubprocessState(SubprocessDeploymentState):
+    def run_microsampler_checked_subprocess(
+            self, ctx: StateContext,
+            err: Type[SubprocessError], next_state: StrEnum,
+            args: Union[Iterable[str], str],
+            script_name: str, log_name: str,
+    ):
+        log_path = ctx.context.log_prefix / log_name
+        with open(log_path, "w+") as fp:
+            self.run_checked_subprocess(
+                ctx, err, next_state,
+                [str((self.config.microsampler.scripts_prefix / script_name).resolve().absolute()), *args],
+                stdout=fp, stderr=sp.STDOUT,
+                env_overrides={
                     "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
                     "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
                 },
                 cwd=self.config.microsampler.working_directory
-            ), MicroSamplerSimulationError, MicroSamplerCoreDeploymentState.PARSE)
+            )
 
 
-class MicroSamplerParseState(DeploymentState):
+class MicroSamplerSimulationState(MicroSamplerSubprocessState):
     def execute(self, ctx: MicroSamplerLoopContext):
-        args = [
-            str((self.config.microsampler.scripts_prefix / "do_parse.sh").resolve().absolute()),
-        ]
+        self.run_microsampler_checked_subprocess(
+            ctx, MicroSamplerSimulationError, MicroSamplerCoreDeploymentState.PARSE,
+            [
+                ctx.context.run_config.keys[ctx.context.current_key_index],
+                ctx.context.run_config.suite,
+                ctx.context.run_config.apps[ctx.context.current_app_index],
+                str(ctx.context.run_config.iterations),
+                ctx.context.run_config.design,
+            ],
+            "do_simulation.sh", "launch_simulation.log"
+        )
+
+
+class MicroSamplerParseState(MicroSamplerSubprocessState):
+    def execute(self, ctx: MicroSamplerLoopContext):
+        args = []
 
         suite = ctx.context.run_config.suite
         app = ctx.context.run_config.apps[ctx.context.current_app_index]
@@ -133,40 +147,32 @@ class MicroSamplerParseState(DeploymentState):
                 return
         else:
             ctx.stop(ValueError(f"suite {suite} not supported"))
+            return
 
         args.extend([
             suite, app, str(ctx.context.run_config.iterations), ctx.context.run_config.design,
         ])
 
-        with open(ctx.context.log_prefix / "launch_parse.log", "w+") as fp:
-            self.check_subprocess_output(ctx, sp.run(
-                args,
-                stdout=fp, stderr=sp.STDOUT,
-                env={
-                    "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
-                    "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
-                },
-                cwd=self.config.microsampler.working_directory
-            ), MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS)
+        self.run_microsampler_checked_subprocess(
+            ctx, MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS,
+            args,
+            "do_parse.sh", "launch_parse.log"
+        )
 
 
-class MicroSamplerStatsState(DeploymentState):
+class MicroSamplerStatsState(MicroSamplerSubprocessState):
     def execute(self, ctx: MicroSamplerLoopContext):
-        with open(ctx.context.log_prefix / "launch_stats.log", "w+") as fp:
-            self.check_subprocess_output(ctx, sp.run([
-                    str((self.config.microsampler.scripts_prefix / "do_stats.sh").resolve().absolute()),
-                    ctx.context.run_config.keys[ctx.context.current_key_index],
-                    ctx.context.run_config.suite,
-                    ctx.context.run_config.apps[ctx.context.current_app_index],
-                    str(ctx.context.run_config.phi),
-                    str(ctx.context.run_config.alpha),
-                    str(ctx.context.run_config.window),
-                    str(ctx.context.run_config.iterations),
-                    ctx.context.run_config.design,
-                ], stdout=fp, stderr=sp.STDOUT,
-                env={
-                    "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
-                    "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
-                },
-                cwd=self.config.microsampler.working_directory
-            ), MicroSamplerStatsError, MicroSamplerCoreDeploymentState.LOOP_CHECK)
+        self.run_microsampler_checked_subprocess(
+            ctx, MicroSamplerStatsError, MicroSamplerCoreDeploymentState.LOOP_CHECK,
+            [
+                ctx.context.run_config.keys[ctx.context.current_key_index],
+                ctx.context.run_config.suite,
+                ctx.context.run_config.apps[ctx.context.current_app_index],
+                str(ctx.context.run_config.phi),
+                str(ctx.context.run_config.alpha),
+                str(ctx.context.run_config.window),
+                str(ctx.context.run_config.iterations),
+                ctx.context.run_config.design,
+            ],
+            "do_stats.sh", "launch_stats.log"
+        )
