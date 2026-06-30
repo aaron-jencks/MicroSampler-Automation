@@ -153,6 +153,8 @@ class MicroSamplerParseState(MicroSamplerSubprocessState):
             suite, app, str(ctx.context.run_config.iterations), ctx.context.run_config.design,
         ])
 
+        logger.info(f"Running parsing with {args}")
+
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS,
             args,
