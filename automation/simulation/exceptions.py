@@ -1,8 +1,8 @@
-from typing import Any
+from typing import Any, Optional
 
 
 class SubprocessError(Exception):
-    def __init__(self, code: int, stdout: str, stderr: str, *args: Any) -> None:
+    def __init__(self, code: int, stdout: Optional[str] = None, stderr: Optional[str] = None, *args: Any):
         self.code = code
         self.stdout = stdout
         self.stderr = stderr
