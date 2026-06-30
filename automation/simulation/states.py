@@ -1,5 +1,6 @@
 from abc import ABC
 from enum import StrEnum
+import logging
 import subprocess as sp
 from typing import Type
 
@@ -7,6 +8,9 @@ from qstate import State, StateContext
 
 from config import BaseConfig
 from .exceptions import SubprocessError
+
+
+logger = logging.getLogger(__name__)
 
 
 class DeploymentState(State, ABC):
@@ -22,6 +26,8 @@ class DeploymentState(State, ABC):
             err: Type[SubprocessError], next_state: StrEnum
     ):
         if sp_output.returncode != 0:
-            ctx.stop(err(sp_output.returncode, sp_output.stdout, sp_output.stderr))
+            e = err(sp_output.returncode, sp_output.stdout, sp_output.stderr)
+            logger.warning(f"subprocess failed, program output:\n\n{e.format_error()}")
+            ctx.stop(e)
         else:
             self.append_deployment_state(ctx, next_state)
