@@ -1,3 +1,4 @@
+from abc import ABC
 import json
 import logging
 import os
@@ -54,7 +55,7 @@ class MicroSamplerPrepareState(DeploymentState):
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.SIMULATION)
 
 
-class MicroSamplerSubprocessState(SubprocessDeploymentState):
+class MicroSamplerSubprocessState(SubprocessDeploymentState, ABC):
     def run_microsampler_checked_subprocess(
             self, ctx: StateContext,
             err: Type[SubprocessError], next_state: StrEnum,
@@ -62,17 +63,16 @@ class MicroSamplerSubprocessState(SubprocessDeploymentState):
             script_name: str, log_name: str,
     ):
         log_path = ctx.context.log_prefix / log_name
-        with open(log_path, "w+") as fp:
-            self.run_checked_subprocess(
-                ctx, err, next_state,
-                [str((self.config.microsampler.scripts_prefix / script_name).resolve().absolute()), *args],
-                stdout=fp, stderr=sp.STDOUT,
-                env_overrides={
-                    "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
-                    "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
-                },
-                cwd=self.config.microsampler.working_directory
-            )
+        self.run_checked_subprocess(
+            ctx, err, next_state,
+            [str((self.config.microsampler.scripts_prefix / script_name).resolve().absolute()), *args],
+            stdout=log_path, stderr=sp.STDOUT,
+            env_overrides={
+                "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
+                "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
+            },
+            cwd=self.config.microsampler.working_directory,
+        )
 
 
 class MicroSamplerSimulationState(MicroSamplerSubprocessState):
