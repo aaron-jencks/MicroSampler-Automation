@@ -65,6 +65,7 @@ class MicroSamplerSimulationState(DeploymentState):
                 stderr=sp.STDOUT,
                 env={
                     "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
+                    "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
                 },
                 cwd=self.config.microsampler.working_directory
             )
@@ -141,6 +142,7 @@ class MicroSamplerParseState(DeploymentState):
                 stdout=fp, stderr=sp.STDOUT,
                 env={
                     "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
+                    "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
                 },
                 cwd=self.config.microsampler.working_directory
             )
@@ -164,6 +166,7 @@ class MicroSamplerStatsState(DeploymentState):
                 ], stdout=fp, stderr=sp.STDOUT,
                 env={
                     "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
+                    "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
                 },
                 cwd=self.config.microsampler.working_directory
             )

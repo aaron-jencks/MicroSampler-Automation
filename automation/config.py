@@ -30,6 +30,7 @@ class MicroSamplerConfig(BaseModel):
     working_directory: Path = Path("..")
     scripts_prefix: Path = Path("../scripts/")
     deployment_prefix: Path = Path("..")
+    riscv_root: Path = Path("/local/scratch/riscv")
     core_deployment_qsm: Path = Path("config/governor/microsampler_deployment_core_qsm.json")
 
 
