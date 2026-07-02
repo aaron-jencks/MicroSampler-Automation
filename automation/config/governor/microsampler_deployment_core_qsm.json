@@ -15,6 +15,12 @@
         "ctx": "$ctx"
       }
     },
+    "find_pcs": {
+      "model": "simulation.microsampler.core.states.MicroSamplerFindPCState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
     "simulation": {
       "model": "simulation.microsampler.core.states.MicroSamplerSimulationState",
       "kwargs": {
