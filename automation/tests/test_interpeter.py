@@ -1,9 +1,13 @@
+import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
 from config import parse_configs
 from interpreter.common import PythonInterpreter
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class InterpreterTestCase(unittest.TestCase):

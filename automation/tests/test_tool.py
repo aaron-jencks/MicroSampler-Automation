@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -6,6 +7,9 @@ from agents.defs import GovernorContext
 from config import parse_configs
 from reporting.logger import ReportLog
 from tools import MissingAttackAssemblyError, create_read_attack_assembly_tool
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class AttackAssemblyToolTestCase(unittest.TestCase):

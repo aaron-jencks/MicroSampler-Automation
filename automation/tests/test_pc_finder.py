@@ -1,7 +1,11 @@
+import logging
 from pathlib import Path
 import unittest
 
 from simulation.microsampler.pc_finder import find_pcs
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class PCFinderTestCase(unittest.TestCase):

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import unittest
 
@@ -9,6 +10,8 @@ from reporting.logger import ReportLog
 from simulation.ccopy.struct import RunConfiguration
 from tools import create_read_attack_assembly_tool
 
+
+logging.basicConfig(level=logging.DEBUG)
 
 ATTACK_SOURCE = Path("smoke_data/attack-current.c")
 
@@ -26,6 +29,20 @@ class BuildingDeploymentTestCase(unittest.TestCase):
 
         self.assertIsNone(sm.loop())
         return config
+
+    def test_bad_defines(self):
+        config = parse_configs([Path("config/ccopy_v3.json")])
+        config.harness.make_defines = []
+
+        attack_source = ATTACK_SOURCE.read_text()
+
+        sm = QSM.from_config_file(config.deployment_qsm_path, ctx=config)
+        sm.context.implementation = attack_source
+        sm.context.configuration = RunConfiguration(
+            1, 1, "unit-test", 42
+        )
+
+        self.assertIsNotNone(sm.loop())
 
     def test_deployment_copies_attack_assembly(self):
         config = self.deploy_attack_fixture()
