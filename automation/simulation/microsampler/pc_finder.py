@@ -14,7 +14,7 @@ class UUTPCAddresses:
 
 
 disassembly_regex = re.compile(r"\s*(?P<pc>[0-9a-f]+):\s+(?P<encoding>[0-9a-f]+)\s+(?P<opcode>[a-z]+)\s+(?P<operands>[0-9a-z,_.+-]+)(\s+<(?P<func>[a-z0-9_]+)>)?")
-jump_address_regex = re.compile(r"ra,(?P<address>[0-9a-f]+)")
+jump_address_regex = re.compile(r"(ra,)?(?P<address>[0-9a-f]+)")
 func_def_regex = re.compile(r"(?P<address>[0-9a-f]+)(\s+<(?P<func>[a-z0-9_]+)>)?:")
 
 
