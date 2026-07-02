@@ -34,7 +34,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         logger.debug("testing cross-compiler version")
         version_output = sp.run(["riscv64-unknown-elf-gcc", "--version"], capture_output=True, text=True)
         self.assertEqual(version_output.returncode, 0, "riscv64-unknown-elf-gcc did not print version successfully")
-        version_text = version_output.stdout.splitlines(keepends=False)[-1]
+        version_text = version_output.stderr.splitlines(keepends=False)[-1]
         self.assertEqual(version_text, "gcc version 15.2.0 (g5115c7e44)", "gcc version expected to be 15.2.0 (g5115c7e44), otherwise expected pc addresses won't match")
         logger.debug("testing cross-compiler features")
         with tempfile.TemporaryDirectory() as d:
