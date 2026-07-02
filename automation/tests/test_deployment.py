@@ -44,6 +44,10 @@ class BuildingDeploymentTestCase(unittest.TestCase):
 
         self.assertIsNotNone(sm.loop())
 
+        config.harness.make_defines = ["LOCAL_X86_BUILD=1"]
+
+        self.assertIsNotNone(sm.loop())
+
     def test_deployment_copies_attack_assembly(self):
         config = self.deploy_attack_fixture()
         assembly_path = config.harness.deployment_prefix / config.harness.assembly_file
