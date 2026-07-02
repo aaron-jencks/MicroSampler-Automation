@@ -21,9 +21,9 @@ class MicroSamplerCoreDeploymentState(StrEnum):
 
 @dataclass
 class PCFinderConfig:
-    obj_file: Path
-    roi_function: str
-    uut_function: str
+    obj_file: Path = Path("../apps/bearssl-0.6/microsampler_tests/build/v1.dump")
+    roi_function: str = "br_i31_modpow_v1"
+    uut_function: str = "br_ccopy_v1"
     warmup: bool = False
 
 
