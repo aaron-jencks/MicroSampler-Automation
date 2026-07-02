@@ -7,7 +7,8 @@ import unittest
 
 from config import parse_configs
 from simulation.microsampler.core.qsm import MicroSamplerCoreDeploymentMachine
-from simulation.microsampler.core.defs import MicroSamplerRunConfiguration, MicroSamplerCoreDeploymentState
+from simulation.microsampler.core.defs import MicroSamplerRunConfiguration, MicroSamplerCoreDeploymentState, \
+    PCFinderConfig
 from simulation.microsampler.core.states import MicroSamplerSubprocessState
 
 
@@ -73,6 +74,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         ]
         for ef in expected_files:
             self.assertIn(ef, file_names, f"expected output program {ef} not found")
+        self.assertTrue(Path("../apps/microbench/ct_ccopy/0xaa/ct_ccopy.dump").exists())
 
     def test_deploy_attack_fixture(self):
         config = parse_configs([])
@@ -83,7 +85,13 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         run_config = MicroSamplerRunConfiguration(
             suite="microbench",
             apps=["ct_ccopy"],
-            keys=["0xaa"]
+            keys=["0xaa"],
+            pc_config=PCFinderConfig(
+                obj_file=Path("../apps/microbench/ct_ccopy/0xaa/ct_ccopy.dump"),
+                roi_function="test_ccopy_loop",
+                uut_function="ccopy",
+                warmup=True
+            )
         )
         self.assertIsNone(sm.loop_w_config(run_config))
 

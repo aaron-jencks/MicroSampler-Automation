@@ -7,13 +7,24 @@ import pandas as pd
 from qstate import StateContext
 from tqdm import tqdm
 
+from simulation.microsampler.pc_finder import UUTPCAddresses
+
 
 class MicroSamplerCoreDeploymentState(StrEnum):
     LOOP_CHECK = "loop_check"
     PREPARE = "prepare"
+    FIND_PCS = "find_pcs"
     SIMULATION = "simulation"
     PARSE = "parse"
     STATS = "stats"
+
+
+@dataclass
+class PCFinderConfig:
+    obj_file: Path
+    roi_function: str
+    uut_function: str
+    warmup: bool = False
 
 
 @dataclass
@@ -26,6 +37,7 @@ class MicroSamplerRunConfiguration:
     window: int = 1
     design: str = "baseline"
     iterations: int = 100
+    pc_config: PCFinderConfig = field(default_factory=PCFinderConfig)
 
 
 @dataclass
@@ -34,6 +46,7 @@ class MicroSamplerContext:
     current_app_index: int = 0
     current_key_index: int = 0
     log_prefix: Optional[Path] = None
+    pc_addresses: Optional[UUTPCAddresses] = None
 
 
 @dataclass

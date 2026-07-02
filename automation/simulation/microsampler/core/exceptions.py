@@ -1,4 +1,11 @@
+from .defs import PCFinderConfig
 from ...exceptions import SubprocessError
+
+
+class MicroSamplerPCParsingError(Exception):
+    def __init__(self, cfg: PCFinderConfig):
+        self.cfg = cfg
+        super().__init__(f"parsing PCs failed for config: {cfg}")
 
 
 class MicroSamplerSimulationError(SubprocessError):

@@ -14,8 +14,10 @@ from tqdm import tqdm
 
 from config import BaseConfig
 from .defs import MicroSamplerCoreDeploymentState, MicroSamplerLoopContext
-from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError)
+from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError,
+                         MicroSamplerPCParsingError)
 from ...exceptions import SubprocessError
+from ..pc_finder import find_pcs
 from ...states import DeploymentState, SubprocessDeploymentState
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,19 @@ class MicroSamplerPrepareState(DeploymentState):
         key = ctx.context.run_config.keys[ctx.context.current_key_index]
         ctx.context.log_prefix = deployment_prefix / "logs" / ctx.context.run_config.design / ctx.context.run_config.suite / app / str(ctx.context.run_config.iterations) / key
         ctx.context.log_prefix.mkdir(parents=True, exist_ok=True)
+        self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.FIND_PCS)
+
+
+class MicroSamplerFindPCsState(DeploymentState):
+    def execute(self, ctx: MicroSamplerLoopContext):
+        logger.debug("starting microsampler PC finder step")
+        pc_config = ctx.context.run_config.pc_config
+        pcs = find_pcs(pc_config.obj_file, pc_config.roi_function, pc_config.uut_function, pc_config.warmup)
+        if pcs is None:
+            ctx.stop(MicroSamplerPCParsingError(pc_config))
+            return
+        logger.debug(f"found pcs: {pcs}")
+        ctx.context.pc_addresses = pcs
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.SIMULATION)
 
 
@@ -107,57 +122,66 @@ class MicroSamplerParseState(MicroSamplerSubprocessState):
         suite = ctx.context.run_config.suite
         app = ctx.context.run_config.apps[ctx.context.current_app_index]
 
-        if suite == "microbench":
-            if app == "ct_ccopy":
-                args.extend([
-                    "0x008000010e", "0x0080000124", "0x0080000196", "0x0080000130", "0x008000019a"
-                ])
-            else:
-                ctx.stop(ValueError(f"app {app} not supported"))
-                return
-        elif suite == "bearssl_synthetic":
-            if app == "v1":
-                args.extend([
-                    "0x0000010128", "0x000001012c", "0x00000106d2", "0x000001022c", "0x00000106d6"
-                ])
-            elif app == "v1_warmup":
-                args.extend([
-                    "0x000001014a", "0x000001014e", "0x00000106f4", "0x000001024e", "0x00000106f8"
-                ])
-            elif app == "v1_fence":
-                args.extend([
-                    "0x0000010128", "0x000001012c", "0x00000107a4", "0x000001022c", "0x00000107a8"
-                ])
-            elif app == "v2":
-                args.extend([
-                    "0x000001012c", "0x0000010130", "0x0000010882", "0x000001021a", "0x0000010886"
-                ])
-            elif app == "v2_warmup":
-                args.extend([
-                    "0x0000010152", "0x0000010156", "0x00000108a8", "0x0000010240", "0x00000108ac"
-                ])
-            elif app == "v2_fence":
-                args.extend([
-                    "0x000001012c", "0x0000010130", "0x000001095c", "0x000001021a", "0x0000010960"
-                ])
-            elif app == "v3":
-                args.extend([
-                    "0x0000010128", "0x000001012c", "0x000001052e", "0x000001023c", "0x0000010532"
-                ])
-            elif app == "v3_warmup":
-                args.extend([
-                    "0x000001014a", "0x000001014e", "0x0000010550", "0x000001025e", "0x0000010554"
-                ])
-            elif app == "v3_fence":
-                args.extend([
-                    "0x0000010128", "0x000001012c", "0x0000010600", "0x000001023c", "0x0000010604"
-                ])
-            else:
-                ctx.stop(ValueError(f"app {app} not supported"))
-                return
-        else:
-            ctx.stop(ValueError(f"suite {suite} not supported"))
-            return
+        pc_config = ctx.context.pc_addresses
+        args.extend([
+            f"0x{pc_config.roi_start:010x}",
+            f"0x{pc_config.roi_end:010x}",
+            f"0x{pc_config.calling_address:010x}",
+            f"0x{pc_config.start_address:010x}",
+            f"0x{pc_config.return_address:010x}"
+        ])
+
+        # if suite == "microbench":
+        #     if app == "ct_ccopy":
+        #         args.extend([
+        #             "0x008000010e", "0x0080000124", "0x0080000196", "0x0080000130", "0x008000019a"
+        #         ])
+        #     else:
+        #         ctx.stop(ValueError(f"app {app} not supported"))
+        #         return
+        # elif suite == "bearssl_synthetic":
+        #     if app == "v1":
+        #         args.extend([
+        #             "0x0000010128", "0x000001012c", "0x00000106d2", "0x000001022c", "0x00000106d6"
+        #         ])
+        #     elif app == "v1_warmup":
+        #         args.extend([
+        #             "0x000001014a", "0x000001014e", "0x00000106f4", "0x000001024e", "0x00000106f8"
+        #         ])
+        #     elif app == "v1_fence":
+        #         args.extend([
+        #             "0x0000010128", "0x000001012c", "0x00000107a4", "0x000001022c", "0x00000107a8"
+        #         ])
+        #     elif app == "v2":
+        #         args.extend([
+        #             "0x000001012c", "0x0000010130", "0x0000010882", "0x000001021a", "0x0000010886"
+        #         ])
+        #     elif app == "v2_warmup":
+        #         args.extend([
+        #             "0x0000010152", "0x0000010156", "0x00000108a8", "0x0000010240", "0x00000108ac"
+        #         ])
+        #     elif app == "v2_fence":
+        #         args.extend([
+        #             "0x000001012c", "0x0000010130", "0x000001095c", "0x000001021a", "0x0000010960"
+        #         ])
+        #     elif app == "v3":
+        #         args.extend([
+        #             "0x0000010128", "0x000001012c", "0x000001052e", "0x000001023c", "0x0000010532"
+        #         ])
+        #     elif app == "v3_warmup":
+        #         args.extend([
+        #             "0x000001014a", "0x000001014e", "0x0000010550", "0x000001025e", "0x0000010554"
+        #         ])
+        #     elif app == "v3_fence":
+        #         args.extend([
+        #             "0x0000010128", "0x000001012c", "0x0000010600", "0x000001023c", "0x0000010604"
+        #         ])
+        #     else:
+        #         ctx.stop(ValueError(f"app {app} not supported"))
+        #         return
+        # else:
+        #     ctx.stop(ValueError(f"suite {suite} not supported"))
+        #     return
 
         args.extend([
             suite, app, str(ctx.context.run_config.iterations), ctx.context.run_config.design,
