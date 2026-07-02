@@ -42,8 +42,10 @@ class CCopyCompileHarness(DeploymentState):
         logger.info(f"Fetching UUT source code...")
         shutil.copy(self.config.harness.uut.prefix / self.config.harness.uut.file, harness_prefix)
         logger.info("Building harness...")
+        args = ["make", "clean", "harness", *self.config.harness.make_defines]
+        logger.debug(f"running make with args: {args}")
         make_output = sp.run(
-            ["make", "clean", "harness", *self.config.harness.make_defines],
+            args,
             capture_output=True,
             cwd=harness_prefix,
         )
