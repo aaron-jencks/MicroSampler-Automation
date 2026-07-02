@@ -7,4 +7,5 @@
 **/deploy/
 **/*.log
 **/harness
+**/harness/uut.c
 **/local.json

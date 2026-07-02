@@ -2,7 +2,7 @@ CC ?= cc
 CFLAGS ?= -O2
 BEARSSL_SRC_ROOT ?= ../../../../../apps/bearssl-0.6/src
 BEARSSL_INC_ROOT ?= ../../../../../apps/bearssl-0.6/inc
-CPPFLAGS += -DLOCAL_X86_BUILD -I. -I$(BEARSSL_SRC_ROOT) -I$(BEARSSL_INC_ROOT)
+CPPFLAGS += -I. -I$(BEARSSL_SRC_ROOT) -I$(BEARSSL_INC_ROOT)
 LDFLAGS ?=
 LDLIBS ?=-lpthread -lm
 
@@ -14,13 +14,26 @@ ATTACK_ASMFLAGS ?= -S -fverbose-asm -masm=intel
 
 SOURCES=codec/ccopy.c int/i31_tmont.c int/i31_montmul.c int/i31_modpow.c int/i31_ninv31.c int/i31_muladd.c util/util.c int/i31_sub.c int/i31_add.c int/i32_div32.c
 UUT_SOURCES := $(addprefix $(BEARSSL_SRC_ROOT)/,$(SOURCES))
-LOCAL_SOURCES := context.c timing.c wrapper.c fileio.c encryption_util.c error.c
+LOCAL_SOURCES := context.c timing.c wrapper.c fileio.c encryption_util.c error.c uut.c
 HARNESS_SOURCES := harness.c $(LOCAL_SOURCES) $(ATTACK_IMPL) $(UUT_SOURCES)
 
 HARNESS_OBJECTS := \
 	$(addprefix $(BUILD_DIR)/,$(LOCAL_SOURCES:.c=.o)) \
 	$(BUILD_DIR)/$(ATTACK_IMPL:.c=.o) \
 	$(BUILD_DIR)/harness.o
+
+ifdef DEBUG
+CFLAGS += -g -DDEBUG
+CPPFLAGS += -g -DDEBUG
+endif
+
+ifdef LOCAL
+CPPFLAGS += -DLOCAL_X86_BUILD
+endif
+
+ifdef NO_TIMING
+CFLAGS += -DNO_TIMING
+endif
 
 .PHONY: all clean wrapper
 
@@ -37,7 +50,10 @@ $(BUILD_DIR):
 $(BUILD_DIR)/harness.o: harness.c context.h skeleton.h wrapper.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/wrapper.o: wrapper.c wrapper.h context.h timing.h $(UUT_SOURCES) | $(BUILD_DIR)
+$(BUILD_DIR)/wrapper.o: wrapper.c wrapper.h context.h timing.h uut.h $(UUT_SOURCES) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/uut.o: uut.c uut.h context.h $(UUT_SOURCES) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/context.o: context.c context.h timing.h encryption_util.h error.h | $(BUILD_DIR)

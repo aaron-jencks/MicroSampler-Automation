@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 class UUTConfig(BaseModel):
     prefix: Path = Path("bearssl-0.6/ccopy/v2/uut/")
-    file: str = "wrapper.c"
+    file: str = "uut.c"
 
 
 class HarnessConfig(BaseModel):

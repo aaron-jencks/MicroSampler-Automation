@@ -18,6 +18,7 @@ void destroy_trial_context(trial_context_t ctx) {
     free(ctx.data_len);
 }
 
+#ifndef NO_TIMING
 void generate_json_output(global_context_t ctx, uint64_t* durations, uint32_t* keys) {
     printf("{\n\t\"iterations\": %zd,\n\t\"seed\": %u,\n\t\"data\": [", ctx.iterations, ctx.random_seed);
     for(size_t i = 0; i < ctx.iterations; i++) {
@@ -32,6 +33,7 @@ void generate_json_output(global_context_t ctx, uint64_t* durations, uint32_t* k
     }
     printf("\n\t]\n}\n");
 }
+#endif
 
 int main(int argc, char** argv) {
     size_t iterations = 1;
@@ -47,7 +49,9 @@ int main(int argc, char** argv) {
     srand(seed);
 
     size_t total_bit_iterations = iterations * 32;
+#ifndef NO_TIMING
     uint64_t* iteration_durations = malloc(sizeof(uint64_t) * total_bit_iterations);
+#endif
     uint32_t* iteration_keys = malloc(sizeof(uint32_t) * iterations);
 
     global_context_t global_context = create_global_context(iterations, seed);
@@ -64,7 +68,11 @@ int main(int argc, char** argv) {
             );
             trial_inner_setup(&run_context, &trial_context);
             helper_start(&run_context);
+#ifdef NO_TIMING
+            call_uut(bit, trial_context);
+#else
             iteration_durations[i*32+ki] = timed_call_uut(bit, trial_context);
+#endif
             helper_stop(&run_context);
             destroy_trial_context(trial_context);
         }
@@ -73,5 +81,7 @@ int main(int argc, char** argv) {
 
     global_teardown(&global_context);
 
+#ifndef NO_TIMING
     generate_json_output(global_context, iteration_durations, iteration_keys);
+#endif
 }
