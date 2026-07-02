@@ -5,6 +5,7 @@ import unittest
 from simulation.microsampler.pc_finder import find_pcs, UUTPCAddresses
 
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class PCFinderTestCase(unittest.TestCase):
@@ -29,23 +30,29 @@ class PCFinderTestCase(unittest.TestCase):
         )
         self.run_testcase(obj_file, "test_ccopy_loop", "ccopy", expected_pcs, True)
 
-    def test_prebuild_testcases(self):
+    def test_prebuilt_testcases(self):
         prefix = Path("../apps/bearssl-0.6/microsampler_tests/build")
         tcs = [
-            ("v1.dump", "br_i31_modpow_v1", "br_ccopy_v1", " 0x0000010128 0x000001012c 0x00000106d2 0x000001022c 0x00000106d6 ", False),
-            ("v1_warmup.dump", "br_i31_modpow_v1", "br_ccopy_v1", " 0x000001014a 0x000001014e 0x00000106f4 0x000001024e 0x00000106f8 ", True),
-            ("v1_fence.dump", "br_i31_modpow_v1_fence", "br_ccopy_v1", " 0x0000010128 0x000001012c 0x00000107a4 0x000001022c 0x00000107a8 ", False)
+            ("v1.dump", "br_i31_modpow_v1", "br_ccopy_v1", [65968, 65972, 67396, 66220, 67400], False),
+            ("v1_warmup.dump", "br_i31_modpow_v1", "br_ccopy_v1", [66004, 66008, 67432, 66256, 67436], True),
+            ("v1_fence.dump", "br_i31_modpow_v1_fence", "br_ccopy_v1", [65968, 65972, 67606, 66220, 67610], False),
+            ("v2.dump", "br_i31_modpow_v2", "br_ccopy_v2", [65972, 65976, 67828, 66202, 67832], False),
+            ("v2_warmup.dump", "br_i31_modpow_v2", "br_ccopy_v2", [66012, 66016, 67868, 66242, 67872], True),
+            ("v2_fence.dump", "br_i31_modpow_v2_fence", "br_ccopy_v2", [65972, 65976, 68046, 66202, 68050], False),
+            ("v3.dump", "br_i31_modpow", "br_ccopy", [65968, 65972, 66976, 66236, 66980], False),
+            ("v3_warmup.dump", "br_i31_modpow", "br_ccopy", [66004, 66008, 67012, 66272, 67016], True),
+            ("v3_fence.dump", "br_i31_modpow_fence", "br_ccopy", [65968, 65972, 67186, 66236, 67190], False)
         ]
-        for obj_file, roi_func, uut, pcs_string, warmup in tcs:
-            parsed_pcs = [int(pc, 16) for pc in pcs_string.strip().split(" ")]
-            self.assertEqual(len(parsed_pcs), 5, "expected 5 pcs in the test case definition")
+        for obj_file, roi_func, uut, pcs_ints, warmup in tcs:
+            self.assertEqual(len(pcs_ints), 5, "expected 5 pcs in the test case definition")
             expected_pcs = UUTPCAddresses(
-                roi_start=parsed_pcs[0],
-                roi_end=parsed_pcs[1],
-                calling_address=parsed_pcs[2],
-                start_address=parsed_pcs[3],
-                return_address=parsed_pcs[4],
+                roi_start=pcs_ints[0],
+                roi_end=pcs_ints[1],
+                calling_address=pcs_ints[2],
+                start_address=pcs_ints[3],
+                return_address=pcs_ints[4],
             )
+            logger.debug(f"testing dump file: {obj_file}")
             self.run_testcase(prefix / obj_file, roi_func, uut, expected_pcs, warmup)
 
 
