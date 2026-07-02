@@ -23,6 +23,7 @@ class HarnessConfig(BaseModel):
         "error.h",
         "context.h"
     ]
+    make_defines: List[str] = ["LOCAL_X86_BUILD=1"]
     uut: UUTConfig = UUTConfig()
 
 

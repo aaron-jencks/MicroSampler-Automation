@@ -43,7 +43,7 @@ class CCopyCompileHarness(DeploymentState):
         shutil.copy(self.config.harness.uut.prefix / self.config.harness.uut.file, harness_prefix)
         logger.info("Building harness...")
         make_output = sp.run(
-            ["make", "clean", "harness"],
+            ["make", "clean", "harness", *self.config.harness.make_defines],
             capture_output=True,
             cwd=harness_prefix,
         )
