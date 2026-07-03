@@ -1,10 +1,10 @@
 # MicroSampler Automation
 
-This subfolder for MicroSampler looks at adding LLM agents into the loop of side-channel analysis using the MicroSampler pipeline. The current implementation sets up a toy example that uses a series of LLM agents to expose timing leakage in a series of constant-time copy examples. The way that the loop works is like this:
+This subfolder for MicroSampler adds LLM agents into the loop of side-channel analysis using the MicroSampler pipeline. The current implementation uses a series of LLM agents to search for timing leakage in constant-time copy examples. The high-level loop works like this:
 
 ![flow loop](docs/loop.png)
 
-Development is currently under way to integrate the existing MicroSampler pipeline into this loop under the analysis and simulation steps. Currently, the core pipeline has been extracted into a python package in [simulation/microsampler/core](simulation/microsampler/core). This implements a queued state machine, which can replicate the MicroSampler deployment process exactly, including being able to automatically find the PC addresses of the target functions and regions of interest within the object dumps of the test-cases.
+The active orchestration and deployment paths use queued state machines from the `qstate` package. The governor loop, the local ccopy deployment flow, and the core MicroSampler deployment flow are all described by QSM JSON config files and executed by Python state classes. The MicroSampler core pipeline lives in [simulation/microsampler/core](simulation/microsampler/core); it can run the existing deployment process and automatically find the PC addresses of target functions and regions of interest from test-case object dumps.
 
 ## Next Steps
 
@@ -126,28 +126,84 @@ Once the field is part of `BaseConfig`, an override file can set it:
 
 Code that receives the config object can then use `ctx.my_experiment.max_trials` instead of manually parsing dictionaries. This is the preferred pattern for reusable modules because it keeps config validation close to the interface that consumes it.
 
+### Queued State Machines and qstate
+
+This project uses [`qstate`](https://pypi.org/project/qstate/) for queued state machines. The package source and docs are in the [`qsm` GitHub repository](https://github.com/aaron-jencks/qsm), with the JSON config format documented in [`docs/config.md`](https://github.com/aaron-jencks/qsm/blob/main/docs/config.md). The dependency is declared in `requirements.txt` as `qstate>=1.3.0`.
+
+A queued state machine is a workflow runner where each state performs one unit of work and schedules follow-up work by appending state names to a queue. States receive a `StateContext` containing:
+
+- `ctx.queue`: the queue of state names to execute next.
+- `ctx.context`: the shared run context for the machine.
+- `ctx.stop(result)`: a way to stop the loop and return an error or result to the caller.
+
+This pattern is useful here because agent orchestration and deployment both need conditional control flow. For example, a failed ccopy build schedules another implementation attempt, while a successful simulation schedules analysis.
+
+The governor and deployment machines are loaded from JSON config files:
+
+```python
+from qstate import QSM
+
+
+deployment_controller = QSM.from_config_file(
+    ctx.deployment_qsm_path,
+    ctx=ctx,
+)
+
+governor = QSM.from_config_file(
+    ctx.governor_qsm_path,
+    ctx=ctx,
+    deployment_controller=deployment_controller,
+    # other runtime services are injected here too
+)
+```
+
+Each configured state is a normal Python class:
+
+```python
+from qstate import State, StateContext
+
+
+class AnalysisState(State):
+    def execute(self, ctx: StateContext):
+        ctx.context.current_stats = generate_statistical_analysis(
+            ctx.context.current_results
+        )
+        ctx.queue.append("summarization")
+```
+
+The main QSM configs to read first are:
+
+- [config/governor/ccopy_qsm.json](config/governor/ccopy_qsm.json): the agent/governor loop.
+- [config/governor/ccopy_deployment_qsm.json](config/governor/ccopy_deployment_qsm.json): the local ccopy harness deployment flow.
+- [config/governor/microsampler_deployment_core_qsm.json](config/governor/microsampler_deployment_core_qsm.json): the core MicroSampler deployment flow.
+
 ### Governor
 
-`governor.py` is the orchestration entrypoint. It builds the report log, template controller, deployment controller, and agents, then runs a queued state machine using QSM.
+`governor.py` is the orchestration entrypoint. It builds the report log, template controller, deployment QSM, agent tool registry, and agents, then loads the governor QSM from `ctx.governor_qsm_path`.
 
-Each state owns one unit of work. Agent states render a prompt, call an LLM-backed `Agent`, store the structured response, log an event, and append the next state name to the queue. Non-agent states run simulation, generate statistics, or conclude the run. Shared run data lives in `GovernorContext`, so states communicate by updating the context rather than passing large argument lists through every call.
+Each state owns one unit of work. Agent states render a prompt, call an LLM-backed `Agent`, store the structured response, log an event, and append the next state name to the queue. Non-agent states run deployment/simulation, generate statistics, or conclude the run. Shared run data lives in `GovernorContext`, so states communicate by updating the context rather than passing large argument lists through every call.
 
-The diagram above shows the current flow. The state map is currently wired in Python, but this is expected to evolve; a future version may load the state machine from YAML. Treat the current Python state-map wiring as the active implementation, not a permanent public API.
+The current governor flow is configured in [config/governor/ccopy_qsm.json](config/governor/ccopy_qsm.json):
+
+```text
+hypothesis -> implementation -> simulation -> analysis -> summarization -> hypothesis
+```
+
+The loop reaches `conclusion` when analysis crosses the configured score threshold. If deployment reports an implementation error, the simulation state records feedback and schedules another `implementation` state instead of continuing to analysis.
 
 ### Deployments
 
-Deployment modules are responsible for turning generated code into timing results. The common interface is `DeploymentController` in `simulation/api/common.py`:
+Deployment modules are responsible for turning generated code and run configuration into timing results. The current deployment interface is a `qstate.QSM`. `governor.py` loads the active deployment machine from `ctx.deployment_qsm_path` and passes it into the governor's simulation state.
 
-```python
-class DeploymentController(ABC):
-    @abstractmethod
-    def deploy_test_case(self, code: str, **kwargs) -> pd.DataFrame:
-        pass
+For the local ccopy examples, [config/governor/ccopy_deployment_qsm.json](config/governor/ccopy_deployment_qsm.json) runs this sequence:
+
+```text
+verify -> write -> compile -> prepare -> run_full -> run_loop -> tabulate
 ```
 
-The governor calls `deploy_test_case` from the simulation state. For the ccopy examples, `CCopyDeploymentController` validates and writes the generated `attack.c`, builds the harness, runs the configured number of harness processes, parses the JSON timing output, and returns a dataframe.
+The ccopy deployment states validate generated includes, write the generated `attack.c`, build the harness, stage the executable and assembly, run the configured number of harness processes, parse the JSON timing output, and store the final dataframe on the deployment QSM context.
 
-The ccopy harness also emits compiler assembly for the deployed attack. The `attack.o` Makefile rule compiles `build/attack.s` with the same `CFLAGS` and `CPPFLAGS` used for `attack.o`, plus assembly-only flags. During deployment, `deploy_harness` copies that file to `ctx.harness.deployment_prefix / ctx.harness.assembly_file`, beside the deployed harness executable. This gives later agent states a stable read-only view of the generated attack assembly for the same build that was run.
+The ccopy harness also emits compiler assembly for the deployed attack. The `attack.o` Makefile rule compiles `build/attack.s` with the same `CFLAGS` and `CPPFLAGS` used for `attack.o`, plus assembly-only flags. During the `prepare` deployment state, that file is copied to `ctx.harness.deployment_prefix / ctx.harness.assembly_file`, beside the deployed harness executable. This gives later agent states a stable read-only view of the generated attack assembly for the same build that was run.
 
 The statistics pipeline expects timing data with columns like:
 
@@ -155,11 +211,16 @@ The statistics pipeline expects timing data with columns like:
 run_name, random_seed, global_iteration, inner_iteration, bit, class, key, duration
 ```
 
-To support a new target or benchmark style, create a new `DeploymentController` subclass that accepts the generated source code, performs whatever build/deploy/run steps are needed, and returns a dataframe with the columns your analysis code expects. Then wire that controller into `governor.py` in place of `CCopyDeploymentController`.
+The core MicroSampler deployment machine is configured in [config/governor/microsampler_deployment_core_qsm.json](config/governor/microsampler_deployment_core_qsm.json). It prepares log directories, finds PC addresses from object dumps, runs the MicroSampler simulation script, parses results, runs statistics, and loops over configured apps and keys.
 
-The lower-level helpers in `simulation/building.py` and `simulation/utils.py` are reusable when the target follows the same pattern: write an attack source file, run `make`, execute a harness binary, and parse stdout.
+To support a new target or benchmark style, add:
 
-A future version may also migrate this implementation to a state machine along with a YAML loading implementation, treat the current Python class heirarchy as the active implementation not a permanent public API.
+1. A context dataclass for the deployment data that must persist across states.
+2. State classes for build, staging, simulation, parsing, and error handling.
+3. A QSM JSON config that maps state names to those classes.
+4. A config override that points `deployment_qsm_path` at the new QSM file.
+
+The lower-level helpers in `simulation/states.py` are reusable when the target follows a subprocess-heavy pattern. `DeploymentState` gives deployment states access to `BaseConfig`, and `SubprocessDeploymentState` provides checked subprocess execution that can stop the QSM with structured deployment errors.
 
 ### Prompt Templates
 
@@ -204,7 +265,7 @@ System prompts are rendered when agents are created. Input prompts are rendered 
 
 ### Agents
 
-`prompting/client.py` defines the `Agent` wrapper around LangChain's `create_agent` and `ChatOpenAI`. Each agent has:
+`prompting/client.py` defines the `Agent` wrapper around LangChain's `create_agent` and `ChatOpenAI`. Agents are invoked by governor QSM states; the agent wrapper handles model calls, while the state machine decides when each agent runs and what happens with its output. Each agent has:
 
 - A model name from config.
 - A rendered system prompt.
@@ -228,7 +289,7 @@ class Review(BaseModel):
     recommendation: str
 ```
 
-Then create prompt templates for it, add a config entry with its model, template paths, and optional runtime tools, and instantiate it with `create_agent_from_config`:
+Then create prompt templates for it, add a config entry with its model, template paths, and optional runtime tools, and instantiate it with `create_agent_from_config` in `governor.py`:
 
 ```python
 review_agent = create_agent_from_config(
@@ -240,7 +301,7 @@ review_agent = create_agent_from_config(
 )
 ```
 
-In normal use, the new agent also needs a state that renders its input prompt, calls `agent.prompt_model`, stores the structured response in `GovernorContext`, logs a report event, and appends the next state to the queue. This keeps the agent interface reusable while letting the state machine decide when and why the agent runs.
+In normal use, the new agent also needs a state that renders its input prompt, calls `agent.prompt_model`, stores the structured response in `GovernorContext`, logs a report event, and appends the next state to the queue. Add that state to the governor QSM JSON config so it becomes part of the active workflow. This keeps the agent interface reusable while letting the state machine decide when and why the agent runs.
 
 Model choice and prompt paths are config-driven, so collaborators can iterate on prompt engineering without rewriting the agent wrapper.
 
