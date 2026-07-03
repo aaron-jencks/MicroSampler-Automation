@@ -4,21 +4,82 @@ This subfolder for MicroSampler looks at adding LLM agents into the loop of side
 
 ![flow loop](docs/loop.png)
 
+Development is currently under way to integrate the existing MicroSampler pipeline into this loop under the analysis and simulation steps. Currently, the core pipeline has been extracted into a python package in [simulation/microsampler/core](simulation/microsampler/core). This implements a queued state machine, which can replicate the MicroSampler deployment process exactly, including being able to automatically find the PC addresses of the target functions and regions of interest within the object dumps of the test-cases.
+
+## Next Steps
+
+Work remains to be able to deploy custom test-cases to the core MicroSampler pipeline, as much of it relies on pre-made files and hard-coded values. The next steps are to utilize recent changes in [bearssl-0.6/ccopy/v2/harness](bearssl-0.6/ccopy/v2/harness) to enable running without the monotonic timing code so that the harness can be deployed directly to MicroSampler's simulator without having to change the code interface exposed to the agents. The [makefile](bearssl-0.6/ccopy/v2/harness/Makefile) needs to be modified to enable compiling with a cross-compiler instead of the system gcc, as well as generate object dump files. Finally code needs to be written to utilize that new make version instead of the default one. 
+
+Work has been started on making a state machine that wraps the core MicroSampler deployment state machine, this keeps the core deployment testable, while also allowing us to write custom test-cases.
+
 ## Setup
 
-Install the Python dependencies with:
+### Development Server Setup
 
+The development server that we use contains most of the code and infrastructure necessary to get this up and running. To do this you need to log into the server, then do the following:
+
+1. `cd` into `/local/scratch/{YOUR USERNAME}`
+2. Run `source /local/scratch/scripts/microsampler-env.sh`
+3. Verify that `which riscv64-unknown-elf-gcc` outputs `/local/scratch/riscv/bin/riscv64-unknown-elf-gcc`
+4. Clone this repo **make sure that you are on the right branch**
+5. `cd` into the repo location
+6. Build the pre-built test-cases, like described in the root README, by running `make` in `apps/bearssl-0.6/microsampler_tests` to compile all the tests.
+7. Make a python environment for yourself, I would suggest in `/local/scratch/{YOUR USERNAME}/venvs`. You can do this by running `python -m virtualenv /local/scratch/{YOUR USERNAME}/venvs/microsampler`. **Note:** If you do use my suggested directory location, you'll need to make the `venvs` directory first with `mkdir -p /local/scratch/{YOUR USERNAME}/venvs`.
+8. Activate your new python environment with `source {VENV LOCATION}/bin/activate` where `{VENV LOCATION}` would be `/local/scratch/{YOUR USERNAME}/venvs/microsampler` if you used the example above.
+9. Install the project dependencies with `pip install -r requirements.txt`
+10. The setup for running the automation code on the development server is complete, you should be ready to verify your installation and start developing! You can skip to the **Verifying The System Setup** section next.
+
+### Local Setup
+
+If you want to set this up on your local machine, then you'll need to do additional setup.
+
+1. You need a specific version of the `riscv64-unknown-elf-gcc`, specifically version 15.2.0 and it needs to have the `fence` instruction enabled.
+2. Make sure that your environment variables are correctly set, I use the following script to make sure that everything is set correctly, these values will change depending on where you built your cross-compiler:
 ```bash
-pip install -r requirements.txt
+export RISCV="${RISCV:-/local/scratch/riscv}"
+export RISCV_ARCH="${RISCV_ARCH:-rv64gc_zifencei}"
+export RISCV_ABI="${RISCV_ABI:-lp64d}"
+export MICRO_SAMPLER_TOOLCHAIN="${MICRO_SAMPLER_TOOLCHAIN:-riscv64-unknown-elf}"
+export PKG_CONFIG_PATH="${RISCV}/lib/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}"
+export PATH="${RISCV}/bin:${PATH}:${RISCV}/riscv64-unknown-elf/bin"
 ```
 
+After this, the core setup remains the same:
+
+1. Clone this repo **make sure that you are on the right branch**
+2. `cd` into the repo location
+3. Build the pre-built test-cases, like described in the root README, by running `make` in `apps/bearssl-0.6/microsampler_tests` to compile all the tests.
+4. Make a python environment for yourself, it should be Python 3.10+. Contrary to what the root README says.
+5. Activate your new python environment.
+6. Install the project dependencies with `pip install -r requirements.txt`
+7. The setup should be complete, verify your system using the next section.
+
+### Verifying The System Setup
+
+If you have done everything correctly so far, then you can run `python -m unittest -s tests` from within the `automation` folder. It will check that you have the repo cloned correctly, that you have the correct cross-compiler version, the correct capabilities installed in the cross-compiler, and that the MicroSampler setup can run with your existing setup.
+
+#### Common Issues
+
+* **`unittest` completes successfully, but found no tests:** Either you have not checked out the correct branch of the repo, or you ran the tests from a directory different from the `automation` directory.
+* **The cross-compiler version does not match:** If using the development server, make sure that you run `source /local/scratch/scripts/microsampler-env.sh` every time that you login. Otherwise, you may be using a system installed cross-compiler, but the unit tests require a very specific version of gcc, otherwise the PC addresses used to test the pc_finder module will fail. If you know that your compiler would work otherwise (other versions should work, they may just result in different binary layouts, but the pc_finder can compensate for this), then you can ignore this issue.
+* **The `fence` instruction is required for the cross-compiler:** If using the development server, make sure that you run `source /local/scratch/scripts/microsampler-env.sh` every time that you login. Otherwise, this means that your riscv cross-compiler does not have the `fence` instruction enabled, this is required if you want to replicate the pre-built results, which specifically use the `fence` instruction. If you don't intend to use the existing test-cases, then you can ignore this.
+* **The Core MicroSampler Deployment State Machine did not return None:** This means that either one of the 2 directly preceding issues were ignored, or the cross-compiler is not setup correctly, resulting in either a build error, a simulation error, or something else. Verify that you have followed the setup directions exactly so that your environment is identical. If using the development server, make sure that you run `source /local/scratch/scripts/microsampler-env.sh` every time that you login.
+
+## Quickstart
+
 Then run the default ccopy example with:
+
+```bash
+python governor.py
+```
+
+The built-in defaults live in `config.py`. JSON config files are cascading overrides, so an experiment config only needs to define the fields that differ from the defaults. You can override the default `ccopy_v2` config using the `--configs` flag, like this:
 
 ```bash
 python governor.py --configs config/ccopy_v3.json
 ```
 
-The built-in defaults live in `config.py`. JSON config files are cascading overrides, so an experiment config only needs to define the fields that differ from the defaults.
+**Note:** V3 is considered to be actually constant-time, so the program may never terminate, you can use the default V2 example above to show that the program terminates correctly.
 
 ## Important Components
 
