@@ -36,13 +36,13 @@ for line in fin:
         if marker_reached:
             if opcode == "jal":
                 if func == sys.argv[2]:
-                    pc_lst.append(pc)
-                    pc_lst.append(hex(int(pc, 16) + 4)[2:])
+                    pc_lst.append(int(pc, 16))
+                    pc_lst.append(int(pc, 16) + 4)
                 elif funcdef_reached and func == sys.argv[3]:
-                    pc_lst.append(pc)
+                    pc_lst.append(int(pc, 16))
                     addr = re.search(jmpAddrRegex, operands).group(2)
-                    pc_lst.append(addr)
-                    pc_lst.append(hex(int(pc, 16) + 4)[2:])
+                    pc_lst.append(int(addr, 16))
+                    pc_lst.append(int(pc, 16) + 4)
                     break
 
     elif (match := re.search(funcDefRegex, line)):
@@ -51,5 +51,5 @@ for line in fin:
             funcdef_reached = True
     
 
-print(' '.join(['0x00000' + s for s in pc_lst]))
+print(' '.join([f"0x{s:010x}" for s in pc_lst]))
 
