@@ -24,7 +24,7 @@ The development server that we use contains most of the code and infrastructure 
 4. Clone this repo **make sure that you are on the right branch**
 5. `cd` into the repo location
 6. Build the pre-built test-cases, like described in the root README, by running `make` in `apps/bearssl-0.6/microsampler_tests` to compile all the tests.
-7. Make a python environment for yourself, I would suggest in `/local/scratch/{YOUR USERNAME}/venvs`. You can do this by running `python -m virtualenv /local/scratch/{YOUR USERNAME}/venvs/microsampler`. **Note:** If you do use my suggested directory location, you'll need to make the `venvs` directory first with `mkdir -p /local/scratch/{YOUR USERNAME}/venvs`.
+7. Make a python environment for yourself, I would suggest in `/local/scratch/{YOUR USERNAME}/venvs`. You can do this by running `python3.11 -m virtualenv /local/scratch/{YOUR USERNAME}/venvs/microsampler`. **Note:** If you do use my suggested directory location, you'll need to make the `venvs` directory first with `mkdir -p /local/scratch/{YOUR USERNAME}/venvs`. **NOTE:** The python version is VERY important, do not use just `python` you MUST use `python3.11`.
 8. Activate your new python environment with `source {VENV LOCATION}/bin/activate` where `{VENV LOCATION}` would be `/local/scratch/{YOUR USERNAME}/venvs/microsampler` if you used the example above.
 9. Install the project dependencies with `pip install -r requirements.txt`
 10. The setup for running the automation code on the development server is complete, you should be ready to verify your installation and start developing! You can skip to the **Verifying The System Setup** section next.
@@ -34,7 +34,8 @@ The development server that we use contains most of the code and infrastructure 
 If you want to set this up on your local machine, then you'll need to do additional setup.
 
 1. You need a specific version of the `riscv64-unknown-elf-gcc`, specifically version 15.2.0 and it needs to have the `fence` instruction enabled.
-2. Make sure that your environment variables are correctly set, I use the following script to make sure that everything is set correctly, these values will change depending on where you built your cross-compiler:
+2. Make sure that you have a python interpreter >=3.11.
+3. Make sure that your environment variables are correctly set, I use the following script to make sure that everything is set correctly, these values will change depending on where you built your cross-compiler:
 ```bash
 export RISCV="${RISCV:-/local/scratch/riscv}"
 export RISCV_ARCH="${RISCV_ARCH:-rv64gc_zifencei}"
@@ -49,7 +50,7 @@ After this, the core setup remains the same:
 1. Clone this repo **make sure that you are on the right branch**
 2. `cd` into the repo location
 3. Build the pre-built test-cases, like described in the root README, by running `make` in `apps/bearssl-0.6/microsampler_tests` to compile all the tests.
-4. Make a python environment for yourself, it should be Python 3.10+. Contrary to what the root README says.
+4. Make a python environment for yourself, it should be Python 3.11+. Contrary to what the root README says.
 5. Activate your new python environment.
 6. Install the project dependencies with `pip install -r requirements.txt`
 7. The setup should be complete, verify your system using the next section.
