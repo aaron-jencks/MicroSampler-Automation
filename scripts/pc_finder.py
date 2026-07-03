@@ -9,9 +9,9 @@ arg4: [warmup]?
 
 """
 
-dissasmRegex = re.compile('([0-9a-f]+):\s+([0-9a-f]+)\s+([a-z]+)\s+([a-z0-9\,]+)(\s+<([a-z0-9_]+)>)?')
-jmpAddrRegex = re.compile('(ra,)?([0-9a-f]+)')
-funcDefRegex = re.compile('([0-9a-f]+)(\s+<([a-z0-9_]+)>)?:')
+dissasmRegex = re.compile(r'([0-9a-f]+):\s+([0-9a-f]+)\s+([a-z]+)\s+([a-z0-9,]+)(\s+<([a-z0-9_]+)>)?')
+jmpAddrRegex = re.compile(r'(ra,)?([0-9a-f]+)')
+funcDefRegex = re.compile(r'([0-9a-f]+)(\s+<([a-z0-9_]+)>)?:')
 
 fin = open(sys.argv[1], 'r')
 
