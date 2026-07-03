@@ -10,7 +10,7 @@ arg4: [warmup]?
 """
 
 dissasmRegex = re.compile('([0-9a-f]+):\s+([0-9a-f]+)\s+([a-z]+)\s+([a-z0-9\,]+)(\s+<([a-z0-9_]+)>)?')
-jmpAddrRegex = re.compile('ra,([0-9a-f]+)')
+jmpAddrRegex = re.compile('(ra,)?([0-9a-f]+)')
 funcDefRegex = re.compile('([0-9a-f]+)(\s+<([a-z0-9_]+)>)?:')
 
 fin = open(sys.argv[1], 'r')
@@ -40,7 +40,7 @@ for line in fin:
                     pc_lst.append(hex(int(pc, 16) + 4)[2:])
                 elif funcdef_reached and func == sys.argv[3]:
                     pc_lst.append(pc)
-                    addr = re.search(jmpAddrRegex, operands).group(1)
+                    addr = re.search(jmpAddrRegex, operands).group(2)
                     pc_lst.append(addr)
                     pc_lst.append(hex(int(pc, 16) + 4)[2:])
                     break
