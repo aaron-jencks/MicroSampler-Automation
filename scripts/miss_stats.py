@@ -7,8 +7,8 @@ appname = sys.argv[1]
 keyname = sys.argv[2]
 uarch = sys.argv[3]
 suite = sys.argv[4]
-iters = 100
-window = 1
+iters = int(sys.argv[5])
+window = int(sys.argv[6])
 
 titles = ['Iteration Latency', 'DTLB', 'DCache']
 fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(12,8))
@@ -16,8 +16,8 @@ fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(12,8))
 loop_timing = {'0': list(), '1': list()}
 loop_dtlb_misses = {'0': list(), '1': list()}
 loop_dcache_misses = {'0': list(), '1': list()}
-instructions, loops, states = pickle.load(open('logs/'+uarch+'/'+suite+'/'+appname+'/100/'+keyname+'/uarch.pickle', 'rb')) 
-loopsUArch, theta_lst, diff, key = pickle.load(open('logs/'+uarch+'/'+suite+'/'+appname+'/100/'+keyname+'/sets.pickle', 'rb'))
+instructions, loops, states = pickle.load(open('logs/'+uarch+'/'+suite+'/'+appname+f'/{iters}/'+keyname+'/uarch.pickle', 'rb'))
+loopsUArch, theta_lst, diff, key = pickle.load(open('logs/'+uarch+'/'+suite+'/'+appname+f'/{iters}/'+keyname+'/sets.pickle', 'rb'))
 for j in range(int(iters/window)):
    loop_timing[key[j]].append(loops[j][-1].retire - loops[j][0].fetch) 
    dtlbm = 0
@@ -43,4 +43,4 @@ plt.tight_layout()
 plt.subplots_adjust(top=0.9)
 handles, titles = axs.flat[-1].get_legend_handles_labels()
 fig.legend(handles, titles, loc='upper left', fancybox=True, shadow=True, ncol=3, mode='expand')
-plt.savefig('logs/'+uarch+'/'+suite+'/'+appname+'/100/'+keyname+'/timing_stats.pdf', bbox_inches='tight')
+plt.savefig('logs/'+uarch+'/'+suite+'/'+appname+f'/{iters}/'+keyname+'/timing_stats.pdf', bbox_inches='tight')
