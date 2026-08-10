@@ -113,3 +113,31 @@ def do_parse(ctx: BaseConfig, cfg: SubprocessArguments):
         stdout=log_fd, stderr=sp.STDOUT,
         shell=False, check=False
     )
+
+
+def do_stats(ctx: BaseConfig, cfg: SubprocessArguments):
+    logger.info("Running state analysis...")
+    sim_root = ctx.microsampler.working_directory
+    script_path = get_path(sim_root / "scripts" / "stats.py")
+    key_path = get_path(ctx.microsampler.working_directory / "scripts" / "keys" / f"{cfg.key}.key")
+    uarch_path = get_path(cfg.log_prefix / "uarch.pickle")
+    sets_path = get_path(cfg.log_prefix / "sets.pickle")
+    log_path = cfg.log_prefix / f"stats-{cfg.phi}_{cfg.alpha}.log"
+    log_fd = open(log_path, "w+")
+    sp.run([
+            "time", "python", script_path,
+            uarch_path, key_path, sets_path,
+            get_path(cfg.log_prefix),
+            str(cfg.phi), str(cfg.alpha), str(cfg.window), str(cfg.iterations),
+        ],
+        stdout=log_fd, stderr=sp.STDOUT,
+        shell=False, check=False
+    )
+    script_path = get_path(sim_root / "scripts" / "miss_stats.py")
+    sp.run([
+            "python", script_path,
+            cfg.app, cfg.key, cfg.design, cfg.suite, str(cfg.iterations), str(cfg.window)
+        ],
+        stdout=log_fd, stderr=sp.STDOUT,
+        shell=False, check=False
+    )
