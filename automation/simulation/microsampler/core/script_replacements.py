@@ -7,6 +7,7 @@ from typing import Type
 
 from config import BaseConfig
 from .exceptions import SubprocessError
+from ..pc_finder import UUTPCAddresses
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class SubprocessArguments:
     window: int
     design: str
     iterations: int
+    pc_addresses: UUTPCAddresses
 
 
 def load_key_value(ctx: BaseConfig, cfg: SubprocessArguments) -> str:
@@ -34,9 +36,12 @@ def load_key_value(ctx: BaseConfig, cfg: SubprocessArguments) -> str:
         return f.read()
 
 
+def get_path(p: Path) -> str:
+    return str(p.resolve().absolute())
+
+
 def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments):
     logger.info(f"Running simulation script replacement")
-    get_path = lambda p: str(p.resolve().absolute())
     sim_root = ctx.microsampler.working_directory
     pk = get_path(ctx.microsampler.riscv_root / "riscv64-unknown-elf" / "bin" / "pk")
     keyval = load_key_value(ctx, cfg)
@@ -85,3 +90,26 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments):
     logger.info("Cleaning up.....")
     temp_log_path.unlink()
     logger.info("done.")
+
+
+def do_parse(ctx: BaseConfig, cfg: SubprocessArguments):
+    logger.info("Parsing micro-arch log, collecting state samples...")
+    sim_root = ctx.microsampler.working_directory
+    script_path = get_path(sim_root / "scripts" / "parse_trace.py")
+    asm_log_path = get_path(cfg.log_prefix / "out-all-asm.log.gz")
+    uarch_path = get_path(cfg.log_prefix / "uarch.pickle")
+    log_path = cfg.log_prefix / "parser.log"
+    log_fd = open(log_path, "w+")
+    pc_config = cfg.pc_addresses
+    sp.run([
+            "time", "python", script_path,
+            asm_log_path, uarch_path,
+            f"0x{pc_config.roi_start:010x}",
+            f"0x{pc_config.roi_end:010x}",
+            f"0x{pc_config.calling_address:010x}",
+            f"0x{pc_config.start_address:010x}",
+            f"0x{pc_config.return_address:010x}"
+        ],
+        stdout=log_fd, stderr=sp.STDOUT,
+        shell=False, check=False
+    )
