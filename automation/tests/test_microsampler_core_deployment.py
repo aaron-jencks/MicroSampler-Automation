@@ -63,6 +63,10 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         self.assertEqual(result.returncode, 0, "riscv cross-compiler must support the fence instruction")
         self.assertIsNotNone(result.stderr)
 
+    def test_script_replacement_compatibility(self):
+        logger.debug("testing spike-dasm existence")
+        self.assertIsNotNone(shutil.which("spike-dasm"),"spike-dasm is required for simulation to succeed.")
+
     def test_prebuilt_code_exists(self):
         output_build_directory = Path("../apps/bearssl-0.6/microsampler_tests/build")
         self.assertTrue(output_build_directory.exists(), "make sure to build the microsampler tests per the readme")
