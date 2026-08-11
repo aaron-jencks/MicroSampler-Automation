@@ -106,6 +106,18 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         self.assertEqual(log_prefix, sm.context.log_prefix)
         self.assertTrue(log_prefix.exists())
 
+        # Check Output files
+        output_log_files = [
+            "stdout.log",
+            "out-all-asm.log.gz",
+            "uarch.pickle",
+            "parser.log",
+            "sets.pickle",
+            f"stats-{run_config.phi}_{run_config.alpha}.log"
+        ]
+        for fname in output_log_files:
+            self.assertTrue((log_prefix / fname).exists(), f"expected log file {fname} not found")
+
         simulation_log = log_prefix / "launch_simulation.log"
         simulation_log_data = simulation_log.read_text()
 
