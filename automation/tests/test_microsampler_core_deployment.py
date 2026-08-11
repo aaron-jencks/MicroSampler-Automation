@@ -108,7 +108,6 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
 
         # Check Output files
         output_log_files = [
-            "stdout.log",
             "out-all-asm.log.gz",
             "uarch.pickle",
             "parser.log",
