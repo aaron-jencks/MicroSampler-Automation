@@ -99,14 +99,9 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
                 warmup=True
             )
         )
-        self.assertIsNone(sm.loop_w_config(run_config))
 
-        # check log data
+        # prepare test site
         log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / run_config.suite / "ct_ccopy" / str(run_config.iterations) / "0xaa"
-        self.assertEqual(log_prefix, sm.context.log_prefix)
-        self.assertTrue(log_prefix.exists())
-
-        # Check Output files
         output_log_files = [
             "out-all-asm.log.gz",
             "uarch.pickle",
@@ -114,6 +109,17 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
             "sets.pickle",
             f"stats-{run_config.phi}_{run_config.alpha}.log"
         ]
+        for fname in output_log_files:
+            log_path = log_prefix / fname
+            if log_path.exists():
+                log_path.unlink()
+
+        self.assertIsNone(sm.loop_w_config(run_config))
+
+        # check log data
+        self.assertEqual(log_prefix, sm.context.log_prefix)
+        self.assertTrue(log_prefix.exists())
+
         for fname in output_log_files:
             self.assertTrue((log_prefix / fname).exists(), f"expected log file {fname} not found")
 
