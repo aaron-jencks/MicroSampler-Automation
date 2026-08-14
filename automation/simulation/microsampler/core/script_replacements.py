@@ -78,7 +78,7 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
         return spike_ret
     logger.info("Compressing output log into gzip format...")
     gzip_ret = run_default_subprocess(ctx, [
-            "gzip", "-f", stdout_path,
+            "gzip", "-f", get_path(stdout_path),
         ],
         timeout=cfg.timeout
     )
