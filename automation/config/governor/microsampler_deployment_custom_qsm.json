@@ -1,0 +1,43 @@
+{
+  "initial_context": {
+    "model": "simulation.microsampler.deployment.defs.MicroSamplerTCContext"
+  },
+  "states": {
+    "initial_state": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCInitialState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "prepare": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCPrepareState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "harness_verify": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCVerifyLegalCode",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "harness_prepare": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCWriteAttack",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "harness_compile": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCCompileHarness",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "deployment_prepare": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCPrepareDeploymentStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    }
+  }
+}

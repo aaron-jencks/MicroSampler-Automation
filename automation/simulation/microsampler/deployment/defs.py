@@ -1,40 +1,40 @@
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import pandas as pd
 from qstate import StateContext
 from tqdm import tqdm
 
+from ..core.defs import MicroSamplerRunConfiguration, MicroSamplerContext
+from .struct import BuildResult
+
 
 class MicroSamplerTCDeploymentState(StrEnum):
+    PREPARE = "prepare"
     HARNESS_VERIFY = "harness_verify"
     HARNESS_PREPARE = "harness_prepare"
     HARNESS_COMPILE = "harness_compile"
+    KEY_PREPARE = "key_prepare"
+    DEPLOYMENT_PREPARE = "deployment_prepare"
     LOOP_CHECK = "loop_check"
     MICROSAMPLER_DEPLOYMENT = "microsampler_deployment"
     DATA_COLLECTION = "data_collection"
 
 
 @dataclass
-class MicroSamplerTCRunConfiguration:
-    keys: List[str] = field(default_factory=list)
-    suite: str = "bearssl_synthetic"
-    apps: List[str] = field(default_factory=list)
-    phi: float = 0.9
-    alpha: float = 0.1
-    window: int = 1
-    design: str = "baseline"
-    iterations: int = 100
+class MicroSamplerTCRunConfiguration(MicroSamplerRunConfiguration):
+    global_iterations: int = 100
+    key_size: int = 256
 
 
 @dataclass
-class MicroSamplerTCContext:
+class MicroSamplerTCContext(MicroSamplerContext):
     run_config: MicroSamplerTCRunConfiguration = field(default_factory=MicroSamplerTCRunConfiguration)
-    current_app_index: int = 0
-    current_key_index: int = 0
-    log_prefix: Optional[Path] = None
+    implementation: Optional[str] = None
+    build_status: Optional[BuildResult] = None
+    current_global_iteration: int = 0
 
 
 @dataclass
