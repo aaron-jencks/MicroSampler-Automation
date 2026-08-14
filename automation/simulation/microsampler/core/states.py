@@ -133,7 +133,7 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
         design = ctx.context.run_config.design
         iterations = ctx.context.run_config.iterations
         return SubprocessArguments(
-            log_prefix=self.config.microsampler.working_directory / "logs" / design / app / iterations / key,
+            log_prefix=self.config.microsampler.working_directory / "logs" / design / app / str(iterations) / key,
             log_name=log_name,
             executable=executable,
             executable_args=executable_args,
