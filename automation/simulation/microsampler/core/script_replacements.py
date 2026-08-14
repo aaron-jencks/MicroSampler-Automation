@@ -58,7 +58,8 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
                 *cfg.executable_args,
             ],
             stdout=stdout_fd, stderr=stderr_fd,
-            shell=False, check=False
+            shell=False, check=False,
+            timeout=cfg.timeout,
         )
         if sim_ret.returncode != 0:
             logger.warning("Simulation process had non-zero return")
@@ -77,7 +78,8 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
             ],
             stdin=output_log_fd,
             stdout=stdout_fd,
-            shell=False, check=False
+            shell=False, check=False,
+            timeout=cfg.timeout
         )
         if spike_ret.returncode != 0:
             logger.warning("spike-dasm process had non-zero return")
@@ -89,7 +91,8 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
     gzip_ret = sp.run([
             "gzip", "-f", stdout_path,
         ],
-        shell=False, check=False
+        shell=False, check=False,
+        timeout=cfg.timeout
     )
     if gzip_ret.returncode != 0:
         logger.warning("gzip process had non-zero return")
@@ -119,7 +122,8 @@ def do_parse(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
             f"0x{pc_config.return_address:010x}"
         ],
         stdout=log_fd, stderr=sp.STDOUT,
-        shell=False, check=False
+        shell=False, check=False,
+        timeout=cfg.timeout
     )
 
 
@@ -139,7 +143,8 @@ def do_stats(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
             str(cfg.phi), str(cfg.alpha), str(cfg.window), str(cfg.iterations),
         ],
         stdout=log_fd, stderr=sp.STDOUT,
-        shell=False, check=False
+        shell=False, check=False,
+        timeout=cfg.timeout
     )
     if stats_ret.returncode != 0:
         logger.warning("stats process had non-zero return")
@@ -150,5 +155,6 @@ def do_stats(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
             cfg.app, cfg.key, cfg.design, cfg.suite, str(cfg.iterations), str(cfg.window)
         ],
         stdout=log_fd, stderr=sp.STDOUT,
-        shell=False, check=False
+        shell=False, check=False,
+        timeout=cfg.timeout
     )
