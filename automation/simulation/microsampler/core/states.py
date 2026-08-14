@@ -79,14 +79,15 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
         self.sp_timeout = sp_timeout
 
     def get_builtin_executable_path_w_args(self, ctx: StateContext) -> Tuple[Path, List[str]]:
-        app = ctx.context.run_config.apps[ctx.context.current_app_index]
+        full_app = ctx.context.run_config.apps[ctx.context.current_app_index]
         suite = ctx.context.run_config.suite
         key = ctx.context.run_config.keys[ctx.context.current_key_index]
         iterations = ctx.context.run_config.iterations
 
-        if "_" in app:
-            app, app_type = app.split("_")
+        if "_" in full_app:
+            short_app, app_type = full_app.split("_")
         else:
+            short_app = full_app
             app_type = ""
 
         app_prefix = self.config.microsampler.working_directory / "apps"
@@ -98,7 +99,7 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
         elif suite == "openssl":
             raise NotImplementedError("openssl requires access to home directory which is unaccessible")
         elif suite == "microbench":
-            app_prefix = app_prefix / "microbench" / app / key
+            app_prefix = app_prefix / "microbench" / full_app / key
         else:
             raise UnknownSuiteError(suite)
 
@@ -109,15 +110,15 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
                 executable = app_prefix / "testcrypto_warmup"
             else:
                 executable = app_prefix / "testcrypto"
-            args.extend([app, keyval, iterations])
+            args.extend([short_app, keyval, iterations])
         elif suite == "bearssl_single":
-            executable = app_prefix / f"testcrypto_{app}"
+            executable = app_prefix / f"testcrypto_{full_app}"
             args.append(keyval)
         elif suite == "bearssl_synthetic":
-            executable = app_prefix / app
+            executable = app_prefix / full_app
             args.extend([keyval, iterations])
         elif suite == "microbench":
-            executable = app_prefix / app
+            executable = app_prefix / full_app
         else:
             raise UnknownSuiteError(suite)
 
