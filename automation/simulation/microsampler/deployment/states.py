@@ -15,7 +15,7 @@ from tqdm import tqdm
 from config import BaseConfig
 from .defs import MicroSamplerCoreDeploymentState, MicroSamplerLoopContext
 from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError)
-from ...exceptions import SubprocessError
 from ...states import DeploymentState, SubprocessDeploymentState
+from ....tools import SubprocessError
 
 logger = logging.getLogger(__name__)
