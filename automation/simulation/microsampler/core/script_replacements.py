@@ -40,6 +40,8 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
     sim_root = ctx.microsampler.working_directory
     pk = get_path(ctx.microsampler.riscv_root / "riscv64-unknown-elf" / "bin" / "pk")
     simulator = get_path(sim_root / "BOOM_simulator")
+    if not cfg.executable.exists():
+        raise FileNotFoundError(f"Executable not found: {cfg.executable}")
     executable_path = get_path(cfg.executable)
     stdout_path = get_path(cfg.log_prefix / "stdout.txt")
     temp_log_path = cfg.log_prefix / "out-all.log"
