@@ -37,7 +37,13 @@ def load_key_value(ctx: BaseConfig, key: str) -> str:
 
 def setup_temporary_file_logger(cfg: SubprocessArguments) -> logging.Handler:
     file_handler = logging.FileHandler(cfg.log_prefix / cfg.log_name)
-    file_handler.setFormatter(logger.handlers[0].formatter)
+
+    if logger.handlers:
+        file_handler.setFormatter(logger.handlers[0].formatter)
+    else:
+        file_handler.setFormatter(
+            logging.Formatter("%(levelname)s:%(name)s:%(message)s")
+        )
 
     logger.addHandler(file_handler)
 
