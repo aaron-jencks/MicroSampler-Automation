@@ -37,6 +37,10 @@ def load_key_value(ctx: BaseConfig, key: str) -> str:
 
 def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.CompletedProcess]:
     logger.info(f"Running simulation script replacement")
+
+    logger.info("Setting up directory structure...")
+    cfg.log_prefix.mkdir(parents=True, exist_ok=True)
+
     sim_root = ctx.microsampler.working_directory
     pk = get_path(ctx.microsampler.riscv_root / "riscv64-unknown-elf" / "bin" / "pk")
     simulator = get_path(sim_root / "BOOM_simulator")
