@@ -43,47 +43,35 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
     if not cfg.executable.exists():
         raise FileNotFoundError(f"Executable not found: {cfg.executable}")
     executable_path = get_path(cfg.executable)
-    stdout_path = get_path(cfg.log_prefix / "stdout.txt")
+    stdout_path = cfg.log_prefix / "stdout.txt"
     temp_log_path = cfg.log_prefix / "out-all.log"
-    stderr_path = get_path(temp_log_path)
+    stderr_path = temp_log_path
     logger.info(f"command: {simulator} +verbose {pk} {executable_path} {' '.join(cfg.executable_args)} > {stdout_path} 2> {stderr_path}")
-    stdout_fd = open(stdout_path, "w+")
-    stderr_fd = open(stderr_path, "w+")
-    try:
-        sim_ret = run_default_subprocess(ctx, [
-                "time", simulator,
-                "+verbose", pk,
-                executable_path,
-                *cfg.executable_args,
-            ],
-            stdout=stdout_fd, stderr=stderr_fd,
-            timeout=cfg.timeout,
-        )
-        if sim_ret.returncode != 0:
-            logger.warning("Simulation process had non-zero return")
-            return sim_ret
-    finally:
-        stdout_fd.close()
-        stderr_fd.close()
+    sim_ret = run_default_subprocess(ctx, [
+            "time", simulator,
+            "+verbose", pk,
+            executable_path,
+            *cfg.executable_args,
+        ],
+        stdout=stdout_path, stderr=stderr_path,
+        timeout=cfg.timeout,
+    )
+    if sim_ret.returncode != 0:
+        logger.warning("Simulation process had non-zero return")
+        return sim_ret
     logger.info("Running spike-dasm on output log...")
     output_log = stderr_path
-    output_log_fd = open(output_log, "r")
-    stdout_path = get_path(cfg.log_prefix / "out-all-asm.log")
-    stdout_fd = open(stdout_path, "w+")
-    try:
-        spike_ret = run_default_subprocess(ctx, [
-                "spike-dasm"
-            ],
-            stdin=output_log_fd,
-            stdout=stdout_fd,
-            timeout=cfg.timeout
-        )
-        if spike_ret.returncode != 0:
-            logger.warning("spike-dasm process had non-zero return")
-            return spike_ret
-    finally:
-        output_log_fd.close()
-        stdout_fd.close()
+    stdout_path = cfg.log_prefix / "out-all-asm.log"
+    spike_ret = run_default_subprocess(ctx, [
+            "spike-dasm"
+        ],
+        stdin=output_log,
+        stdout=stdout_path,
+        timeout=cfg.timeout
+    )
+    if spike_ret.returncode != 0:
+        logger.warning("spike-dasm process had non-zero return")
+        return spike_ret
     logger.info("Compressing output log into gzip format...")
     gzip_ret = run_default_subprocess(ctx, [
             "gzip", "-f", stdout_path,
@@ -106,7 +94,6 @@ def do_parse(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
     asm_log_path = get_path(cfg.log_prefix / "out-all-asm.log.gz")
     uarch_path = get_path(cfg.log_prefix / "uarch.pickle")
     log_path = cfg.log_prefix / "parser.log"
-    log_fd = open(log_path, "w+")
     pc_config = cfg.pc_addresses
     return run_default_subprocess(ctx, [
             "time", "python", script_path,
@@ -117,7 +104,7 @@ def do_parse(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
             f"0x{pc_config.start_address:010x}",
             f"0x{pc_config.return_address:010x}"
         ],
-        stdout=log_fd, stderr=sp.STDOUT,
+        stdout=log_path, stderr=sp.STDOUT,
         timeout=cfg.timeout
     )
 
@@ -130,14 +117,13 @@ def do_stats(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
     uarch_path = get_path(cfg.log_prefix / "uarch.pickle")
     sets_path = get_path(cfg.log_prefix / "sets.pickle")
     log_path = cfg.log_prefix / f"stats-{cfg.phi}_{cfg.alpha}.log"
-    log_fd = open(log_path, "w+")
     stats_ret = run_default_subprocess(ctx, [
             "time", "python", script_path,
             uarch_path, key_path, sets_path,
             get_path(cfg.log_prefix),
             str(cfg.phi), str(cfg.alpha), str(cfg.window), str(cfg.iterations),
         ],
-        stdout=log_fd, stderr=sp.STDOUT,
+        stdout=log_path, stderr=sp.STDOUT,
         timeout=cfg.timeout
     )
     if stats_ret.returncode != 0:
@@ -148,6 +134,6 @@ def do_stats(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
             "python", script_path,
             cfg.app, cfg.key, cfg.design, cfg.suite, str(cfg.iterations), str(cfg.window)
         ],
-        stdout=log_fd, stderr=sp.STDOUT,
+        stdout=log_path, stderr=sp.STDOUT,
         timeout=cfg.timeout
     )
