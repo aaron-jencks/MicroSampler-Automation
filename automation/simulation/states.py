@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable, Optional, Type, Union, IO
 from qstate import State, StateContext
 
 from config import BaseConfig
-from .exceptions import SubprocessError
+from ..tools import SubprocessError
 
 
 logger = logging.getLogger(__name__)

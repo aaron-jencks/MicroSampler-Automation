@@ -14,10 +14,10 @@ from .defs import MicroSamplerCoreDeploymentState, MicroSamplerLoopContext
 from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError,
                          MicroSamplerPCParsingError)
 from ..exceptions import UnknownSuiteError
-from ...exceptions import SubprocessError
 from ..pc_finder import find_pcs
 from .script_replacements import do_simulation, do_parse, do_stats, SubprocessArguments, load_key_value
 from ...states import DeploymentState
+from ....tools import SubprocessError
 
 logger = logging.getLogger(__name__)
 
