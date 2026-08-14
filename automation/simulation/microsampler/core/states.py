@@ -128,19 +128,23 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
             self, ctx: StateContext, log_name: str,
             executable: Path, executable_args: List[str]
     ) -> SubprocessArguments:
+        app = ctx.context.run_config.apps[ctx.context.current_app_index]
+        key = ctx.context.run_config.keys[ctx.context.current_key_index]
+        design = ctx.context.run_config.design
+        iterations = ctx.context.run_config.iterations
         return SubprocessArguments(
-            log_prefix=self.config.microsampler.working_directory / "logs",
+            log_prefix=self.config.microsampler.working_directory / "logs" / design / app / iterations / key,
             log_name=log_name,
             executable=executable,
             executable_args=executable_args,
-            key=ctx.context.run_config.keys[ctx.context.current_key_index],
+            key=key,
             suite=ctx.context.run_config.suite,
-            app=ctx.context.run_config.apps[ctx.context.current_app_index],
+            app=app,
             phi=ctx.context.run_config.phi,
             alpha=ctx.context.run_config.alpha,
             window=ctx.context.run_config.window,
-            design=ctx.context.run_config.design,
-            iterations=ctx.context.run_config.iterations,
+            design=design,
+            iterations=iterations,
             pc_addresses=ctx.context.pc_addresses,
             timeout=self.sp_timeout
         )
