@@ -38,6 +38,8 @@ class MicroSamplerRunConfiguration:
     design: str = "baseline"
     iterations: int = 100
     pc_config: PCFinderConfig = field(default_factory=PCFinderConfig)
+    executable: Optional[Path] = None
+    executable_args: Optional[List[str]] = None
 
 
 @dataclass

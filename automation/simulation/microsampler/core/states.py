@@ -126,7 +126,7 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
 
     def generate_subprocess_args(
             self, ctx: StateContext, log_name: str,
-            executable: Path, executable_args: List[str]
+            executable: Optional[Path], executable_args: Optional[List[str]]
     ) -> SubprocessArguments:
         app = ctx.context.run_config.apps[ctx.context.current_app_index]
         key = ctx.context.run_config.keys[ctx.context.current_key_index]
@@ -157,12 +157,14 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
             func: CoreMicroSamplerStepFunc,
             executable: Optional[Path] = None,
             executable_args: Optional[List[str]] = None,
+            need_executable: bool = True
     ):
-        if executable_args is None:
-            executable_args = []
-        if executable is None:
-            executable, exec_args = self.get_builtin_executable_path_w_args(ctx)
-            executable_args.extend(exec_args)
+        if need_executable:
+            if executable_args is None:
+                executable_args = []
+            if executable is None:
+                executable, exec_args = self.get_builtin_executable_path_w_args(ctx)
+                executable_args.extend(exec_args)
 
         args = self.generate_subprocess_args(ctx, log_name, executable, executable_args)
 
@@ -178,7 +180,9 @@ class MicroSamplerSimulationState(MicroSamplerCoreStepState):
         logger.debug("starting microsampler simulation")
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerSimulationError, MicroSamplerCoreDeploymentState.PARSE,
-            "launch_simulation.log", do_simulation
+            "launch_simulation.log", do_simulation,
+            ctx.context.run_config.executable,
+            ctx.context.run_config.executable_args,
         )
 
 
@@ -189,6 +193,7 @@ class MicroSamplerParseState(MicroSamplerCoreStepState):
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS,
             "launch_parse.log", do_parse,
+            need_executable=False,
         )
 
 
@@ -197,5 +202,6 @@ class MicroSamplerStatsState(MicroSamplerCoreStepState):
         logger.debug("starting microsampler stats execution")
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerStatsError, MicroSamplerCoreDeploymentState.LOOP_CHECK,
-            "launch_stats.log", do_stats
+            "launch_stats.log", do_stats,
+            need_executable=False,
         )
