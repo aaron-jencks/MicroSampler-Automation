@@ -152,6 +152,8 @@ def run_default_subprocess(
         env_overrides = {}
     env_overrides["SIM_ROOT"] = get_path(ctx.microsampler.working_directory)
     env_overrides["RISCV"] = get_path(ctx.microsampler.riscv_root)
+    if cwd is None:
+        cwd = ctx.microsampler.working_directory
     return run_subprocess(
         args,
         stdin, stdout, stderr,
