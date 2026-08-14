@@ -46,13 +46,17 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
     stdout_path = cfg.log_prefix / "stdout.txt"
     temp_log_path = cfg.log_prefix / "out-all.log"
     stderr_path = temp_log_path
-    logger.info(f"command: {simulator} +verbose {pk} {executable_path} {' '.join(cfg.executable_args)} > {stdout_path} 2> {stderr_path}")
-    sim_ret = run_default_subprocess(ctx, [
-            "time", simulator,
-            "+verbose", pk,
-            executable_path,
-            *cfg.executable_args,
-        ],
+
+    sim_args = [
+        "time", simulator, "+verbose"
+    ]
+    if cfg.suite != "microbench":
+        sim_args.append(pk)
+    sim_args.append(executable_path)
+    sim_args.extend(cfg.executable_args)
+
+    logger.info(f"command: {' '.join(sim_args)} > {stdout_path} 2> {stderr_path}")
+    sim_ret = run_default_subprocess(ctx, sim_args,
         stdout=stdout_path, stderr=stderr_path,
         timeout=cfg.timeout,
     )
