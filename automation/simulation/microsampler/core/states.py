@@ -117,7 +117,7 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
             executable = app_prefix / app
             args.extend([keyval, iterations])
         elif suite == "microbench":
-            executable = app_prefix / "microbench" / app / key / app
+            executable = app_prefix / app
         else:
             raise UnknownSuiteError(suite)
 
