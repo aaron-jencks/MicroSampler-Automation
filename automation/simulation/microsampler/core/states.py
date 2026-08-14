@@ -1,12 +1,9 @@
 from abc import ABC
-import json
 import logging
-import os
-import re
-import shutil
+from pathlib import Path
 import subprocess as sp
 from enum import StrEnum
-from typing import Iterable, Optional, Type, Union
+from typing import Callable, List, Optional, Tuple, Type
 
 import pandas as pd
 from qstate import StateContext
@@ -16,9 +13,11 @@ from config import BaseConfig
 from .defs import MicroSamplerCoreDeploymentState, MicroSamplerLoopContext
 from .exceptions import (MicroSamplerSimulationError, MicroSamplerParsingError, MicroSamplerStatsError,
                          MicroSamplerPCParsingError)
+from ..exceptions import UnknownSuiteError
 from ...exceptions import SubprocessError
 from ..pc_finder import find_pcs
-from ...states import DeploymentState, SubprocessDeploymentState
+from .script_replacements import do_simulation, do_parse, do_stats, SubprocessArguments, load_key_value
+from ...states import DeploymentState
 
 logger = logging.getLogger(__name__)
 
@@ -71,143 +70,207 @@ class MicroSamplerFindPCsState(DeploymentState):
         self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.SIMULATION)
 
 
-class MicroSamplerSubprocessState(SubprocessDeploymentState, ABC):
+CoreMicroSamplerStepFunc = Callable[[BaseConfig, SubprocessArguments], Optional[sp.CompletedProcess]]
+
+
+class MicroSamplerCoreStepState(DeploymentState, ABC):
     def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
         super().__init__(ctx)
         self.sp_timeout = sp_timeout
 
-    def run_microsampler_checked_subprocess(
-            self, ctx: StateContext,
-            err: Type[SubprocessError], next_state: StrEnum,
-            args: Union[Iterable[str], str],
-            script_name: str, log_name: str,
-    ):
-        log_path = ctx.context.log_prefix / log_name
-        self.run_checked_subprocess(
-            ctx, err, next_state,
-            [str((self.config.microsampler.scripts_prefix / script_name).resolve().absolute()), *args],
-            stdout=log_path, stderr=sp.STDOUT,
-            env_overrides={
-                "SIM_ROOT": str(self.config.microsampler.working_directory.resolve().absolute()),
-                "RISCV": str(self.config.microsampler.riscv_root.resolve().absolute()),
-            },
-            cwd=self.config.microsampler.working_directory,
+    def get_builtin_executable_path_w_args(self, ctx: StateContext) -> Tuple[Path, List[str]]:
+        app = ctx.context.run_config.apps[ctx.context.current_app_index]
+        suite = ctx.context.run_config.suite
+        key = ctx.context.run_config.keys[ctx.context.current_key_index]
+        iterations = ctx.context.run_config.iterations
+
+        if "_" in app:
+            app, app_type = app.split("_")
+        else:
+            app_type = ""
+
+        app_prefix = self.config.microsampler.working_directory / "apps"
+        if suite.startswith("bearssl"):
+            app_prefix /= "bearssl-0.6"
+            if suite == "bearssl_synthetic":
+                app_prefix /= "microsampler_tests"
+            app_prefix /= "build"
+        elif suite == "openssl":
+            raise NotImplementedError("openssl requires access to home directory which is unaccessible")
+        elif suite == "microbench":
+            app_prefix = app_prefix / "microbench" / app / key
+        else:
+            raise UnknownSuiteError(suite)
+
+        args = []
+        keyval = load_key_value(self.config, key)
+        if suite == "bearssl_comb":
+            if app_type == "warmup":
+                executable = app_prefix / "testcrypto_warmup"
+            else:
+                executable = app_prefix / "testcrypto"
+            args.extend([app, keyval, iterations])
+        elif suite == "bearssl_single":
+            executable = app_prefix / f"testcrypto_{app}"
+            args.append(keyval)
+        elif suite == "bearssl_synthetic":
+            executable = app_prefix / app
+            args.extend([keyval, iterations])
+        elif suite == "microbench":
+            executable = app_prefix / "microbench" / app / key / app
+        else:
+            raise UnknownSuiteError(suite)
+
+        return executable, args
+
+    def generate_subprocess_args(
+            self, ctx: StateContext, log_name: str,
+            executable: Path, executable_args: List[str]
+    ) -> SubprocessArguments:
+        return SubprocessArguments(
+            log_prefix=self.config.microsampler.working_directory / "logs",
+            log_name=log_name,
+            executable=executable,
+            executable_args=executable_args,
+            key=ctx.context.run_config.keys[ctx.context.current_key_index],
+            suite=ctx.context.run_config.suite,
+            app=ctx.context.run_config.apps[ctx.context.current_app_index],
+            phi=ctx.context.run_config.phi,
+            alpha=ctx.context.run_config.alpha,
+            window=ctx.context.run_config.window,
+            design=ctx.context.run_config.design,
+            iterations=ctx.context.run_config.iterations,
+            pc_addresses=ctx.context.pc_addresses,
             timeout=self.sp_timeout
         )
 
+    def run_microsampler_checked_subprocess(
+            self, ctx: StateContext,
+            err: Type[SubprocessError], next_state: StrEnum,
+            log_name: str,
+            func: CoreMicroSamplerStepFunc,
+            executable: Optional[Path] = None,
+            executable_args: Optional[List[str]] = None,
+    ):
+        if executable_args is None:
+            executable_args = []
+        if executable is None:
+            executable, exec_args = self.get_builtin_executable_path_w_args(ctx)
+            executable_args.extend(exec_args)
 
-class MicroSamplerSimulationState(MicroSamplerSubprocessState):
+        args = self.generate_subprocess_args(ctx, log_name, executable, executable_args)
+
+        res = func(self.config, args)
+        if res is not None and res.returncode != 0:
+            raise err(res.returncode, res.stdout, res.stderr)
+
+        self.append_deployment_state(ctx, next_state)
+
+
+class MicroSamplerSimulationState(MicroSamplerCoreStepState):
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler simulation")
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerSimulationError, MicroSamplerCoreDeploymentState.PARSE,
-            [
-                ctx.context.run_config.keys[ctx.context.current_key_index],
-                ctx.context.run_config.suite,
-                ctx.context.run_config.apps[ctx.context.current_app_index],
-                str(ctx.context.run_config.iterations),
-                ctx.context.run_config.design,
-            ],
-            "do_simulation.sh", "launch_simulation.log"
+            "launch_simulation.log", do_simulation
         )
 
 
-class MicroSamplerParseState(MicroSamplerSubprocessState):
+class MicroSamplerParseState(MicroSamplerCoreStepState):
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler parse")
-        key = ctx.context.run_config.keys[ctx.context.current_key_index]
-
-        args = [key]
-
-        suite = ctx.context.run_config.suite
-        app = ctx.context.run_config.apps[ctx.context.current_app_index]
-
-        pc_config = ctx.context.pc_addresses
-        args.extend([
-            f"0x{pc_config.roi_start:010x}",
-            f"0x{pc_config.roi_end:010x}",
-            f"0x{pc_config.calling_address:010x}",
-            f"0x{pc_config.start_address:010x}",
-            f"0x{pc_config.return_address:010x}"
-        ])
-
-        # if suite == "microbench":
-        #     if app == "ct_ccopy":
-        #         args.extend([
-        #             "0x008000010e", "0x0080000124", "0x0080000196", "0x0080000130", "0x008000019a"
-        #         ])
-        #     else:
-        #         ctx.stop(ValueError(f"app {app} not supported"))
-        #         return
-        # elif suite == "bearssl_synthetic":
-        #     if app == "v1":
-        #         args.extend([
-        #             "0x0000010128", "0x000001012c", "0x00000106d2", "0x000001022c", "0x00000106d6"
-        #         ])
-        #     elif app == "v1_warmup":
-        #         args.extend([
-        #             "0x000001014a", "0x000001014e", "0x00000106f4", "0x000001024e", "0x00000106f8"
-        #         ])
-        #     elif app == "v1_fence":
-        #         args.extend([
-        #             "0x0000010128", "0x000001012c", "0x00000107a4", "0x000001022c", "0x00000107a8"
-        #         ])
-        #     elif app == "v2":
-        #         args.extend([
-        #             "0x000001012c", "0x0000010130", "0x0000010882", "0x000001021a", "0x0000010886"
-        #         ])
-        #     elif app == "v2_warmup":
-        #         args.extend([
-        #             "0x0000010152", "0x0000010156", "0x00000108a8", "0x0000010240", "0x00000108ac"
-        #         ])
-        #     elif app == "v2_fence":
-        #         args.extend([
-        #             "0x000001012c", "0x0000010130", "0x000001095c", "0x000001021a", "0x0000010960"
-        #         ])
-        #     elif app == "v3":
-        #         args.extend([
-        #             "0x0000010128", "0x000001012c", "0x000001052e", "0x000001023c", "0x0000010532"
-        #         ])
-        #     elif app == "v3_warmup":
-        #         args.extend([
-        #             "0x000001014a", "0x000001014e", "0x0000010550", "0x000001025e", "0x0000010554"
-        #         ])
-        #     elif app == "v3_fence":
-        #         args.extend([
-        #             "0x0000010128", "0x000001012c", "0x0000010600", "0x000001023c", "0x0000010604"
-        #         ])
-        #     else:
-        #         ctx.stop(ValueError(f"app {app} not supported"))
-        #         return
-        # else:
-        #     ctx.stop(ValueError(f"suite {suite} not supported"))
-        #     return
-
-        args.extend([
-            suite, app, str(ctx.context.run_config.iterations), ctx.context.run_config.design,
-        ])
+        # key = ctx.context.run_config.keys[ctx.context.current_key_index]
+        #
+        # args = [key]
+        #
+        # suite = ctx.context.run_config.suite
+        # app = ctx.context.run_config.apps[ctx.context.current_app_index]
+        #
+        # pc_config = ctx.context.pc_addresses
+        # args.extend([
+        #     f"0x{pc_config.roi_start:010x}",
+        #     f"0x{pc_config.roi_end:010x}",
+        #     f"0x{pc_config.calling_address:010x}",
+        #     f"0x{pc_config.start_address:010x}",
+        #     f"0x{pc_config.return_address:010x}"
+        # ])
+        #
+        # # if suite == "microbench":
+        # #     if app == "ct_ccopy":
+        # #         args.extend([
+        # #             "0x008000010e", "0x0080000124", "0x0080000196", "0x0080000130", "0x008000019a"
+        # #         ])
+        # #     else:
+        # #         ctx.stop(ValueError(f"app {app} not supported"))
+        # #         return
+        # # elif suite == "bearssl_synthetic":
+        # #     if app == "v1":
+        # #         args.extend([
+        # #             "0x0000010128", "0x000001012c", "0x00000106d2", "0x000001022c", "0x00000106d6"
+        # #         ])
+        # #     elif app == "v1_warmup":
+        # #         args.extend([
+        # #             "0x000001014a", "0x000001014e", "0x00000106f4", "0x000001024e", "0x00000106f8"
+        # #         ])
+        # #     elif app == "v1_fence":
+        # #         args.extend([
+        # #             "0x0000010128", "0x000001012c", "0x00000107a4", "0x000001022c", "0x00000107a8"
+        # #         ])
+        # #     elif app == "v2":
+        # #         args.extend([
+        # #             "0x000001012c", "0x0000010130", "0x0000010882", "0x000001021a", "0x0000010886"
+        # #         ])
+        # #     elif app == "v2_warmup":
+        # #         args.extend([
+        # #             "0x0000010152", "0x0000010156", "0x00000108a8", "0x0000010240", "0x00000108ac"
+        # #         ])
+        # #     elif app == "v2_fence":
+        # #         args.extend([
+        # #             "0x000001012c", "0x0000010130", "0x000001095c", "0x000001021a", "0x0000010960"
+        # #         ])
+        # #     elif app == "v3":
+        # #         args.extend([
+        # #             "0x0000010128", "0x000001012c", "0x000001052e", "0x000001023c", "0x0000010532"
+        # #         ])
+        # #     elif app == "v3_warmup":
+        # #         args.extend([
+        # #             "0x000001014a", "0x000001014e", "0x0000010550", "0x000001025e", "0x0000010554"
+        # #         ])
+        # #     elif app == "v3_fence":
+        # #         args.extend([
+        # #             "0x0000010128", "0x000001012c", "0x0000010600", "0x000001023c", "0x0000010604"
+        # #         ])
+        # #     else:
+        # #         ctx.stop(ValueError(f"app {app} not supported"))
+        # #         return
+        # # else:
+        # #     ctx.stop(ValueError(f"suite {suite} not supported"))
+        # #     return
+        #
+        # args.extend([
+        #     suite, app, str(ctx.context.run_config.iterations), ctx.context.run_config.design,
+        # ])
 
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS,
-            args,
-            "do_parse.sh", "launch_parse.log"
+            "launch_parse.log", do_parse,
         )
 
 
-class MicroSamplerStatsState(MicroSamplerSubprocessState):
+class MicroSamplerStatsState(MicroSamplerCoreStepState):
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler stats execution")
         self.run_microsampler_checked_subprocess(
             ctx, MicroSamplerStatsError, MicroSamplerCoreDeploymentState.LOOP_CHECK,
-            [
-                ctx.context.run_config.keys[ctx.context.current_key_index],
-                ctx.context.run_config.suite,
-                ctx.context.run_config.apps[ctx.context.current_app_index],
-                str(ctx.context.run_config.phi),
-                str(ctx.context.run_config.alpha),
-                str(ctx.context.run_config.window),
-                str(ctx.context.run_config.iterations),
-                ctx.context.run_config.design,
-            ],
-            "do_stats.sh", "launch_stats.log"
+            # [
+            #     ctx.context.run_config.keys[ctx.context.current_key_index],
+            #     ctx.context.run_config.suite,
+            #     ctx.context.run_config.apps[ctx.context.current_app_index],
+            #     str(ctx.context.run_config.phi),
+            #     str(ctx.context.run_config.alpha),
+            #     str(ctx.context.run_config.window),
+            #     str(ctx.context.run_config.iterations),
+            #     ctx.context.run_config.design,
+            # ],
+            "launch_stats.log", do_stats
         )

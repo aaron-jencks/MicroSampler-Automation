@@ -9,7 +9,7 @@ from config import parse_configs
 from simulation.microsampler.core.qsm import MicroSamplerCoreDeploymentMachine
 from simulation.microsampler.core.defs import MicroSamplerRunConfiguration, MicroSamplerCoreDeploymentState, \
     PCFinderConfig
-from simulation.microsampler.core.states import MicroSamplerSubprocessState
+from simulation.microsampler.core.states import MicroSamplerCoreStepState
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -86,7 +86,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         config = parse_configs([])
         sm = MicroSamplerCoreDeploymentMachine.from_config_file(config.microsampler.core_deployment_qsm, ctx=config)
         for state, timeout in STATE_TIMEOUTS.items():
-            self.assertIsInstance(sm.state_map[state], MicroSamplerSubprocessState)
+            self.assertIsInstance(sm.state_map[state], MicroSamplerCoreStepState)
             sm.state_map[state].sp_timeout = timeout
         run_config = MicroSamplerRunConfiguration(
             suite="microbench",

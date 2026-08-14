@@ -1,12 +1,10 @@
 from dataclasses import dataclass
-from enum import StrEnum
 import logging
 from pathlib import Path
 import subprocess as sp
-from typing import Type
+from typing import List, Optional
 
 from config import BaseConfig
-from .exceptions import SubprocessError
 from ..pc_finder import UUTPCAddresses
 
 
@@ -17,9 +15,8 @@ logger = logging.getLogger(__name__)
 class SubprocessArguments:
     log_prefix: Path
     log_name: str
-    err: Type[SubprocessError]
-    next_state: StrEnum
     executable: Path
+    executable_args: List[str]
     key: str
     suite: str
     app: str
@@ -29,10 +26,11 @@ class SubprocessArguments:
     design: str
     iterations: int
     pc_addresses: UUTPCAddresses
+    timeout: Optional[float] = None
 
 
-def load_key_value(ctx: BaseConfig, cfg: SubprocessArguments) -> str:
-    with open(ctx.microsampler.working_directory / "scripts" / "keys" / f"{cfg.key}.key") as f:
+def load_key_value(ctx: BaseConfig, key: str) -> str:
+    with open(ctx.microsampler.working_directory / "scripts" / "keys" / f"{key}.key") as f:
         return f.read()
 
 
@@ -40,28 +38,31 @@ def get_path(p: Path) -> str:
     return str(p.resolve().absolute())
 
 
-def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments):
+def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.CompletedProcess]:
     logger.info(f"Running simulation script replacement")
     sim_root = ctx.microsampler.working_directory
     pk = get_path(ctx.microsampler.riscv_root / "riscv64-unknown-elf" / "bin" / "pk")
-    keyval = load_key_value(ctx, cfg)
     simulator = get_path(sim_root / "BOOM_simulator")
     executable_path = get_path(cfg.executable)
     stdout_path = get_path(cfg.log_prefix / "stdout.txt")
     temp_log_path = cfg.log_prefix / "out-all.log"
     stderr_path = get_path(temp_log_path)
-    logger.info(f"command: {simulator} +verbose {pk} {executable_path} {keyval} > {stdout_path} 2> {stderr_path}")
+    logger.info(f"command: {simulator} +verbose {pk} {executable_path} {' '.join(cfg.executable_args)} > {stdout_path} 2> {stderr_path}")
     stdout_fd = open(stdout_path, "w+")
     stderr_fd = open(stderr_path, "w+")
     try:
-        sp.run([
+        sim_ret = sp.run([
                 "time", simulator,
                 "+verbose", pk,
-                executable_path, keyval
+                executable_path,
+                *cfg.executable_args,
             ],
             stdout=stdout_fd, stderr=stderr_fd,
             shell=False, check=False
         )
+        if sim_ret.returncode != 0:
+            logger.warning("Simulation process had non-zero return")
+            return sim_ret
     finally:
         stdout_fd.close()
         stderr_fd.close()
@@ -71,28 +72,35 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments):
     stdout_path = get_path(cfg.log_prefix / "out-all-asm.log")
     stdout_fd = open(stdout_path, "w+")
     try:
-        sp.run([
+        spike_ret = sp.run([
                 "spike-dasm"
             ],
             stdin=output_log_fd,
             stdout=stdout_fd,
             shell=False, check=False
         )
+        if spike_ret.returncode != 0:
+            logger.warning("spike-dasm process had non-zero return")
+            return spike_ret
     finally:
         output_log_fd.close()
         stdout_fd.close()
     logger.info("Compressing output log into gzip format...")
-    sp.run([
+    gzip_ret = sp.run([
             "gzip", "-f", stdout_path,
         ],
         shell=False, check=False
     )
+    if gzip_ret.returncode != 0:
+        logger.warning("gzip process had non-zero return")
+        return gzip_ret
     logger.info("Cleaning up.....")
     temp_log_path.unlink()
     logger.info("done.")
+    return None
 
 
-def do_parse(ctx: BaseConfig, cfg: SubprocessArguments):
+def do_parse(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.CompletedProcess]:
     logger.info("Parsing micro-arch log, collecting state samples...")
     sim_root = ctx.microsampler.working_directory
     script_path = get_path(sim_root / "scripts" / "parse_trace.py")
@@ -101,7 +109,7 @@ def do_parse(ctx: BaseConfig, cfg: SubprocessArguments):
     log_path = cfg.log_prefix / "parser.log"
     log_fd = open(log_path, "w+")
     pc_config = cfg.pc_addresses
-    sp.run([
+    return sp.run([
             "time", "python", script_path,
             asm_log_path, uarch_path,
             f"0x{pc_config.roi_start:010x}",
@@ -115,7 +123,7 @@ def do_parse(ctx: BaseConfig, cfg: SubprocessArguments):
     )
 
 
-def do_stats(ctx: BaseConfig, cfg: SubprocessArguments):
+def do_stats(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.CompletedProcess]:
     logger.info("Running state analysis...")
     sim_root = ctx.microsampler.working_directory
     script_path = get_path(sim_root / "scripts" / "stats.py")
@@ -124,7 +132,7 @@ def do_stats(ctx: BaseConfig, cfg: SubprocessArguments):
     sets_path = get_path(cfg.log_prefix / "sets.pickle")
     log_path = cfg.log_prefix / f"stats-{cfg.phi}_{cfg.alpha}.log"
     log_fd = open(log_path, "w+")
-    sp.run([
+    stats_ret = sp.run([
             "time", "python", script_path,
             uarch_path, key_path, sets_path,
             get_path(cfg.log_prefix),
@@ -133,8 +141,11 @@ def do_stats(ctx: BaseConfig, cfg: SubprocessArguments):
         stdout=log_fd, stderr=sp.STDOUT,
         shell=False, check=False
     )
+    if stats_ret.returncode != 0:
+        logger.warning("stats process had non-zero return")
+        return stats_ret
     script_path = get_path(sim_root / "scripts" / "miss_stats.py")
-    sp.run([
+    return sp.run([
             "python", script_path,
             cfg.app, cfg.key, cfg.design, cfg.suite, str(cfg.iterations), str(cfg.window)
         ],
