@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from config import BaseConfig
 from ..pc_finder import UUTPCAddresses
-from ....tools import get_path, run_default_subprocess
+from tools import get_path, run_default_subprocess
 
 
 logger = logging.getLogger(__name__)

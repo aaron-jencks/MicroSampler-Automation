@@ -1,5 +1,5 @@
 from .defs import PCFinderConfig
-from ....tools import SubprocessError
+from tools import SubprocessError
 
 
 class MicroSamplerPCParsingError(Exception):
