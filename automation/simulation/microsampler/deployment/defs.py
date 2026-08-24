@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from typing import Optional
+import uuid
 
 import pandas as pd
 from qstate import StateContext
@@ -25,6 +26,7 @@ class MicroSamplerTCDeploymentState(StrEnum):
 
 @dataclass
 class MicroSamplerTCRunConfiguration(MicroSamplerRunConfiguration):
+    run_name: str = field(default_factory=lambda: uuid.uuid4().hex)
     global_iterations: int = 100
     key_size: int = 256
 
@@ -35,6 +37,7 @@ class MicroSamplerTCContext(MicroSamplerContext):
     implementation: Optional[str] = None
     build_status: Optional[BuildResult] = None
     current_global_iteration: int = 0
+    current_key_name: Optional[str] = None
 
 
 @dataclass

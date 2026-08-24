@@ -1,11 +1,14 @@
 from abc import ABC
+from datetime import datetime, UTC
 import logging
 from pathlib import Path
+import random
 import re
 import shutil
 import subprocess as sp
 from enum import StrEnum
 from typing import Callable, List, Optional, Tuple, Type
+import uuid
 
 import pandas as pd
 from qstate import StateContext
@@ -85,6 +88,15 @@ class MicroSamplerTCCompileHarness(DeploymentState):
 class MicroSamplerTCPrepareKeyStage(DeploymentState):
     def execute(self, ctx: MicroSamplerTCLoopContext):
         # Generate 256-byte key and store it as a file in scripts/keys/something.key
+        key_string = ""
+        for _ in range(ctx.context.run_config.key_size):
+            c = random.randint(0, 15)
+            if c > 9:
+                c = chr(ord('a') + c)
+            key_string += str(c)
+        key_name = f"{datetime.now(tz=UTC).strftime('%Y-%m-%dT%H-%M-%S-%f')}_{ctx.context.run_config.run_name}"
+        # TODO save key to file
+        ctx.context.current_key_name = key_name
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.MICROSAMPLER_DEPLOYMENT)
         pass
 
