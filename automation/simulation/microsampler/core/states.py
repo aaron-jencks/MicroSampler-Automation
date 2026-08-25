@@ -176,10 +176,15 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
 
 
 class MicroSamplerSimulationState(MicroSamplerCoreStepState):
+    def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None,
+                 next_state: StrEnum = MicroSamplerCoreDeploymentState.PARSE):
+        super().__init__(ctx, sp_timeout)
+        self.next_state = next_state
+
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler simulation")
         self.run_microsampler_checked_subprocess(
-            ctx, MicroSamplerSimulationError, MicroSamplerCoreDeploymentState.PARSE,
+            ctx, MicroSamplerSimulationError, self.next_state,
             "launch_simulation.log", do_simulation,
             ctx.context.run_config.executable,
             ctx.context.run_config.executable_args,
@@ -187,21 +192,31 @@ class MicroSamplerSimulationState(MicroSamplerCoreStepState):
 
 
 class MicroSamplerParseState(MicroSamplerCoreStepState):
+    def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None,
+                 next_state: StrEnum = MicroSamplerCoreDeploymentState.STATS):
+        super().__init__(ctx, sp_timeout)
+        self.next_state = next_state
+
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler parse")
 
         self.run_microsampler_checked_subprocess(
-            ctx, MicroSamplerParsingError, MicroSamplerCoreDeploymentState.STATS,
+            ctx, MicroSamplerParsingError, self.next_state,
             "launch_parse.log", do_parse,
             need_executable=False,
         )
 
 
 class MicroSamplerStatsState(MicroSamplerCoreStepState):
+    def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None,
+                 next_state: StrEnum = MicroSamplerCoreDeploymentState.LOOP_CHECK):
+        super().__init__(ctx, sp_timeout)
+        self.next_state = next_state
+
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler stats execution")
         self.run_microsampler_checked_subprocess(
-            ctx, MicroSamplerStatsError, MicroSamplerCoreDeploymentState.LOOP_CHECK,
+            ctx, MicroSamplerStatsError, self.next_state,
             "launch_stats.log", do_stats,
             need_executable=False,
         )
