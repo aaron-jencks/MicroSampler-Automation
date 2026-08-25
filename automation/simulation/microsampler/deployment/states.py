@@ -15,6 +15,8 @@ from qstate import StateContext
 from tqdm import tqdm
 
 from config import BaseConfig
+from core.defs import MicroSamplerCoreDeploymentState
+from ..core.states import MicroSamplerSimulationState, MicroSamplerParseState, MicroSamplerStatsState
 from .defs import MicroSamplerTCDeploymentState, MicroSamplerTCLoopContext
 from .exceptions import BuildError, IllegalCodeError
 from ...states import DeploymentState
@@ -88,6 +90,7 @@ class MicroSamplerTCCompileHarness(DeploymentState):
 class MicroSamplerTCPrepareKeyStage(DeploymentState):
     def execute(self, ctx: MicroSamplerTCLoopContext):
         # Generate 256-byte key and store it as a file in scripts/keys/something.key
+        logger.info("Generating key file...")
         key_string = ""
         for _ in range(ctx.context.run_config.key_size):
             c = random.randint(0, 15)
@@ -95,10 +98,12 @@ class MicroSamplerTCPrepareKeyStage(DeploymentState):
                 c = chr(ord('a') + c)
             key_string += str(c)
         key_name = f"{datetime.now(tz=UTC).strftime('%Y-%m-%dT%H-%M-%S-%f')}_{ctx.context.run_config.run_name}"
-        # TODO save key to file
+        key_directory = self.config.microsampler.working_directory / "scripts" / "keys"
+        key_file = key_directory / f"{key_name}.key"
+        logger.info(f"Saving key to {key_file}")
+        key_file.write_text(key_string)
         ctx.context.current_key_name = key_name
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.MICROSAMPLER_DEPLOYMENT)
-        pass
 
 
 class MicroSamplerTCPrepareDeploymentStage(DeploymentState):
@@ -122,4 +127,21 @@ class MicroSamplerTCLoopControllerState(DeploymentState):
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.KEY_PREPARE)
 
 
-# TODO Actual MicroSampler Deployment
+class MicroSamplerTCDeploymentStage(DeploymentState):
+    def execute(self, ctx: MicroSamplerTCLoopContext):
+        self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.MICROSAMPLER_SIMULATION)
+
+
+class MicroSamplerTCSimulationStage(MicroSamplerSimulationState):
+    def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
+        super().__init__(ctx, sp_timeout, MicroSamplerTCDeploymentState.MICROSAMPLER_PARSE)
+
+
+class MicroSamplerTCParseStage(MicroSamplerSimulationState):
+    def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
+        super().__init__(ctx, sp_timeout, MicroSamplerTCDeploymentState.MICROSAMPLER_STATS)
+
+
+class MicroSamplerTCStatsStage(MicroSamplerSimulationState):
+    def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
+        super().__init__(ctx, sp_timeout, MicroSamplerTCDeploymentState.DATA_COLLECTION)

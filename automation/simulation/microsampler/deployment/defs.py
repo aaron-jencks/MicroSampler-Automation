@@ -21,6 +21,9 @@ class MicroSamplerTCDeploymentState(StrEnum):
     DEPLOYMENT_PREPARE = "deployment_prepare"
     LOOP_CHECK = "loop_check"
     MICROSAMPLER_DEPLOYMENT = "microsampler_deployment"
+    MICROSAMPLER_SIMULATION = "microsampler_simulation"
+    MICROSAMPLER_PARSE = "microsampler_parse"
+    MICROSAMPLER_STATS = "microsampler_stats"
     DATA_COLLECTION = "data_collection"
 
 
