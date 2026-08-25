@@ -137,11 +137,11 @@ class MicroSamplerTCSimulationStage(MicroSamplerSimulationState):
         super().__init__(ctx, sp_timeout, MicroSamplerTCDeploymentState.MICROSAMPLER_PARSE)
 
 
-class MicroSamplerTCParseStage(MicroSamplerSimulationState):
+class MicroSamplerTCParseStage(MicroSamplerParseState):
     def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
         super().__init__(ctx, sp_timeout, MicroSamplerTCDeploymentState.MICROSAMPLER_STATS)
 
 
-class MicroSamplerTCStatsStage(MicroSamplerSimulationState):
+class MicroSamplerTCStatsStage(MicroSamplerStatsState):
     def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
         super().__init__(ctx, sp_timeout, MicroSamplerTCDeploymentState.DATA_COLLECTION)
