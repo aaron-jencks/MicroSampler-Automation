@@ -145,3 +145,10 @@ class MicroSamplerTCParseStage(MicroSamplerParseState):
 class MicroSamplerTCStatsStage(MicroSamplerStatsState):
     def __init__(self, ctx: BaseConfig, sp_timeout: Optional[float] = None):
         super().__init__(ctx, sp_timeout, MicroSamplerTCDeploymentState.DATA_COLLECTION)
+
+
+class MicroSamplerTCDataCollectionStage(DeploymentState):
+    def execute(self, ctx: MicroSamplerTCLoopContext):
+        # TODO Figure out how the data needs to look for the next step
+        # Maybe just do a list of files or something, idk
+        self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.LOOP_CHECK)
