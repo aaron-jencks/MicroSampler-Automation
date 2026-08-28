@@ -13,6 +13,7 @@ from .struct import BuildResult
 
 
 class MicroSamplerTCDeploymentState(StrEnum):
+    INITIAL= "initial_state"
     PREPARE = "prepare"
     HARNESS_VERIFY = "harness_verify"
     HARNESS_PREPARE = "harness_prepare"
