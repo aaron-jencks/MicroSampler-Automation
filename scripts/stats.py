@@ -225,7 +225,7 @@ for idx in range(int(iters/window)):
     for s in range(len(loopsUArch[idx])):
         exe_unit = {
             f"{k.name}:{k.value}":v
-            for k, v in loopsUArch[idx][s].executionUnits.exeReqs
+            for k, v in loopsUArch[idx][s].executionUnits.exeReqs.items()
         }
         print('loop: {}, state: {}, exe_unit {}:{}'.format(idx, s, exe_unit))
 
