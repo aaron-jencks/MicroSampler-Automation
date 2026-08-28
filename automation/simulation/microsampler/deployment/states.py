@@ -15,7 +15,6 @@ from qstate import StateContext
 from tqdm import tqdm
 
 from config import BaseConfig
-from core.defs import MicroSamplerCoreDeploymentState
 from ..core.states import MicroSamplerSimulationState, MicroSamplerParseState, MicroSamplerStatsState
 from .defs import MicroSamplerTCDeploymentState, MicroSamplerTCLoopContext
 from .exceptions import BuildError, IllegalCodeError
