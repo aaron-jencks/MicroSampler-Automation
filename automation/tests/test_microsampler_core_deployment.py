@@ -28,6 +28,10 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         self.assertNotIn("No such file or directory", log_data)
         self.assertNotIn("ModuleNotFoundError", log_data)
 
+    def check_stats_log_data(self, log_data: str):
+        self.check_log_data(log_data)
+        pass
+
     def test_cross_compiler_exists(self):
         logger.debug("testing cross-compiler existence")
         self.assertIsNotNone(shutil.which("riscv64-unknown-elf-gcc"), "a riscv64-unknown-elf-gcc cross-compiler is required for microsampler deployment")
@@ -141,7 +145,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
 
         self.check_log_data(simulation_log_data)
         self.check_log_data(parse_log_data)
-        self.check_log_data(stats_log_data)
+        self.check_stats_log_data(stats_log_data)
 
 
 if __name__ == '__main__':
