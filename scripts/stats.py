@@ -186,7 +186,7 @@ for component in Component:
     
     print('len: '+str(len(diff[component])))
     if len(diff[component]) == 0:
-        print('No candidates found for '+str(component)+'!')
+        print('No candidates found for '+str(component_names[component])+'!')
     for candidate in diff[component]:
         print('dclass: '+candidate[0])
         print('----------')
