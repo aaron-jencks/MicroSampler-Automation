@@ -30,7 +30,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
 
     def check_stats_log_data(self, log_data: str):
         self.check_log_data(log_data)
-        pass
+        self.assertNotIn("findfont: Generic family 'sans-serif' not found because", log_data)
 
     def test_cross_compiler_exists(self):
         logger.debug("testing cross-compiler existence")

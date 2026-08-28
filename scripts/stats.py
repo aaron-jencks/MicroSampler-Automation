@@ -119,7 +119,7 @@ for x in range(len(loops)):
     loopsUArch.append([state for state in states if state.cycle_begin >= fetch and state.cycle_begin <= retire])
 
 rcParams['font.family'] = 'sans-serif'
-rcParams['font.sans-serif'] = ['Verdana']
+rcParams['font.sans-serif'] = ['Verdana', "Arial", "DejaVu Sans"]
 rcParams['axes.titlesize'] = 14
 rcParams['axes.labelsize'] = 14
 fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(15,6))
