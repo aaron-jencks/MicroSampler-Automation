@@ -27,6 +27,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
     def check_log_data(self, log_data: str):
         self.assertNotIn("No such file or directory", log_data)
         self.assertNotIn("ModuleNotFoundError", log_data)
+        self.assertNotIn("Traceback (most recent call last):", log_data)
 
     def check_stats_log_data(self, log_data: str):
         self.check_log_data(log_data)
