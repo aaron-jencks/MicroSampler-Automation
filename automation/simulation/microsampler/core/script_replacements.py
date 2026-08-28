@@ -172,7 +172,6 @@ def do_stats(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Completed
                 "python", script_path,
                 cfg.app, cfg.key, cfg.design, cfg.suite, str(cfg.iterations), str(cfg.window)
             ],
-            stdout=log_path, stderr=sp.STDOUT,
             timeout=cfg.timeout
         )
     finally:
