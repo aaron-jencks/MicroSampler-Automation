@@ -223,7 +223,11 @@ fmiss.close()
 print('+++++++++++++++++++++++++++++++')
 for idx in range(int(iters/window)):
     for s in range(len(loopsUArch[idx])):
-        print('loop: {}, state: {}, exe_unit {}'.format(idx, s, loopsUArch[idx][s].executionUnits.exeReqs))
+        exe_unit = {
+            f"{k.name}:{k.value}":v
+            for k, v in loopsUArch[idx][s].executionUnits.exeReqs
+        }
+        print('loop: {}, state: {}, exe_unit {}:{}'.format(idx, s, exe_unit))
 
 print('+++++++++++++++++++++++++++++++')
 
