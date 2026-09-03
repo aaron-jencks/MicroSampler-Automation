@@ -8,10 +8,12 @@ from unittest.mock import patch
 
 from config import parse_configs
 from qstate import QSM
+from simulation.microsampler.core.defs import PCFinderConfig
 from simulation.microsampler.deployment.defs import (
     MicroSamplerTCDeploymentState,
     MicroSamplerTCRunConfiguration,
 )
+from simulation.microsampler.pc_finder import UUTPCAddresses
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -268,6 +270,12 @@ class MicroSamplerCustomDeploymentTestCase(unittest.TestCase):
                 / "scripts"
                 / "keys"
             )
+            object_dump = (
+                temp_root / "custom_harness.dump"
+            )
+            object_dump.write_text(
+                "unit-test object dump placeholder\n"
+            )
 
             shutil.copytree(
                 source_harness_directory,
@@ -291,6 +299,7 @@ class MicroSamplerCustomDeploymentTestCase(unittest.TestCase):
             config.harness.assembly_file = "attack.s"
 
             config.harness.make_defines = [
+                "CC=cc",
                 "LOCAL=1",
                 (
                     "BEARSSL_SRC_ROOT="
@@ -307,11 +316,6 @@ class MicroSamplerCustomDeploymentTestCase(unittest.TestCase):
             )
             config.microsampler.deployment_prefix = (
                 microsampler_directory
-            )
-
-            key_directory.mkdir(
-                parents=True,
-                exist_ok=True,
             )
 
             state_machine = QSM.from_config_file(
@@ -335,12 +339,19 @@ class MicroSamplerCustomDeploymentTestCase(unittest.TestCase):
 
             run_config = (
                 MicroSamplerTCRunConfiguration(
+                    run_name="custom-test",
                     suite="custom",
                     apps=["custom_harness"],
                     iterations=1,
                     global_iterations=1,
                     key_size=len(self.FIXED_KEY),
                     fixed_key=self.FIXED_KEY,
+                    pc_config=PCFinderConfig(
+                        obj_file=object_dump,
+                        roi_function="test_roi",
+                        uut_function="test_uut",
+                        warmup=False,
+                    ),
                 )
             )
 
@@ -349,6 +360,14 @@ class MicroSamplerCustomDeploymentTestCase(unittest.TestCase):
             )
             state_machine.context.run_config = (
                 run_config
+            )
+
+            expected_pc_addresses = UUTPCAddresses(
+                roi_start=0x1000,
+                roi_end=0x1004,
+                calling_address=0x1010,
+                return_address=0x1014,
+                start_address=0x2000,
             )
 
             with (
@@ -367,10 +386,19 @@ class MicroSamplerCustomDeploymentTestCase(unittest.TestCase):
                     "core.states.do_stats",
                     side_effect=self.fake_stats,
                 ),
+                patch(
+                    "simulation.microsampler."
+                    "deployment.states.find_pcs",
+                    return_value=expected_pc_addresses,
+                ),
             ):
                 result = state_machine.loop()
 
             self.assertIsNone(result)
+            self.assertEqual(
+                state_machine.context.pc_addresses,
+                expected_pc_addresses,
+            )
 
             attack_source = (
                 harness_directory / "attack.c"
@@ -424,11 +452,19 @@ class MicroSamplerCustomDeploymentTestCase(unittest.TestCase):
             )
             self.assertEqual(
                 state_machine.context.current_key_name,
+                "custom-test-0000",
+            )
+            self.assertEqual(
                 key_files[0].stem,
+                "custom-test-0000",
             )
             self.assertEqual(
                 state_machine.context.run_config.keys,
                 [key_files[0].stem],
+            )
+            self.assertEqual(
+                state_machine.context.current_key_file,
+                key_files[0],
             )
 
             self.assertEqual(
