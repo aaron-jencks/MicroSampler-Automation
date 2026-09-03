@@ -38,6 +38,48 @@
       "kwargs": {
         "ctx": "$ctx"
       }
+    },
+    "key_prepare": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCPrepareKeyStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_deployment": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCDeploymentStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_simulation": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCSimulationStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_parse": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCParseStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_stats": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCStatsStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "data_collection": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCDataCollectionStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "loop_check": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCLoopControllerState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
     }
   }
 }
