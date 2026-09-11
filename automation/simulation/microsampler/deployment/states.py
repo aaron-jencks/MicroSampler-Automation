@@ -149,6 +149,11 @@ class MicroSamplerTCLoopControllerState(DeploymentState):
 
 class MicroSamplerTCDeploymentStage(DeploymentState):
     def execute(self, ctx: MicroSamplerTCLoopContext):
+
+        # Configure the keys, since core deployment uses a list of key names
+        ctx.context.current_key_index = 0
+        ctx.context.run_config.keys = [ctx.context.current_key_name]
+
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.MICROSAMPLER_SIMULATION)
 
 
