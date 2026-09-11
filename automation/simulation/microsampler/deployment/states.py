@@ -15,7 +15,8 @@ from qstate import StateContext
 from tqdm import tqdm
 
 from config import BaseConfig
-from ..core.states import MicroSamplerSimulationState, MicroSamplerParseState, MicroSamplerStatsState
+from core.defs import MicroSamplerCoreDeploymentState
+from ..core.states import MicroSamplerSimulationState, MicroSamplerParseState, MicroSamplerStatsState, MicroSamplerFindPCsState
 from .defs import MicroSamplerTCDeploymentState, MicroSamplerTCLoopContext
 from .exceptions import BuildError, IllegalCodeError
 from ...states import DeploymentState
@@ -34,12 +35,20 @@ class MicroSamplerTCInitialState(DeploymentState):
             ctx.stop(ValueError(f"expected at least one key, found zero"))
             return
 
+        if ctx.context.run_config.global_iterations <= 0:
+            ctx.stop(ValueError(f"expected at least one global iteration, found {ctx.context.run_config.global_iterations}"))
+            return
+
+        if ctx.context.run_config.iterations <= 0:
+            ctx.stop(ValueError(f"expected at least one inner iteration, found {ctx.context.run_config.iterations}"))
+
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.PREPARE)
 
 
 class MicroSamplerTCPrepareState(DeploymentState):
     def execute(self, ctx: MicroSamplerTCLoopContext):
         ctx.context.current_global_iteration = 0
+        ctx.context.current_key_name = None
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.HARNESS_VERIFY)
 
 
@@ -83,21 +92,33 @@ class MicroSamplerTCCompileHarness(DeploymentState):
         if ctx.context.build_status.return_code != 0:
             ctx.stop(BuildError(ctx.context.build_status))
             return
-        self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.DEPLOYMENT_PREPARE)
+        self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.MICROSAMPLER_FIND_PCS)
+
+
+class MicroSamplerTCFindPCsStage(MicroSamplerFindPCsState):
+    def __init__(self, ctx: BaseConfig):
+        super().__init__(ctx, MicroSamplerTCDeploymentState.DEPLOYMENT_PREPARE)
 
 
 class MicroSamplerTCPrepareKeyStage(DeploymentState):
     def execute(self, ctx: MicroSamplerTCLoopContext):
         # Generate 256-byte key and store it as a file in scripts/keys/something.key
         logger.info("Generating key file...")
+
+        if ctx.context.run_config.key_size <= 0:
+            ctx.stop(ValueError("Key size must be greater than 0"))
+            return
+
         key_string = ""
         for _ in range(ctx.context.run_config.key_size):
             c = random.randint(0, 15)
             if c > 9:
                 c = chr(ord('a') + c)
             key_string += str(c)
+
         key_name = f"{datetime.now(tz=UTC).strftime('%Y-%m-%dT%H-%M-%S-%f')}_{ctx.context.run_config.run_name}"
         key_directory = self.config.microsampler.working_directory / "scripts" / "keys"
+        key_directory.mkdir(parents=True, exist_ok=True)
         key_file = key_directory / f"{key_name}.key"
         logger.info(f"Saving key to {key_file}")
         key_file.write_text(key_string)

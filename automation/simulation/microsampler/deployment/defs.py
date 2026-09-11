@@ -13,11 +13,12 @@ from .struct import BuildResult
 
 
 class MicroSamplerTCDeploymentState(StrEnum):
-    INITIAL= "initial_state"
+    INITIAL = "initial_state"
     PREPARE = "prepare"
     HARNESS_VERIFY = "harness_verify"
     HARNESS_PREPARE = "harness_prepare"
     HARNESS_COMPILE = "harness_compile"
+    MICROSAMPLER_FIND_PCS = "microsampler_find_pcs"
     KEY_PREPARE = "key_prepare"
     DEPLOYMENT_PREPARE = "deployment_prepare"
     LOOP_CHECK = "loop_check"
