@@ -58,6 +58,10 @@ class MicroSamplerPrepareState(DeploymentState):
 
 
 class MicroSamplerFindPCsState(DeploymentState):
+    def __init__(self, ctx: BaseConfig, next_state: StrEnum = MicroSamplerCoreDeploymentState.SIMULATION):
+        super().__init__(ctx)
+        self.next_state = next_state
+
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler PC finder step")
         pc_config = ctx.context.run_config.pc_config
@@ -67,7 +71,7 @@ class MicroSamplerFindPCsState(DeploymentState):
             return
         logger.debug(f"found pcs: {pcs}")
         ctx.context.pc_addresses = pcs
-        self.append_deployment_state(ctx, MicroSamplerCoreDeploymentState.SIMULATION)
+        self.append_deployment_state(ctx, self.next_state)
 
 
 CoreMicroSamplerStepFunc = Callable[[BaseConfig, SubprocessArguments], Optional[sp.CompletedProcess]]
