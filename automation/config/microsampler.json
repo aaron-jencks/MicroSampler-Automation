@@ -1,0 +1,5 @@
+{
+  "microsampler": {
+    "core_deployment_path": "config/governor/microsampler_deployment_custom_qsm.json"
+  }
+}
