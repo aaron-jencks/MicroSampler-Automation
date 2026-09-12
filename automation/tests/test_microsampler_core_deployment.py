@@ -102,7 +102,7 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         )
 
         # prepare test site
-        log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / run_config.suite / "ct_ccopy" / str(run_config.iterations) / "0xaa"
+        log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / run_config.suite / config.microsampler.app / str(run_config.iterations) / "0xaa"
         output_log_files = [
             "out-all-asm.log.gz",
             "uarch.pickle",
