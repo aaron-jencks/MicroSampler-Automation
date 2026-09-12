@@ -33,8 +33,56 @@
         "ctx": "$ctx"
       }
     },
+    "microsampler_find_pcs": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCFindPCsStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "key_prepare": {
+      "model": "simulation.microsampler.deployment.states.MicroSamplerTCPrepareKeyStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
     "deployment_prepare": {
       "model": "simulation.microsampler.deployment.states.MicroSamplerTCPrepareDeploymentStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "loop_check": {
+      "model": "simulation.microsampler.deploymnet.states.MicroSamplerTCLoopControllerState",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_deployment": {
+      "model": "simulation.microsampler.deploymnet.states.MicroSamplerTCDeploymentStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_simulation": {
+      "model": "simulation.microsampler.deploymnet.states.MicroSamplerTCSimulationStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_parse": {
+      "model": "simulation.microsampler.deploymnet.states.MicroSamplerTCParseStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "microsampler_stats": {
+      "model": "simulation.microsampler.deploymnet.states.MicroSamplerTCStatsStage",
+      "kwargs": {
+        "ctx": "$ctx"
+      }
+    },
+    "data_collection": {
+      "model": "simulation.microsampler.deploymnet.states.MicroSamplerTCDataCollectionStage",
       "kwargs": {
         "ctx": "$ctx"
       }
