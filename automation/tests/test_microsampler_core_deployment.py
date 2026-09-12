@@ -94,16 +94,11 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         for state, timeout in STATE_TIMEOUTS.items():
             self.assertIsInstance(sm.state_map[state], MicroSamplerCoreStepState)
             sm.state_map[state].sp_timeout = timeout
+
+        # Little bit of finagling to get everything to work
+        config.microsampler.pc_finder.obj_file = Path("../apps/microbench/ct_ccopy/0xaa/ct_ccopy.dump")
         run_config = MicroSamplerRunConfiguration(
-            suite="microbench",
-            apps=["ct_ccopy"],
-            keys=["0xaa"],
-            pc_config=PCFinderConfig(
-                obj_file=Path("../apps/microbench/ct_ccopy/0xaa/ct_ccopy.dump"),
-                roi_function="test_ccopy_loop",
-                uut_function="ccopy",
-                warmup=True
-            )
+            keys=["0xaa"]
         )
 
         # prepare test site

@@ -28,12 +28,10 @@ class HarnessConfig(BaseModel):
 
 
 class PCFinderConfig(BaseModel):
-    suite: str = "microbench"
-    app: Optional[str] = None
-    obj_file: Optional[Path] = None
+    obj_file: Optional[Path] = None         # If none, derives from the harness output files
     roi_function: str = "test_ccopy_loop"
     uut_function: str = "ccopy"
-    warmup: bool = False
+    warmup: bool = True
 
 
 class MicroSamplerConfig(BaseModel):
@@ -43,6 +41,8 @@ class MicroSamplerConfig(BaseModel):
     riscv_root: Path = Path("/local/scratch/riscv")
     core_deployment_qsm: Path = Path("config/governor/microsampler_deployment_core_qsm.json")
     pc_finder: PCFinderConfig = PCFinderConfig()
+    suite: str = "microbench"
+    app: str = "ct_ccopy"
 
 
 class InterpreterConfig(BaseModel):

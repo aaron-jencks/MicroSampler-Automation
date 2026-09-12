@@ -18,12 +18,15 @@ from ..pc_finder import find_pcs
 from .script_replacements import do_simulation, do_parse, do_stats, SubprocessArguments, load_key_value
 from ...states import DeploymentState
 from tools import SubprocessError
+from ..utils import derive_run_configuration
 
 logger = logging.getLogger(__name__)
 
 
 class MicroSamplerInitialState(DeploymentState):
     def execute(self, ctx: MicroSamplerLoopContext):
+        ctx.context.run_config = derive_run_configuration(self.config, self.ctx.context.run_config)
+
         ctx.context.current_key_index = 0
         ctx.context.current_app_index = 0
 
