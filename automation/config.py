@@ -27,12 +27,22 @@ class HarnessConfig(BaseModel):
     uut: UUTConfig = UUTConfig()
 
 
+class PCFinderConfig(BaseModel):
+    suite: str = "microbench"
+    app: Optional[str] = None
+    obj_file: Optional[Path] = None
+    roi_function: str = "test_ccopy_loop"
+    uut_function: str = "ccopy"
+    warmup: bool = False
+
+
 class MicroSamplerConfig(BaseModel):
     working_directory: Path = Path("..")
     scripts_prefix: Path = Path("../scripts/")
     deployment_prefix: Path = Path("..")
     riscv_root: Path = Path("/local/scratch/riscv")
     core_deployment_qsm: Path = Path("config/governor/microsampler_deployment_core_qsm.json")
+    pc_finder: PCFinderConfig = PCFinderConfig()
 
 
 class InterpreterConfig(BaseModel):
