@@ -15,25 +15,21 @@ from qstate import StateContext
 from tqdm import tqdm
 
 from config import BaseConfig
-from core.defs import MicroSamplerCoreDeploymentState
 from ..core.states import MicroSamplerSimulationState, MicroSamplerParseState, MicroSamplerStatsState, MicroSamplerFindPCsState
 from .defs import MicroSamplerTCDeploymentState, MicroSamplerTCLoopContext
 from .exceptions import BuildError, IllegalCodeError
 from ...states import DeploymentState
 from .struct import BuildResult
-from tools import SubprocessError
+from ..utils import derive_run_configuration
 
 logger = logging.getLogger(__name__)
 
 
 class MicroSamplerTCInitialState(DeploymentState):
     def execute(self, ctx: MicroSamplerTCLoopContext):
-        ctx.context.current_key_index = 0
-        ctx.context.current_app_index = 0
+        ctx.context.run_config = derive_run_configuration(self.config, self.ctx.context.run_config)
 
-        if len(ctx.context.run_config.keys) == 0:
-            ctx.stop(ValueError(f"expected at least one key, found zero"))
-            return
+        ctx.context.current_app_index = 0
 
         if ctx.context.run_config.global_iterations <= 0:
             ctx.stop(ValueError(f"expected at least one global iteration, found {ctx.context.run_config.global_iterations}"))
@@ -74,8 +70,10 @@ class MicroSamplerTCCompileHarness(DeploymentState):
     def execute(self, ctx: MicroSamplerTCLoopContext):
         harness_prefix = self.config.harness.prefix
         logger.info(f"Building harness in: {harness_prefix}")
+
         logger.info(f"Fetching UUT source code...")
         shutil.copy(self.config.harness.uut.prefix / self.config.harness.uut.file, harness_prefix)
+
         logger.info("Building harness...")
         args = ["make", "clean", "harness", *self.config.harness.make_defines]
         logger.debug(f"running make with args: {args}")
@@ -92,6 +90,7 @@ class MicroSamplerTCCompileHarness(DeploymentState):
         if ctx.context.build_status.return_code != 0:
             ctx.stop(BuildError(ctx.context.build_status))
             return
+
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.MICROSAMPLER_FIND_PCS)
 
 
@@ -133,7 +132,10 @@ class MicroSamplerTCPrepareDeploymentStage(DeploymentState):
         deploy_path.mkdir(parents=True, exist_ok=True)
         shutil.copy(self.config.harness.prefix / self.config.harness.executable, deploy_path)
         shutil.copy(self.config.harness.prefix / "build" / self.config.harness.assembly_file, deploy_path)
+        logger.info(f"using artifacts generated at {self.config.harness.deployment_prefix}")
         ctx.context.run_config.executable = deploy_path / self.config.harness.executable
+        # I know that this is handled in the derive_run_configuration function, but for readability, I'll re-define it here too
+        ctx.context.run_config.pc_config.obj_file = deploy_path / self.config.harness.assembly_file
         self.append_deployment_state(ctx, MicroSamplerTCDeploymentState.KEY_PREPARE)
 
 
