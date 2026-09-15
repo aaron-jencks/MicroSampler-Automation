@@ -1,5 +1,5 @@
 from config import BaseConfig
-from core.defs import MicroSamplerRunConfiguration
+from .core.defs import MicroSamplerRunConfiguration
 
 
 def derive_run_configuration(cfg: BaseConfig, base_config: MicroSamplerRunConfiguration) -> MicroSamplerRunConfiguration:
