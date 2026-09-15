@@ -144,6 +144,74 @@ class MicroSamplerCoreDeploymentTestCase(unittest.TestCase):
         self.check_log_data(parse_log_data)
         self.check_stats_log_data(stats_log_data)
 
+    def test_deploy_attack_fixture_with_pk(self):
+        config = parse_configs([])
+        config.microsampler.suite = "bearssl_synthetic"
+        config.microsampler.app = "v2"
+
+        config.microsampler.pc_finder.obj_file = Path(
+            "../apps/bearssl-0.6/microsampler_tests/build/v2.dump"
+        )
+        config.microsampler.pc_finder.roi_function = "br_i31_modpow_v2"
+        config.microsampler.pc_finder.uut_function = "br_ccopy_v2"
+        config.microsampler.pc_finder.warmup = False
+
+        sm = MicroSamplerCoreDeploymentMachine.from_config_file(config.microsampler.core_deployment_qsm, ctx=config)
+        for state, timeout in STATE_TIMEOUTS.items():
+            self.assertIsInstance(sm.state_map[state], MicroSamplerCoreStepState)
+            sm.state_map[state].sp_timeout = timeout
+
+        #increase timeout to 10 mins
+        sm.state_map[MicroSamplerCoreDeploymentState.SIMULATION].sp_timeout = 600
+
+        # Little bit of finagling to get everything to work
+        run_config = MicroSamplerRunConfiguration(
+            keys=["0xaa"]
+        )
+
+        # prepare test site
+        log_prefix = config.microsampler.deployment_prefix / "logs" / run_config.design / config.microsampler.suite / config.microsampler.app / str(run_config.iterations) / "0xaa"
+        output_log_files = [
+            "out-all-asm.log.gz",
+            "uarch.pickle",
+            "parser.log",
+            "sets.pickle",
+            f"stats-{run_config.phi}_{run_config.alpha}.log"
+        ]
+        for fname in output_log_files:
+            log_path = log_prefix / fname
+            if log_path.exists():
+                log_path.unlink()
+
+        self.assertIsNone(sm.loop_w_config(run_config))
+
+        # check log data
+        self.assertEqual(log_prefix, sm.context.log_prefix)
+        self.assertTrue(log_prefix.exists())
+
+        for fname in output_log_files:
+            self.assertTrue((log_prefix / fname).exists(), f"expected log file {fname} not found")
+
+        simulation_log = log_prefix / "launch_simulation.log"
+        simulation_log_data = simulation_log.read_text()
+
+        parse_log = log_prefix / "launch_parse.log"
+        parse_log_data = parse_log.read_text()
+
+        stats_log = log_prefix / "launch_stats.log"
+        stats_log_data = stats_log.read_text()
+
+        print("simulation log:")
+        print(simulation_log_data)
+        print("parse log:")
+        print(parse_log_data)
+        print("stats log:")
+        print(stats_log_data)
+
+        self.check_log_data(simulation_log_data)
+        self.check_log_data(parse_log_data)
+        self.check_stats_log_data(stats_log_data)
+
 
 if __name__ == '__main__':
     unittest.main()

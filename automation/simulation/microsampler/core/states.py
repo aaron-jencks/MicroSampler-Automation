@@ -123,7 +123,7 @@ class MicroSamplerCoreStepState(DeploymentState, ABC):
             args.append(keyval)
         elif suite == "bearssl_synthetic":
             executable = app_prefix / full_app
-            args.extend([keyval, iterations])
+            args.extend([keyval, str(iterations)])
         elif suite == "microbench":
             executable = app_prefix / full_app
         else:
