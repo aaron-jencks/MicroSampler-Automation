@@ -51,15 +51,15 @@ class ReportLog:
         builder += "\n\n".join([s.generate_section(ctx, self.events) for s in self.sections])
 
         full_html = f"""<!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Report</title>
-        </head>
-        <body>
-        {builder}
-        </body>
-        </html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Report</title>
+</head>
+<body>
+{builder}
+</body>
+</html>
         """
 
         with open(output_fname, 'w+') as fp:
