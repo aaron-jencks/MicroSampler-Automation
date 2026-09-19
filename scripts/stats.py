@@ -117,19 +117,7 @@ for x in range(len(loops)):
     fetch = loops[x][0].fetch
     retire = loops[x][-1].retire
     loopsUArch.append([state for state in states if state.cycle_begin >= fetch and state.cycle_begin <= retire])
-    
-    
-    
-    
-print("\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print("All samples within valid fetch/retire range:")
-for state in range(len(loopsUArch)):
-    print(str(loopsUArch[state]))
-print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n\n\n")
-    
-    
-    
-    
+
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Verdana', "Arial", "DejaVu Sans"]
 rcParams['axes.titlesize'] = 14
@@ -144,10 +132,10 @@ for component in Component:
     #  Collect common elements across rounds with the same key bit value
     for dclass in theta_lst:
         theta_lst[dclass][component] = list()
-    #print("Finding unique and common elements for "+str(component))
+    print("Finding unique and common elements for "+str(component))
     for idx in range(int(iters/window)):
-        #if component == Component.EXESTATUS:
-        #    print('ITER {}'.format(idx))
+        if component == Component.EXESTATUS:
+            print('ITER {}'.format(idx))
         # For each UArch state object associated with the current loop iteration...
         for state in loopsUArch[idx]:
             # If this state object differs from any of the state objects we have seen so far,
@@ -156,8 +144,8 @@ for component in Component:
             # previously collected state objects for that component. 'sidx' indicates if a match was found for an "equivalent" state,
             # and a tally is updated to reflect how many repititions of the given (component,state) have been seen for this iteration.
             sidx = find_index(loop_unique_states, lambda e: e[0].compare(component, state))
-            #if component == Component.EXESTATUS:
-            #    print(state.print_feature(Component.EXESTATUS), sidx)
+            if component == Component.EXESTATUS:
+                print(state.print_feature(Component.EXESTATUS), sidx)
             if sidx is None:
                 loop_unique_states.append([state, 1])
             else:
@@ -185,11 +173,11 @@ for component in Component:
             state[1] = state[1]/classcnt[dclass]
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
-    #for dclass in theta_lst.keys():
-    #    print('Unique states for dclass: '+dclass)
-    #    print(len(theta_lst[dclass][component]))
-    #    for state in theta_lst[dclass][component]:
-    #        print(state[0], state[1])
+    for dclass in theta_lst.keys():
+        print('Unique states for dclass: '+dclass)
+        print(len(theta_lst[dclass][component]))
+        for state in theta_lst[dclass][component]:
+            print(state[0], state[1])
 
     print("=======================================================================================")
     print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
@@ -257,14 +245,14 @@ print([dtlbm[x] for x in range(int(iters/window))])
 print('dcache misses for each loop:')
 print([dcachem[x] for x in range(int(iters/window))])
 
-#for dclass in theta_lst.keys():
-#    print(dclass)
-#    for state in theta_lst[dclass][Component.EXESTATUS]:
-#        print(state[0].print_feature(Component.EXESTATUS))
-#        print(state[1])
+for dclass in theta_lst.keys():
+    print(dclass)
+    for state in theta_lst[dclass][Component.EXESTATUS]:
+        print(state[0].print_feature(Component.EXESTATUS))
+        print(state[1])
 
-#print(sum([len(loopsUArch[idx]) for idx in range(len(loops)-1) if key[idx] == '1'])/loop_bit1_cnt)
-#print(sum([len(loopsUArch[idx]) for idx in range(len(loops)-1) if key[idx] == '0'])/loop_bit0_cnt)
+print(sum([len(loopsUArch[idx]) for idx in range(len(loops)-1) if key[idx] == '1'])/loop_bit1_cnt)
+print(sum([len(loopsUArch[idx]) for idx in range(len(loops)-1) if key[idx] == '0'])/loop_bit0_cnt)
 
 for component in Component:
     print(str(component))
