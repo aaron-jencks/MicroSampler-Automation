@@ -1,7 +1,7 @@
 CC ?= cc
 CFLAGS ?= -O2
-BEARSSL_SRC_ROOT ?= ../../../../../apps/bearssl-0.6/src
-BEARSSL_INC_ROOT ?= ../../../../../apps/bearssl-0.6/inc
+BEARSSL_SRC_ROOT ?= ../../apps/bearssl-0.6/src
+BEARSSL_INC_ROOT ?= ../../apps/bearssl-0.6/inc
 CPPFLAGS += -I. -I$(BEARSSL_SRC_ROOT) -I$(BEARSSL_INC_ROOT)
 LDFLAGS ?=
 LDLIBS ?=-lpthread -lm

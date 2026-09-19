@@ -1,6 +1,5 @@
 {
     "harness": {
-        "prefix": "bearssl-0.6/ccopy/v2/harness",
         "deployment_prefix": "bearssl-0.6/ccopy/v3/deploy",
         "uut": {
             "prefix": "bearssl-0.6/ccopy/v3/uut"

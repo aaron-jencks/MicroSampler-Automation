@@ -12,7 +12,7 @@ class UUTConfig(BaseModel):
 
 
 class HarnessConfig(BaseModel):
-    prefix: Path = Path("bearssl-0.6/ccopy/v2/harness/")
+    prefix: Path = Path("./harness/")
     executable: str = "harness"
     target: str = "attack.c"
     assembly_file: str = "attack.s"

@@ -17,21 +17,21 @@ Your implementation must work within the lifecycle-hook interface shown below.
 
 Relevant harness support code:
 
-[[source:bearssl-0.6/ccopy/v2/harness/encryption_util.h]]
+[[source:harness/encryption_util.h]]
 
-[[source:bearssl-0.6/ccopy/v2/harness/encryption_util.c]]
+[[source:harness/encryption_util.c]]
 
-[[source:bearssl-0.6/ccopy/v2/harness/error.h]]
+[[source:harness/error.h]]
 
-[[source:bearssl-0.6/ccopy/v2/harness/error.c]]
+[[source:harness/error.c]]
 
-[[source:bearssl-0.6/ccopy/v2/harness/context.h]]
+[[source:harness/context.h]]
 
-[[source:bearssl-0.6/ccopy/v2/harness/context.c]]
+[[source:harness/context.c]]
 
 Required attack.c interface:
 
-[[source:bearssl-0.6/ccopy/v2/harness/skeleton.h]]
+[[source:harness/skeleton.h]]
 
 Allowed local includes:
 
