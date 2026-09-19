@@ -27,8 +27,19 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             if sidx is None:
                 states.append(state[0])
                 
-    for s in range(states):
+    
+    
+    
+    
+    
+    for s in range(len(states)):
         print(states[s].print_feature(component))
+    
+    
+    
+    
+    
+    
 
     obsrv = {k: [] for k in theta_lst.keys()}
     diff = list()
