@@ -51,7 +51,10 @@
       "model": "agents.states.ConclusionState",
       "kwargs": {
         "ctx": "$ctx",
-        "reporter": "$reporter"
+        "reporter": "$reporter",
+        "hypothesis_agent": "$hypothesis_agent",
+        "implementation_agent": "$implementation_agent",
+        "summarization_agent": "$summarization_agent"
       }
     }
   }

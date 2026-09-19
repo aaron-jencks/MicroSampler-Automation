@@ -8,7 +8,8 @@ from pydantic import BaseModel
 from agents.responses import Hypothesis, Implementation, Summarization
 from agents.defs import LoopState
 from config import BaseConfig
-from reporting.default.events import AnalysisEvent, ConclusionEvent, ImplementationErrorEvent, SimulationErrorEvent
+from reporting.default.events import AnalysisEvent, ConclusionEvent, ImplementationErrorEvent, SimulationErrorEvent, \
+    ConclusionData
 from reporting.events import ReportEvent, QSMReportEvent
 from reporting.sections import ReportSection
 from reporting.tables import MarkdownTableBuilder
@@ -140,7 +141,16 @@ class TimelineSection(ReportSection):
 
         for event in events:
             payload = event.payload
-            if isinstance(payload, StatisticalAnalysisResults):
+            if isinstance(payload, ConclusionData):
+                payload = {
+                    "stats": _format_stats_results_json(payload.stats),
+                    "is_early": payload.is_early,
+                    "token_usage": {
+                        k: v.model_dump()
+                        for k, v in payload.token_usage.items()
+                    },
+                }
+            elif isinstance(payload, StatisticalAnalysisResults):
                 payload = _format_stats_results_json(payload)
             elif isinstance(payload, BaseModel):
                 payload = payload.model_dump()

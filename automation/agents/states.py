@@ -8,7 +8,7 @@ from config import BaseConfig
 from prompting.client import Agent
 from prompting.templates import TemplateController
 from reporting.default.events import HypothesisEvent, ImplementationEvent, SimulationDeploymentEvent, \
-    ImplementationErrorEvent, SimulationErrorEvent, AnalysisEvent, SummarizationEvent, ConclusionEvent
+    ImplementationErrorEvent, SimulationErrorEvent, AnalysisEvent, SummarizationEvent, ConclusionEvent, ConclusionData
 from reporting.logger import ReportLog
 from simulation.ccopy.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
 from stats import generate_statistical_analysis
@@ -107,6 +107,7 @@ class AnalysisState(GovernorLoopState):
         logger.info(f"Current average score: {ctx.context.current_stats.iteration_score:0.4f}")
         if ctx.context.current_stats.iteration_score > 0.95:
             logger.info(f"analysis hit score threshold")
+            ctx.context.stopping_early = True
             self.append_loop_state(ctx, LoopState.CONCLUSION)
             return
         self.append_loop_state(ctx, LoopState.SUMMARIZATION)
@@ -138,6 +139,24 @@ class SummarizationState(AgentLoopState):
 
 
 class ConclusionState(GovernorLoopState):
+    def __init__(
+            self, ctx: BaseConfig, reporter: ReportLog,
+            hypothesis_agent: Agent, implementation_agent: Agent, summarization_agent: Agent,
+    ):
+        super().__init__(ctx, reporter)
+        self.hypothesis_agent = hypothesis_agent
+        self.implementation_agent = implementation_agent
+        self.summarization_agent = summarization_agent
+
     def execute(self, ctx: AgentLoopContext):
         logger.info("exiting loop")
-        self.reporter.log(ConclusionEvent(ctx.context.iteration, ctx.context.current_stats))
+        data = ConclusionData(
+            is_early=ctx.context.stopping_early,
+            stats=ctx.context.current_stats,
+            token_usage={
+                "hypothesis": self.hypothesis_agent.token_usage,
+                "implementation": self.implementation_agent.token_usage,
+                "summarization": self.summarization_agent.token_usage,
+            }
+        )
+        self.reporter.log(ConclusionEvent(ctx.context.iteration, data))

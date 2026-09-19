@@ -27,6 +27,7 @@ class GovernorContext:
     current_stats: Optional[StatisticalAnalysisResults] = None
     current_results: Optional[pd.DataFrame] = None
     simulation_feedback: Optional[str] = None
+    stopping_early: bool = False
 
 
 class AgentLoopContext(StateContext):

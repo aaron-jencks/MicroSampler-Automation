@@ -9,6 +9,7 @@ from langchain.agents.structured_output import ToolStrategy
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
+from pydantic import BaseModel
 
 from config import BaseConfig
 from .responses import DryRunnableBaseModel
@@ -31,6 +32,11 @@ def _create_context_compaction_middleware(ctx: BaseConfig, model: ChatOpenAI):
     ]
 
 
+class TokenUsageMetric(BaseModel):
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+
 class Agent:
     def __init__(
             self, ctx: BaseConfig, model: str,
@@ -49,6 +55,7 @@ class Agent:
         self.dry_run = dry_run
         self.templates = templates
         self.tools = list(tools or [])
+        self.token_usage = TokenUsageMetric()
         if ctx.llm.api_key is not None:
             self.model = ChatOpenAI(
                 model=model,
@@ -87,4 +94,6 @@ class Agent:
                 }
             }
         )
+        self.token_usage.input_tokens += response.usage_metadata["input_tokens"]
+        self.token_usage.output_tokens += response.usage_metadata["output_tokens"]
         return response["structured_response"]

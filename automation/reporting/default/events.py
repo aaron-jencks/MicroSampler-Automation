@@ -1,7 +1,9 @@
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, Dict
 
 from agents.responses import Hypothesis, Implementation, Summarization
 from agents.defs import LoopState
+from prompting.client import TokenUsageMetric
 from reporting.events import ReportEvent, QSMReportEvent
 from stats import StatisticalAnalysisResults
 
@@ -51,6 +53,13 @@ class SummarizationEvent(QSMReportEvent):
         super().__init__(iteration, LoopState.SUMMARIZATION, "output", payload)
 
 
+@dataclass
+class ConclusionData:
+    is_early: bool
+    stats: StatisticalAnalysisResults
+    token_usage: Dict[str, TokenUsageMetric]
+
+
 class ConclusionEvent(QSMReportEvent):
-    def __init__(self, iteration: int, payload: StatisticalAnalysisResults):
+    def __init__(self, iteration: int, payload: ConclusionData):
         super().__init__(iteration, LoopState.CONCLUSION, "output", payload)
