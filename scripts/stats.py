@@ -26,20 +26,6 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             sidx = find_index(states, lambda e: e.compare(component, state[0])) 
             if sidx is None:
                 states.append(state[0])
-                
-    
-    
-    
-    
-    
-    for s in range(len(states)):
-        print(states[s].print_feature(component))
-    
-    
-    
-    
-    
-    
 
     obsrv = {k: [] for k in theta_lst.keys()}
     diff = list()
@@ -54,6 +40,17 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
                 obsrv[dclass].append(theta_lst[dclass][component][sidx][1])
                 stats[j].append((dclass, theta_lst[dclass][component][sidx][1]))
 
+    
+    
+    
+    
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print(stats)
+    print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+    
+    
+    
+    
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
         obsrv_candidates[dclass] = [0] * len(states) 
