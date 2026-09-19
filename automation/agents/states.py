@@ -129,7 +129,7 @@ class SummarizationState(AgentLoopState):
         self.reporter.log(SummarizationEvent(ctx.context.iteration, ctx.context.current_summarization))
         ctx.context.simulation_feedback = None
         ctx.context.iteration += 1
-        if ctx.context.iteration > 2 and self.dry_run:
+        if ctx.context.iteration > 2 and self.dry_run or ctx.context.iteration > self.config.max_loop_iterations:
             # Break after 2 iterations to test the entire loop
             # And any interactions between summarization and hypothesis
             self.append_loop_state(ctx, LoopState.CONCLUSION)
