@@ -124,7 +124,7 @@ for x in range(len(loops)):
 print("\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 print("All samples within valid fetch/retire range:")
 for state in range(len(loopsUArch)):
-    print(loopsUArch[state])
+    print(str(loopsUArch[state]))
 print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n\n\n")
     
     
