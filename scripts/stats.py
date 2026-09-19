@@ -118,8 +118,7 @@ for x in range(len(loops)):
     retire = loops[x][-1].retire
     print(f">>>loop {x}: fetch: {fetch}, retire: {retire}")
     for state in range(len(states)):
-        for field, value in state.__dict__.items():
-            print(f"{field}: {value}")
+        print(states[state])
     loopsUArch.append([state for state in states if state.cycle_begin >= fetch and state.cycle_begin <= retire])
 
 rcParams['font.family'] = 'sans-serif'
