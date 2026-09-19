@@ -107,7 +107,19 @@ loopsUArch = []
 loop_unique_states = []
 theta_lst = {w: {} for w in key}
 diff = {}
-
+    
+    
+    
+    
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print(f"Total loop length: {len(loops)}")
+    for x in range(len(loops)):
+        print(f"Loop {x} length: {len(loops[x])}")
+    print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+    
+    
+    
+    
 # Cross-reference RoI from begin/end instructions with UArch objects
 # for all cycles enclosed by the fetch/retire cycles for those RoI instructions.
 print("Gathering loop state samples..")
