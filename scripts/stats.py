@@ -106,6 +106,7 @@ print(classcnt)
 loopsUArch = []
 loop_unique_states = []
 theta_lst = {w: {} for w in key}
+print(f"theta_lst: {theta_lst}")
 diff = {}
 
 # Cross-reference RoI from begin/end instructions with UArch objects
@@ -116,9 +117,6 @@ for x in range(len(loops)):
 
     fetch = loops[x][0].fetch
     retire = loops[x][-1].retire
-    print(f">>>loop {x}: fetch: {fetch}, retire: {retire}")
-    for state in range(len(states)):
-        print(states[state])
     loopsUArch.append([state for state in states if state.cycle_begin >= fetch and state.cycle_begin <= retire])
 
 rcParams['font.family'] = 'sans-serif'
@@ -175,13 +173,14 @@ for component in Component:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
 
+    print(f"theta_lst before uarch_diff: {theta_lst}")
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
-    #for dclass in theta_lst.keys():
-    #    print('Unique states for dclass: '+dclass)
-    #    print(len(theta_lst[dclass][component]))
-    #    for state in theta_lst[dclass][component]:
-    #        print(state[0], state[1])
+    for dclass in theta_lst.keys():
+        print('Unique states for dclass: '+dclass)
+        print(len(theta_lst[dclass][component]))
+        for state in theta_lst[dclass][component]:
+            print(state[0], state[1])
 
     print("=======================================================================================")
     print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
