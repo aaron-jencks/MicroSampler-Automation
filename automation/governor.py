@@ -2,7 +2,7 @@ import argparse
 import datetime as dt
 import logging
 from pathlib import Path
-from typing import Dict, List, Type
+from typing import Dict, List, Optional, Type
 
 from cascade_config import CascadeConfig
 from pydantic import BaseModel
@@ -70,7 +70,7 @@ def create_agent_from_config(
     )
 
 
-def main(ctx: BaseConfig, dry: bool = False):
+def main(ctx: BaseConfig, dry: bool = False, performance_log: Optional[Path] = None):
     reporter = ReportLog()
     for section in create_default_report_sections():
         reporter.add_section(section)
@@ -104,17 +104,20 @@ def main(ctx: BaseConfig, dry: bool = False):
     q.loop()
 
     reporter.generate_report(ctx)
+    if performance_log is not None:
+        reporter.generate_performance_report(ctx, performance_log)
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help='indicates to exit after generating the first prompts')
     ap.add_argument('--run-name', type=str, default=None, help='the name of the run to use, overrides the one in the config file')
+    ap.add_argument("--performance-log", type=Path, default=None, help='indicates to log the performance metrics')
     args, cfg = parse_args(ap)
 
     if args.run_name is not None:
         cfg.final_report.run_name = args.run_name
 
     setup_logging(cfg)
-    main(cfg, args.dry_run)
+    main(cfg, args.dry_run, args.performance_log)
     

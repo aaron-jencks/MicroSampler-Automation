@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
+import json
 import logging
 from pathlib import Path
 import shutil
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from config import BaseConfig
 from reporting.events import ReportEvent
@@ -34,7 +35,7 @@ class ReportLog:
     def log(self, d: ReportEvent):
         self.events.append(d)
 
-    def generate_report(self, ctx: BaseConfig):
+    def generate_report(self, ctx: BaseConfig, performance_log: Optional[Path] = None):
         prefix, output_fname = generate_timestamped_report_file_name(ctx)
         logger.info(f'generating report to {output_fname.resolve()}')
 
@@ -66,3 +67,15 @@ class ReportLog:
             fp.write(full_html)
 
         logger.info(f"wrote report to {output_fname.resolve()}")
+
+    def generate_performance_report(self, ctx: BaseConfig, performance_log: Path):
+        logger.info(f'generating performance data to {performance_log.resolve()}')
+
+        builder = {}
+        for section in self.sections:
+            builder[section.name.lower().replace(" ", "_")] = section.body(ctx, self.events)
+
+        with open(performance_log, 'w+') as fp:
+            json.dump(builder, fp, indent=2)
+
+        logger.info(f"wrote performance data to {performance_log.resolve()}")

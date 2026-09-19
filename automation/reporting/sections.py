@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, List
 
 import markdown
 
@@ -13,11 +13,15 @@ class ReportSection(ABC):
         self.index = index
 
     @abstractmethod
-    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
+    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> Any:
+        pass
+
+    @abstractmethod
+    def html_body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         pass
 
     def generate_section(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         builder = f"<details>\n<summary>{self.name}</summary>\n\n"
-        builder += markdown.markdown(self.body(ctx, events), extensions=['tables', 'fenced_code'])
+        builder += markdown.markdown(self.html_body(ctx, events), extensions=['tables', 'fenced_code'])
         builder += "\n\n</details>"
         return builder

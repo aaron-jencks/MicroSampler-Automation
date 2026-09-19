@@ -1,7 +1,9 @@
 from collections import defaultdict
-from typing import Iterable, List, Optional
+from dataclasses import dataclass, asdict, is_dataclass
+from typing import Any, Iterable, List, Optional
 
 import pandas as pd
+from pydantic import BaseModel
 
 from agents.responses import Hypothesis, Implementation, Summarization
 from agents.defs import LoopState
@@ -107,11 +109,58 @@ def _latest_payload_before_or_at(
     return result
 
 
+def _format_dataframe_json(df: pd.DataFrame) -> dict:
+    return {
+        "columns": df.columns.tolist(),
+        "data": df.values.tolist(),
+    }
+
+
+def _format_stats_results_json(stats: StatisticalAnalysisResults) -> dict:
+    return {
+        "global_data": {
+            "score": stats.global_score,
+            "distribution": _format_dataframe_json(stats.global_distribution),
+            "t_test": _format_dataframe_json(stats.global_welch_ttest_data),
+        },
+        "iteration_data": {
+            "score": stats.iteration_score,
+            "distribution": _format_dataframe_json(stats.iteration_distribution),
+            "t_test": _format_dataframe_json(stats.iteration_welch_ttest_data)
+        }
+    }
+
+
 class TimelineSection(ReportSection):
     def __init__(self, index: int = 0):
         super().__init__(index, "Timeline")
 
-    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
+    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> Any:
+        result = []
+
+        for event in events:
+            payload = event.payload
+            if isinstance(payload, StatisticalAnalysisResults):
+                payload = _format_stats_results_json(payload)
+            elif isinstance(payload, BaseModel):
+                payload = payload.model_dump()
+            elif is_dataclass(payload):
+                payload = asdict(payload)
+
+            data = {
+                "iteration": event.iteration,
+                "timestamp": event.timestamp.isoformat(),
+                "name": event.state.name.title() if isinstance(event, QSMReportEvent) else "",
+                "kind": event.kind,
+                "payload": payload,
+            }
+
+            result.append(data)
+
+        return result
+
+
+    def html_body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         if len(events) == 0:
             return "No report events were recorded."
 
@@ -158,7 +207,19 @@ class FinalVerificationSection(ReportSection):
     def __init__(self, index: int = 1):
         super().__init__(index, "Final Verification")
 
-    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
+    def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> Any:
+        stats_event = self._find_final_stats_event(events)
+        if stats_event is None or not isinstance(stats_event.payload, StatisticalAnalysisResults):
+            return {}
+
+        stats = stats_event.payload
+
+        result = _format_stats_results_json(stats)
+        result["iteration"] = stats_event.iteration
+
+        return result
+
+    def html_body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
         stats_event = self._find_final_stats_event(events)
         if stats_event is None or not isinstance(stats_event.payload, StatisticalAnalysisResults):
             return "No final statistics are available."
