@@ -9,9 +9,9 @@ from langchain.agents.structured_output import ToolStrategy
 from langchain_core.tools import BaseTool
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
-from pydantic import BaseModel
 
 from config import BaseConfig
+from .responses import DryRunnableBaseModel
 
 logger = logging.getLogger(__file__)
 
@@ -34,7 +34,7 @@ def _create_context_compaction_middleware(ctx: BaseConfig, model: ChatOpenAI):
 class Agent:
     def __init__(
             self, ctx: BaseConfig, model: str,
-            name: str, output_format: Type[BaseModel],
+            name: str, output_format: Type[DryRunnableBaseModel],
             system_prompt: str,
             templates: Dict[str, Path],
             tools: Optional[Sequence[BaseTool]] = None,
@@ -71,10 +71,10 @@ class Agent:
         with open(self.templates[name], 'r') as template:
             return template.read()
 
-    def prompt_model(self, ctx: BaseConfig, prompt: str) -> Optional[BaseModel]:
+    def prompt_model(self, ctx: BaseConfig, prompt: str) -> Optional[DryRunnableBaseModel]:
         logger.debug(f"prompting {self.name} agent with {prompt}")
         if self.dry_run:
-            return None
+            return self.output_format.from_dry_run()
         response = self.agent.invoke(
             {
                 "messages": [
