@@ -40,17 +40,6 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
                 obsrv[dclass].append(theta_lst[dclass][component][sidx][1])
                 stats[j].append((dclass, theta_lst[dclass][component][sidx][1]))
 
-    
-    
-    
-    
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    print(stats)
-    print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-    
-    
-    
-    
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
         obsrv_candidates[dclass] = [0] * len(states) 
@@ -128,7 +117,19 @@ for x in range(len(loops)):
     fetch = loops[x][0].fetch
     retire = loops[x][-1].retire
     loopsUArch.append([state for state in states if state.cycle_begin >= fetch and state.cycle_begin <= retire])
-
+    
+    
+    
+    
+print("\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+print("All samples within valid fetch/retire range:")
+for state in range(len(loopsUArch)):
+    print(f"start: {loopsUArch[state].cycle_begin}, end: {loopsUArch[state].cycle_end}, state:\n{loopsUArch[state].print_feature()")
+print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n\n\n")
+    
+    
+    
+    
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Verdana', "Arial", "DejaVu Sans"]
 rcParams['axes.titlesize'] = 14
