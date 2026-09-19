@@ -39,6 +39,9 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             else:
                 obsrv[dclass].append(theta_lst[dclass][component][sidx][1])
                 stats[j].append((dclass, theta_lst[dclass][component][sidx][1]))
+                
+    print(f"Stats for {component}")
+    print(stats)
 
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
@@ -108,19 +111,6 @@ loop_unique_states = []
 theta_lst = {w: {} for w in key}
 diff = {}
     
-    
-    
-    
-print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print(f"Total number of loops: {len(loops)}\nloop\tseq\tfetch\tretire\tinstruction")
-for x in range(len(loops)):
-    for y in range(len(loops[x])):
-        print(f"{x}\t{loops[x][y].seqnum}\t{loops[x][y].fetch}\t{loops[x][y].retire}\t{loops[x][y].inst}")
-print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-    
-    
-    
-    
 # Cross-reference RoI from begin/end instructions with UArch objects
 # for all cycles enclosed by the fetch/retire cycles for those RoI instructions.
 print("Gathering loop state samples..")
@@ -145,10 +135,10 @@ for component in Component:
     #  Collect common elements across rounds with the same key bit value
     for dclass in theta_lst:
         theta_lst[dclass][component] = list()
-    print("Finding unique and common elements for "+str(component))
+    #print("Finding unique and common elements for "+str(component))
     for idx in range(int(iters/window)):
-        if component == Component.EXESTATUS:
-            print('ITER {}'.format(idx))
+        #if component == Component.EXESTATUS:
+        #    print('ITER {}'.format(idx))
         # For each UArch state object associated with the current loop iteration...
         for state in loopsUArch[idx]:
             # If this state object differs from any of the state objects we have seen so far,
@@ -157,8 +147,8 @@ for component in Component:
             # previously collected state objects for that component. 'sidx' indicates if a match was found for an "equivalent" state,
             # and a tally is updated to reflect how many repititions of the given (component,state) have been seen for this iteration.
             sidx = find_index(loop_unique_states, lambda e: e[0].compare(component, state))
-            if component == Component.EXESTATUS:
-                print(state.print_feature(Component.EXESTATUS), sidx)
+            #if component == Component.EXESTATUS:
+            #    print(state.print_feature(Component.EXESTATUS), sidx)
             if sidx is None:
                 loop_unique_states.append([state, 1])
             else:
