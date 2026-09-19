@@ -113,6 +113,10 @@ class AnalysisState(GovernorLoopState):
 
 
 class SummarizationState(AgentLoopState):
+    def __init__(self, ctx: BaseConfig, agent: Agent, reporter: ReportLog, template_controller: TemplateController, dry_run: bool):
+        super().__init__(ctx, agent, reporter, template_controller)
+        self.dry_run = dry_run
+
     def execute(self, ctx: AgentLoopContext):
         logger.info("starting summarization for iteration {}".format(ctx.context.iteration))
         ctx.context.current_summarization = self.prompt_model(
@@ -125,7 +129,12 @@ class SummarizationState(AgentLoopState):
         self.reporter.log(SummarizationEvent(ctx.context.iteration, ctx.context.current_summarization))
         ctx.context.simulation_feedback = None
         ctx.context.iteration += 1
-        self.append_loop_state(ctx, LoopState.HYPOTHESIS)
+        if ctx.context.iteration > 2 and self.dry_run:
+            # Break after 2 iterations to test the entire loop
+            # And any interactions between summarization and hypothesis
+            self.append_loop_state(ctx, LoopState.CONCLUSION)
+        else:
+            self.append_loop_state(ctx, LoopState.HYPOTHESIS)
 
 
 class ConclusionState(GovernorLoopState):

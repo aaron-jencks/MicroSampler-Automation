@@ -43,7 +43,8 @@
         "ctx": "$ctx",
         "agent": "$summarization_agent",
         "reporter": "$reporter",
-        "template_controller": "$template_controller"
+        "template_controller": "$template_controller",
+        "dry_run": "$dry_run"
       }
     },
     "conclusion": {

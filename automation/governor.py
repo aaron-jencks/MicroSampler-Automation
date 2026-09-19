@@ -83,6 +83,7 @@ def main(ctx: BaseConfig, dry: bool = False):
     deployment_controller = QSM.from_config_file(
         ctx.deployment_qsm_path,
         ctx=ctx,
+        dry_run=dry,
     )
     tool_registry = create_default_agent_tool_registry(ctx, state, reporter)
 
@@ -95,6 +96,7 @@ def main(ctx: BaseConfig, dry: bool = False):
         hypothesis_agent=create_agent_from_config(ctx, template_controller, "hypothesis", Hypothesis, tool_registry, dry),
         implementation_agent=create_agent_from_config(ctx, template_controller, "implementation", Implementation, tool_registry, dry),
         summarization_agent=create_agent_from_config(ctx, template_controller, "summarization", Summarization, tool_registry, dry),
+        dry_run=dry,
     )
     q.context = state
 
