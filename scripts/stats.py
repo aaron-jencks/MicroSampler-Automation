@@ -173,14 +173,13 @@ for component in Component:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
 
-    print(f"theta_lst before uarch_diff: {theta_lst}")
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
-    for dclass in theta_lst.keys():
-        print('Unique states for dclass: '+dclass)
-        print(len(theta_lst[dclass][component]))
-        for state in theta_lst[dclass][component]:
-            print(state[0], state[1])
+    #for dclass in theta_lst.keys():
+    #    print('Unique states for dclass: '+dclass)
+    #    print(len(theta_lst[dclass][component]))
+    #    for state in theta_lst[dclass][component]:
+    #        print(state[0], state[1])
 
     print("=======================================================================================")
     print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
