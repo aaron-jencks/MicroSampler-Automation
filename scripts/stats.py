@@ -114,7 +114,8 @@ diff = {}
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 print(f"Total loop length: {len(loops)}")
 for x in range(len(loops)):
-    print(loops[x])
+    for y in range(len(loops[x]))
+        print(loops[x][y])
 print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
     
     
