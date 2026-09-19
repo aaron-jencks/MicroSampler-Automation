@@ -14,11 +14,6 @@ colors = ['blue', 'darkorange', 'violet', 'green', 'maroon', 'red', 'dimgray', '
 markers = ['o', 'x', '<', '|', '*', '+', '_', '.', '^', 'P', 'X', 'D', '>', '1', '2', '3'] 
 
 def uarch_diff(component, theta_lst, axs, _phi, _alpha):
-  
-    print(f">>> Component: {component}")
-    
-    
-  
     states = list()   
     seed = list(theta_lst.keys())[0]
     for state in theta_lst[seed][component]:
@@ -31,6 +26,8 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             sidx = find_index(states, lambda e: e.compare(component, state[0])) 
             if sidx is None:
                 states.append(state[0])
+                
+    print(f">>> states during uarch_diff: {states}")
 
     obsrv = {k: [] for k in theta_lst.keys()}
     diff = list()
