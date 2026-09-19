@@ -112,10 +112,10 @@ diff = {}
     
     
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print(f"Total loop length: {len(loops)}")
+print(f"Total number of loops: {len(loops)}\nloop\tseq\tfetch\tretire\tinstruction")
 for x in range(len(loops)):
     for y in range(len(loops[x])):
-        print(loops[x][y])
+        print(f"{x}\t{loops[x][y].seqnum}\t{loops[x][y].fetch}\t{loops[x][y].retire}\t{loops[x][y].inst}")
 print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
     
     
@@ -186,11 +186,11 @@ for component in Component:
             state[1] = state[1]/classcnt[dclass]
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
-    for dclass in theta_lst.keys():
-        print('Unique states for dclass: '+dclass)
-        print(len(theta_lst[dclass][component]))
-        for state in theta_lst[dclass][component]:
-            print(state[0], state[1])
+    #for dclass in theta_lst.keys():
+    #    print('Unique states for dclass: '+dclass)
+    #    print(len(theta_lst[dclass][component]))
+    #    for state in theta_lst[dclass][component]:
+    #        print(state[0], state[1])
 
     print("=======================================================================================")
     print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
@@ -258,11 +258,11 @@ print([dtlbm[x] for x in range(int(iters/window))])
 print('dcache misses for each loop:')
 print([dcachem[x] for x in range(int(iters/window))])
 
-for dclass in theta_lst.keys():
-    print(dclass)
-    for state in theta_lst[dclass][Component.EXESTATUS]:
-        print(state[0].print_feature(Component.EXESTATUS))
-        print(state[1])
+#for dclass in theta_lst.keys():
+#    print(dclass)
+#    for state in theta_lst[dclass][Component.EXESTATUS]:
+#        print(state[0].print_feature(Component.EXESTATUS))
+#        print(state[1])
 
 #print(sum([len(loopsUArch[idx]) for idx in range(len(loops)-1) if key[idx] == '1'])/loop_bit1_cnt)
 #print(sum([len(loopsUArch[idx]) for idx in range(len(loops)-1) if key[idx] == '0'])/loop_bit0_cnt)
