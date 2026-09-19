@@ -14,6 +14,11 @@ colors = ['blue', 'darkorange', 'violet', 'green', 'maroon', 'red', 'dimgray', '
 markers = ['o', 'x', '<', '|', '*', '+', '_', '.', '^', 'P', 'X', 'D', '>', '1', '2', '3'] 
 
 def uarch_diff(component, theta_lst, axs, _phi, _alpha):
+  
+    print(f">>> Component: {component}")
+    
+    
+  
     states = list()   
     seed = list(theta_lst.keys())[0]
     for state in theta_lst[seed][component]:
@@ -106,7 +111,6 @@ print(classcnt)
 loopsUArch = []
 loop_unique_states = []
 theta_lst = {w: {} for w in key}
-print(f"theta_lst: {theta_lst}")
 diff = {}
 
 # Cross-reference RoI from begin/end instructions with UArch objects
@@ -172,7 +176,6 @@ for component in Component:
     for dclass in theta_lst:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
-
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
     #for dclass in theta_lst.keys():
