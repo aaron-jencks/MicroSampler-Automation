@@ -42,6 +42,8 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
                 
     print(f"Stats for {component}")
     print(stats)
+    print("Observed: ")
+    print(obsrv)
 
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
@@ -76,7 +78,8 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             axs.flat[component.value].scatter([j for j in range(len(states)) if obsrv[dclass][j] > 0.0], [obsrv[dclass][j] for j in range(len(states)) if obsrv[dclass][j] > 0.0], color=colors[idx], marker=markers[idx], facecolors=faceclr, label='e='+dclass)
             #axs.flat[component.value].scatter([j for j in range(len(states)) if obsrv_candidates[dclass][j] > 0.0], [obsrv_candidates[dclass][j] for j in range(len(states)) if obsrv_candidates[dclass][j] > 0.0], color='gold', marker='*', edgecolors='black', s=90)
             idx = idx + 1
-
+    
+    print(f"diff to be returned: {diff}")
     return diff
 
 finUarch = open(sys.argv[1], 'rb')
