@@ -39,31 +39,7 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             else:
                 obsrv[dclass].append(theta_lst[dclass][component][sidx][1])
                 stats[j].append((dclass, theta_lst[dclass][component][sidx][1]))
-                
-    
-    
-    
-    
-    
                 print(f"{dclass}\t{theta_lst[dclass][component][sidx][0].cycle_begin}\t{theta_lst[dclass][component][sidx][1]}")
-                
-    print(f"Stats for {component}")
-    print(stats)
-    print("Observed: ")
-    print(obsrv)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
@@ -149,7 +125,6 @@ rcParams['axes.labelsize'] = 14
 fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(15,6))
 
 assert len(loops) == len(loopsUArch)
-print(f"# run loops/iterations: {len(loops)}, # saved UArch states: {len(loopsUArch)}")
 print('iters: {}, loops: {}'.format(iters, len(loopsUArch)))
 
 for component in Component:
@@ -195,17 +170,19 @@ for component in Component:
     for dclass in theta_lst:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
+    
+    
+    print("=======================================================================================")
+    print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
+    print("=======================================================================================")
+    print("class\tcycle#\tfrequency")
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
-                
+    print("")
     #for dclass in theta_lst.keys():
     #    print('Unique states for dclass: '+dclass)
     #    print(len(theta_lst[dclass][component]))
     #    for state in theta_lst[dclass][component]:
     #        print(state[0], state[1])
-
-    print("=======================================================================================")
-    print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
-    print("=======================================================================================")
     
     print('len: '+str(len(diff[component])))
     if len(diff[component]) == 0:
