@@ -64,7 +64,7 @@ class LLMConfig(BaseModel):
 
 
 class AgentConfig(BaseModel):
-    model: str = "gpt-5.4"
+    model: str = "gpt-5.6-luna"
     templates: Dict[str, Path]
     tools: List[str] = []
 
