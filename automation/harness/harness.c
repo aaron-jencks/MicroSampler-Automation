@@ -9,7 +9,7 @@
 #include <time.h>
 
 #define GENERATE_RANDOM_KEY (rand())
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 256
 
 void destroy_trial_context(trial_context_t ctx) {
     free(ctx.dest);
