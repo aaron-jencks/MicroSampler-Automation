@@ -30,6 +30,7 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
     obsrv = {k: [] for k in theta_lst.keys()}
     diff = list()
     stats = [[] for _ in range(len(states))]
+    fileOutput = ""
     for j in range(len(states)):
         for dclass in theta_lst:
             sidx = find_index(theta_lst[dclass][component], lambda e: e[0].compare(component, states[j]))
@@ -39,6 +40,18 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             else:
                 obsrv[dclass].append(theta_lst[dclass][component][sidx][1])
                 stats[j].append((dclass, theta_lst[dclass][component][sidx][1]))
+                stateString = (
+                    f"{dclass}\t{theta_lst[dclass][component][sidx][0].cycle_begin}\t"
+                    f"{theta_lst[dclass][component][sidx][1]:.6f}\t{'1' if theta_lst[dclass][component][sidx][1] >= _phi else '0'}"
+                    f"\t{1 if theta_lst[dclass][component][sidx][1] <= _alpha else 0}"
+                )
+                print(stateString)
+                fileOutput = fileOutput + stateString + "\n"
+                
+    freqOut = open(sys.argv[4]+'/'+component.name+'_freq.tsv', 'w+')
+    freqOut.write('class\tcycle#\tfrequency\tphi\talpha\n')
+    freqOut.write(fileOutput)
+    freqOut.close()
 
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
@@ -172,6 +185,10 @@ for component in Component:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
 
+    print("=======================================================================================")
+    print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
+    print("=======================================================================================")
+    print("class\tcycle#\tfrequency\tphi\talpha")
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
     #for dclass in theta_lst.keys():
@@ -179,10 +196,7 @@ for component in Component:
     #    print(len(theta_lst[dclass][component]))
     #    for state in theta_lst[dclass][component]:
     #        print(state[0], state[1])
-
-    print("=======================================================================================")
-    print("=========== Diff of "+str(component_names[component])+" States (Candidates)  ==========")
-    print("=======================================================================================")
+    print("")
     
     print('len: '+str(len(diff[component])))
     if len(diff[component]) == 0:
@@ -227,7 +241,7 @@ for idx in range(int(iters/window)):
             f"{k.name}:{k.value}":v
             for k, v in loopsUArch[idx][s].executionUnits.exeReqs.items()
         }
-        print('loop: {}, state: {}, exe_unit {}'.format(idx, s, exe_unit))
+        print('loop: {}, state: {}, cycle_start: {}, exe_unit {}'.format(idx, s, loopsUArch[idx][s].cycle_begin, exe_unit))
 
 print('+++++++++++++++++++++++++++++++')
 
