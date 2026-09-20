@@ -1,0 +1,22 @@
+{
+  "agents": {
+    "hypothesis": {
+      "templates": {
+        "system": "bearssl-0.6/ccopy/v2/prompts/hypothesis/system-prompt-baseline.txt",
+        "input": "bearssl-0.6/ccopy/v2/prompts/hypothesis/feedback-prompt.txt"
+      }
+    },
+    "implementation": {
+      "templates": {
+        "system": "bearssl-0.6/ccopy/v2/prompts/implementation/system-prompt-baseline.txt",
+        "input": "bearssl-0.6/ccopy/v2/prompts/implementation/feedback-prompt.txt"
+      }
+    },
+    "summarization": {
+      "templates": {
+        "system": "bearssl-0.6/ccopy/v2/prompts/summarization/system-prompt-baseline.txt",
+        "input": "bearssl-0.6/ccopy/v2/prompts/summarization/feedback-prompt.txt"
+      }
+    }
+  }
+}

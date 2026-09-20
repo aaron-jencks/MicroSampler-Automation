@@ -1,9 +1,12 @@
 from abc import ABC
 import logging
+import random as rng
+import sys
 
 from qstate import State, StateContext, QSM
 
 from agents.defs import LoopState, AgentLoopContext
+from agents.responses import Implementation, Hypothesis
 from config import BaseConfig
 from prompting.client import Agent
 from prompting.templates import TemplateController
@@ -11,6 +14,7 @@ from reporting.default.events import HypothesisEvent, ImplementationEvent, Simul
     ImplementationErrorEvent, SimulationErrorEvent, AnalysisEvent, SummarizationEvent, ConclusionEvent, ConclusionData
 from reporting.logger import ReportLog
 from simulation.ccopy.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
+from simulation.ccopy.struct import RunConfiguration
 from stats import generate_statistical_analysis
 
 logger = logging.getLogger(__name__)
@@ -25,6 +29,28 @@ class GovernorLoopState(State, ABC):
     @staticmethod
     def append_loop_state(ctx: StateContext, loop_state: LoopState):
         ctx.queue.append(loop_state.value)
+
+
+class GovernorInitialState(GovernorLoopState):
+    def execute(self, ctx: AgentLoopContext):
+        logger.info("starting governor loop")
+        logger.info("starting initial attack execution")
+        ctx.context.iteration = 0
+        ctx.context.current_implementation = Implementation(
+            attack_code=self.config.initial_attack.file.read_text(),
+            changes=[]
+        )
+        ctx.context.current_hypothesis = Hypothesis(
+            hypothesis=self.config.initial_attack.hypothesis,
+            previous_implementation_bugs=[],
+            run_configuration=RunConfiguration(
+                global_iterations=self.config.initial_attack.global_iterations,
+                inner_iterations=self.config.initial_attack.inner_iterations,
+                run_name="baseline",
+                random_seed=rng.randint(0, sys.maxsize)
+            )
+        )
+        self.append_loop_state(ctx, LoopState.SIMULATION)
 
 
 class AgentLoopState(GovernorLoopState, ABC):
@@ -104,7 +130,7 @@ class AnalysisState(GovernorLoopState):
         self.reporter.log(AnalysisEvent(ctx.context.iteration, ctx.context.current_stats))
         # TODO early stopping happens here
         # TODO split this early stopping checking into its own state
-        logger.info(f"Current average score: {ctx.context.current_stats.iteration_score:0.4f}")
+        logger.info(f"current average score: {ctx.context.current_stats.iteration_score:0.4f}")
         if ctx.context.current_stats.iteration_score > 0.95:
             logger.info(f"analysis hit score threshold")
             ctx.context.stopping_early = True

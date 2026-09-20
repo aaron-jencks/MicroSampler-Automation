@@ -10,6 +10,7 @@ from .responses import Hypothesis, Implementation, Summarization
 
 
 class LoopState(Enum):
+    INITIAL = "initial_state"
     HYPOTHESIS = "hypothesis"
     CODE_GEN = "implementation"
     SIMULATION = "simulation"

@@ -1,9 +1,16 @@
 {
-  "initial_state": "hypothesis",
+  "initial_state": "initial_state",
   "initial_context": {
     "model": "agents.defs.GovernorContext"
   },
   "states": {
+    "initial_state": {
+      "model": "agents.states.GovernorInitialState",
+      "kwargs": {
+        "ctx": "$ctx",
+        "reporter": "$reporter"
+      }
+    },
     "hypothesis": {
       "model": "agents.states.HypothesisState",
       "kwargs": {

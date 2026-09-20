@@ -82,6 +82,13 @@ class FinalReportConfig(BaseModel):
     clear_report_area: bool = True
 
 
+class InitialAttackConfig(BaseModel):
+    hypothesis: str = "Initial run with a stub implementation for a sanity check to verify that the code is constant time without modification."
+    file: Path = Path("bearssl-0.6/ccopy/v2/initial_attack.c")
+    global_iterations: int = 10
+    inner_iterations: int = 100
+
+
 class BaseConfig(BaseModel):
     microsampler: MicroSamplerConfig = MicroSamplerConfig()
     harness: HarnessConfig = HarnessConfig()
@@ -111,6 +118,7 @@ class BaseConfig(BaseModel):
             tools=["read_attack_assembly"]
         ),
     }
+    initial_attack: InitialAttackConfig = InitialAttackConfig()
     logging: LogConfig = LogConfig()
     final_report: FinalReportConfig = FinalReportConfig()
 
