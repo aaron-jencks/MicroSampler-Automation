@@ -45,7 +45,7 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
     
     
     
-                print(f"{dclass}\t{str(theta_lst[dclass][component][sidx][0]).cycle_begin}\t{theta_lst[dclass][component][sidx][1]}")
+                print(f"{dclass}\t{theta_lst[dclass][component][sidx][0].cycle_begin}\t{theta_lst[dclass][component][sidx][1]}")
                 
     print(f"Stats for {component}")
     print(stats)
