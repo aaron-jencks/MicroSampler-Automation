@@ -152,6 +152,8 @@ class TimelineSection(ReportSection):
                 }
             elif isinstance(payload, StatisticalAnalysisResults):
                 payload = _format_stats_results_json(payload)
+            elif isinstance(payload, Exception):
+                payload = str(payload)
             elif isinstance(payload, BaseModel):
                 payload = payload.model_dump()
             elif is_dataclass(payload):
