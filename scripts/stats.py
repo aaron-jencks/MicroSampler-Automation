@@ -205,7 +205,7 @@ for component in Component:
     for dclass in theta_lst:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
-            print(state)
+            print(str(state[0]))
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
     #for dclass in theta_lst.keys():
