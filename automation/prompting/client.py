@@ -94,6 +94,6 @@ class Agent:
                 }
             }
         )
-        self.token_usage.input_tokens += response.usage_metadata["input_tokens"]
-        self.token_usage.output_tokens += response.usage_metadata["output_tokens"]
+        self.token_usage.input_tokens += response["messages"][1].usage_metadata["input_tokens"]
+        self.token_usage.output_tokens += response["messages"][1].usage_metadata["output_tokens"]
         return response["structured_response"]
