@@ -46,7 +46,8 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
     
     
     
-    
+                print(str(theta_lst[dclass][component][sidx][0]))
+                
     print(f"Stats for {component}")
     print(stats)
     print("Observed: ")
@@ -149,7 +150,7 @@ rcParams['axes.labelsize'] = 14
 fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(15,6))
 
 assert len(loops) == len(loopsUArch)
-
+print(f"# run loops/iterations: {len(loops)}, # saved UArch states: {len(loopsUArch)}")
 print('iters: {}, loops: {}'.format(iters, len(loopsUArch)))
 
 for component in Component:
@@ -192,20 +193,9 @@ for component in Component:
         del loop_unique_states[:]
 
     #Normalize tally by total class count
-    
-    
-    
-    
-    print("Theta list: ")
-    
-    
-    
-    
-    
     for dclass in theta_lst:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
-            print(str(state[0]))
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
     #for dclass in theta_lst.keys():
