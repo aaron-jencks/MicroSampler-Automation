@@ -45,8 +45,7 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
     
     
     
-    
-                print(str(theta_lst[dclass][component][sidx][0]))
+                print(f"{dclass}\t{str(theta_lst[dclass][component][sidx][0]).cycle_begin}\t{theta_lst[dclass][component][sidx][1]}")
                 
     print(f"Stats for {component}")
     print(stats)
@@ -251,7 +250,7 @@ for idx in range(int(iters/window)):
             f"{k.name}:{k.value}":v
             for k, v in loopsUArch[idx][s].executionUnits.exeReqs.items()
         }
-        print('loop: {}, state: {}, exe_unit {}'.format(idx, s, exe_unit))
+        print('loop: {}, state: {}, cycle_start: {}, exe_unit {}'.format(idx, s, loopsUArch[idx][s].cycle_begin, exe_unit))
 
 print('+++++++++++++++++++++++++++++++')
 
