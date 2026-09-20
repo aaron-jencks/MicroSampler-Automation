@@ -96,7 +96,7 @@ class BaseConfig(BaseModel):
     llm: LLMConfig = LLMConfig()
     deployment_qsm_path: Path = Path("config/governor/ccopy_deployment_qsm.json")
     governor_qsm_path: Path = Path("config/governor/ccopy_qsm.json")
-    max_loop_iterations: int = 100
+    max_loop_iterations: int = 10
     agents: Dict[str, AgentConfig] = {
         "hypothesis": AgentConfig(
             templates={
