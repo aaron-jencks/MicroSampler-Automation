@@ -39,11 +39,7 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             else:
                 obsrv[dclass].append(theta_lst[dclass][component][sidx][1])
                 stats[j].append((dclass, theta_lst[dclass][component][sidx][1]))
-              stateString = (
-                  f"{dclass}\t{theta_lst[dclass][component][sidx][0].cycle_begin}\t"
-                  
-              )
-              print(stateString)
+              
 
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
