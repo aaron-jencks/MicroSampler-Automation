@@ -43,8 +43,8 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
                     #f"{dclass}\t{theta_lst[dclass][component][sidx][0].cycle_begin}\t"
                   
                     #f"\t{1 if theta_lst[dclass][component][sidx][1] <= _alpha else 0}"
-              #)
-              print(stateString)
+                #)
+                print(stateString)
 
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
