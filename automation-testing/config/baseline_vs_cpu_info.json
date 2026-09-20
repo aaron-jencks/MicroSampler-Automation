@@ -1,0 +1,12 @@
+{
+  "baseline": {
+    "name": "baseline",
+    "configs": ["config/baseline_v2.json", "config/ccopy_v3.json"]
+  },
+  "candidates": [
+    {
+      "name": "cpu_info",
+      "configs": ["config/ccopy_v3.json"]
+    }
+  ]
+}

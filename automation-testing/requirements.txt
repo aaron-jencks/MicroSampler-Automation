@@ -1,0 +1,16 @@
+cascade-config
+deepagents
+langchain
+langchain-openai
+langgraph
+markdown
+matplotlib
+numpy
+openai
+pandas
+pydantic
+qstate>=1.3.0
+scikit-learn
+scipy
+tabulate
+tqdm
