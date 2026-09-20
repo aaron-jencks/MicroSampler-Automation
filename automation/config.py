@@ -67,6 +67,7 @@ class AgentConfig(BaseModel):
     model: str = "gpt-5.6-luna"
     templates: Dict[str, Path]
     tools: List[str] = []
+    reasoning_effort: Optional[str] = None
 
 
 class LogConfig(BaseModel):

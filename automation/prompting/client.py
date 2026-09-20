@@ -44,11 +44,13 @@ class Agent:
             system_prompt: str,
             templates: Dict[str, Path],
             tools: Optional[Sequence[BaseTool]] = None,
-            dry_run: bool = False
+            dry_run: bool = False,
+            reasoning_effort: Optional[str] = None,
     ):
         self.ctx = ctx
         self.model = model
         self.name = name
+        self.reasoning_effort = reasoning_effort
         self.system_prompt = system_prompt
         self.output_format = output_format
         self.thread_id = str(uuid.uuid4())
@@ -60,10 +62,16 @@ class Agent:
             self.model = ChatOpenAI(
                 model=model,
                 api_key=ctx.llm.api_key,
+                reasoning={
+                    "effort": reasoning_effort,
+                }
             )
         else:
             self.model = ChatOpenAI(
                 model=model,
+                reasoning={
+                    "effort": reasoning_effort,
+                }
             )
         self.agent = create_agent(
             model=self.model,
