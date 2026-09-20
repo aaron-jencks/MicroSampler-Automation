@@ -40,10 +40,30 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
                 obsrv[dclass].append(theta_lst[dclass][component][sidx][1])
                 stats[j].append((dclass, theta_lst[dclass][component][sidx][1]))
                 
+    
+    
+    
+    
+    
+    
+    
     print(f"Stats for {component}")
     print(stats)
     print("Observed: ")
     print(obsrv)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     obsrv_candidates = {k: [] for k in theta_lst.keys()}
     for dclass in theta_lst:
@@ -66,7 +86,6 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             diff.append((class_lbl, states[j]))
             obsrv_candidates[class_lbl][j] = candidate_freq 
 
-
     if component not in plot_blacklist:
         axs.flat[component.value].axhspan(_phi, 1, color='green', alpha=0.15, label=r'$\phi$')
         axs.flat[component.value].axhspan(0, _alpha, color='red', alpha=0.15, label=r'$\alpha$')
@@ -79,7 +98,6 @@ def uarch_diff(component, theta_lst, axs, _phi, _alpha):
             #axs.flat[component.value].scatter([j for j in range(len(states)) if obsrv_candidates[dclass][j] > 0.0], [obsrv_candidates[dclass][j] for j in range(len(states)) if obsrv_candidates[dclass][j] > 0.0], color='gold', marker='*', edgecolors='black', s=90)
             idx = idx + 1
     
-    print(f"diff to be returned: {diff}")
     return diff
 
 finUarch = open(sys.argv[1], 'rb')
@@ -177,6 +195,19 @@ for component in Component:
     for dclass in theta_lst:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
+    
+    
+    
+    
+    
+    
+    print(theta_lst)
+    
+    
+    
+    
+    
+    
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
     #for dclass in theta_lst.keys():
