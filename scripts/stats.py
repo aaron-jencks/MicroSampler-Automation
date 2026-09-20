@@ -192,22 +192,20 @@ for component in Component:
         del loop_unique_states[:]
 
     #Normalize tally by total class count
+    
+    
+    
+    
+    print("Theta list: ")
+    
+    
+    
+    
+    
     for dclass in theta_lst:
         for state in theta_lst[dclass][component]:
             state[1] = state[1]/classcnt[dclass]
-    
-    
-    
-    
-    
-    
-    print(theta_lst)
-    
-    
-    
-    
-    
-    
+            print(state)
     diff[component] = uarch_diff(component, theta_lst, axs, _phi, _alpha)
                 
     #for dclass in theta_lst.keys():
