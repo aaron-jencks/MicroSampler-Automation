@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 import subprocess as sp
+import sys
 from typing import List
 import uuid
 
@@ -29,20 +30,29 @@ def run_configuration_instance(config: AutomationSettings, log_directory: Path) 
         args.extend(list(map(str, config.configs)))
 
     with open(output_log, "w+") as fp:
-        sp.run(
+        proc = sp.Popen(
             args,
-            stdout=fp,
+            stdout=sp.PIPE,
             stderr=sp.STDOUT,
-            check=True,
             cwd=config.cwd,
+            text=True
         )
+
+        for line in proc.stdout:
+            sys.stdout.write(line)
+            sys.stdout.flush()
+
+            fp.write(line)
+            fp.flush()
+
+        proc.wait()
 
     return performance_log
 
 
 def run_configuration(config: AutomationSettings, log_directory: Path, iterations: int) -> List[Path]:
     logs = []
-    for iteration in range(iterations):
+    for iteration in tqdm(range(iterations), desc=f"Running candidate {config.name}"):
         instance_log_directory = log_directory / f"iteration_{iteration:06d}"
         instance_log_directory.mkdir(parents=True, exist_ok=True)
 
