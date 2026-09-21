@@ -117,7 +117,9 @@ def _format_dataframe_json(df: pd.DataFrame) -> dict:
     }
 
 
-def _format_stats_results_json(stats: StatisticalAnalysisResults) -> dict:
+def _format_stats_results_json(stats: Optional[StatisticalAnalysisResults]) -> Optional[dict]:
+    if stats is None:
+        return None
     return {
         "global_data": {
             "score": stats.global_score,
