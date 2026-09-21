@@ -15,6 +15,7 @@ trial_context_t create_default_trial_context(size_t data_size) {
         .dummy = (uint32_t*)calloc(data_size, sizeof(uint32_t)),
         .data = (uint32_t*)calloc(data_size, sizeof(uint32_t)),
         .data_len = (size_t*)malloc(sizeof(size_t)),
+        .buffer_len = data_size,
     };
     handle_oom_error(ctx.dest);
     handle_oom_error(ctx.dummy);

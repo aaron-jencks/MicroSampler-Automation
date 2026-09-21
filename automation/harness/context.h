@@ -18,6 +18,7 @@ typedef struct {
     uint32_t * const dummy;     // The dummy output buffer
     uint32_t * const data;      // The data to copy
     size_t * const data_len;    // The number of bytes in the data buffer
+    const size_t buffer_len;    // The size of the buffers allocated in dest, dummy, and data
 } trial_context_t;
 
 typedef struct {
