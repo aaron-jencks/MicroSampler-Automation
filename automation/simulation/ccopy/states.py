@@ -132,7 +132,11 @@ class CCopyTabulateResults(DeploymentState):
 
         for iteration in range(ctx.context.configuration.global_iterations):
             output = ctx.context.results[iteration]
-            raw_data = json.loads(output.stdout)
+            try:
+                raw_data = json.loads(output.stdout)
+            except json.decoder.JSONDecodeError:
+                ctx.stop(SimulationFailureError(output))
+                return
             seed = raw_data["seed"]
             for row in raw_data["data"]:
                 inner_iteration = row["iteration"]
