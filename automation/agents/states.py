@@ -106,7 +106,7 @@ class SimulationState(GovernorLoopState):
         sim_err = self.deployment_controller.loop()
         self.reporter.log(SimulationDeploymentEvent(ctx.context.iteration))
         if sim_err is not None:
-            ctx.context.simulation_feedback = str(sim_err)
+            ctx.context.simulation_feedback = sim_err
             if isinstance(sim_err, IllegalCodeError) or isinstance(sim_err, BuildError):
                 logger.info("code was illegal or did not build successfully")
                 self.reporter.log(ImplementationErrorEvent(ctx.context.iteration, sim_err))

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from agents.responses import Hypothesis, Implementation, Summarization
 from config import BaseConfig
 from prompting.templates import TemplateController
+from simulation.ccopy.exceptions import IllegalCodeError, BuildError, SimulationTimeoutError, SimulationFailureError
 from simulation.ccopy.struct import RunConfiguration
 from stats import dataframe_to_markdown
 from system import get_cache_information, read_cpuinfo
@@ -161,7 +162,13 @@ def template_insert_hypothesis(ctx: BaseConfig, client: TemplateController, tag_
 def template_insert_simulation_feedback(ctx: BaseConfig, client: TemplateController, tag_name: str, args: List[str], kwargs: Optional[Dict[str, Any]]) -> str:
     if "feedback" not in kwargs or kwargs["feedback"] is None:
         return "None"
-    return kwargs['feedback']
+    feedback = kwargs["feedback"]
+    if isinstance(feedback, BuildError):
+        return f"""
+The harness build failed: {str(feedback)}
+{feedback.result.stderr}
+"""
+    return str(feedback)
 
 
 def _format_float(value: Any) -> str:
