@@ -75,6 +75,7 @@ class HypothesisState(AgentLoopState):
             "input",
             summary=ctx.context.current_summarization if ctx.context.current_summarization is not None else None,
         )
+        logger.info(f"current hypothesis: {ctx.context.current_hypothesis.hypothesis}")
         self.reporter.log(HypothesisEvent(ctx.context.iteration, ctx.context.current_hypothesis))
         self.append_loop_state(ctx, LoopState.CODE_GEN)
 
@@ -87,6 +88,7 @@ class ImplementationState(AgentLoopState):
             current_hypothesis=ctx.context.current_hypothesis,
             feedback=ctx.context.simulation_feedback,
         )
+        logger.info(f"current implementation:\n{ctx.context.current_implementation.attack_code}")
         self.reporter.log(ImplementationEvent(ctx.context.iteration, ctx.context.current_implementation))
         self.append_loop_state(ctx, LoopState.SIMULATION)
 
@@ -153,6 +155,7 @@ class SummarizationState(AgentLoopState):
             stats=ctx.context.current_stats,
             implementation=ctx.context.current_implementation.attack_code,
         )
+        logger.info(f"current summarization: {ctx.context.current_summarization.description}")
         self.reporter.log(SummarizationEvent(ctx.context.iteration, ctx.context.current_summarization))
         ctx.context.simulation_feedback = None
         ctx.context.iteration += 1
