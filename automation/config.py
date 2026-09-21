@@ -109,7 +109,8 @@ class BaseConfig(BaseModel):
             templates={
                 "system": Path("bearssl-0.6/ccopy/v2/prompts/implementation/system-prompt.txt"),
                 "input": Path("bearssl-0.6/ccopy/v2/prompts/implementation/feedback-prompt.txt"),
-            }
+            },
+            model="gpt-5.4",
         ),
         "summarization": AgentConfig(
             templates={
