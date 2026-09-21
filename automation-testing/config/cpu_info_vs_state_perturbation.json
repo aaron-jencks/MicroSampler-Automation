@@ -1,0 +1,16 @@
+{
+  "baseline": {
+    "name": "baseline",
+    "configs": ["config/baseline_v2.json"]
+  },
+  "candidates": [
+    {
+      "name": "cpu_info",
+      "configs": []
+    },
+    {
+      "name": "state_perturbation",
+      "configs": ["config/state_perturbation_v2.json"]
+    }
+  ]
+}
