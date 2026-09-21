@@ -45,7 +45,8 @@ def run_configuration_instance(config: AutomationSettings, log_directory: Path) 
             fp.write(line)
             fp.flush()
 
-        proc.wait()
+        if proc.wait() != 0:
+            raise RuntimeError("Candidate instance crashed!")
 
     return performance_log
 
