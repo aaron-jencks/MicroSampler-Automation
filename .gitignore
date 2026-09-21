@@ -47,3 +47,9 @@ logs/baseline/microbench/ct_ccopy/100/0xaa/stats-0.9_0.1.pdf
 logs/baseline/microbench/ct_ccopy/100/0xaa/sets.pickle
 logs/baseline/microbench/ct_ccopy/100/0xaa/out-all-asm.log.gz
 logs/baseline/microbench/ct_ccopy/100/0xaa/miss_stats.csv
+logs/baseline/bearssl_synthetic/v2/100/0xaa/stdout.txt
+/automation/crosscompiler-experiment/builds/
+/automation/crosscompiler-experiment/toolchains/
+/automation/crosscompiler-experiment/sources/
+/automation/crosscompiler-experiment/logs/
+/automation/crosscompiler-experiment/tmp/
