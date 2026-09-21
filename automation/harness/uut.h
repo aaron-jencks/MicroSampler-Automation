@@ -1,5 +1,5 @@
-#ifndef WRAPPER_H
-#define WRAPPER_H
+#ifndef UUT_H
+#define UUT_H
 
 #include <stdint.h>
 
