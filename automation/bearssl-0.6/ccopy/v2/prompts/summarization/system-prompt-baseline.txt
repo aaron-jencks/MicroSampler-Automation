@@ -99,6 +99,8 @@ In `bugs`, list concrete runtime or implementation-behavior issues for the next 
 
 Be concise but specific. The next Hypothesis Agent should be able to choose a better strategy from your summary alone.
 
+[[uut]]
+
 Output format:
 
 [[model:summary]]

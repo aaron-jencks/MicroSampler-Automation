@@ -9,6 +9,7 @@ from pydantic import BaseModel
 class UUTConfig(BaseModel):
     prefix: Path = Path("bearssl-0.6/ccopy/v2/uut/")
     file: str = "uut.c"
+    description_file: str = "uut_description.md"
 
 
 class HarnessConfig(BaseModel):
@@ -110,7 +111,6 @@ class BaseConfig(BaseModel):
                 "system": Path("bearssl-0.6/ccopy/v2/prompts/implementation/system-prompt.txt"),
                 "input": Path("bearssl-0.6/ccopy/v2/prompts/implementation/feedback-prompt.txt"),
             },
-            model="gpt-5.4",
         ),
         "summarization": AgentConfig(
             templates={

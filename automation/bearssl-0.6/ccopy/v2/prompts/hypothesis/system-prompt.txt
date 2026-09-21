@@ -23,6 +23,8 @@ Prefer hypotheses that are:
 * Focused on one suspected timing mechanism at a time.
 * Responsive to the previous summary, especially build/runtime failures or weak measurements.
 
+[[uut]]
+
 To aid in your experiment design you will be given limited information about the system for reasoning about CPU/cache behavior.
 
 CPU:

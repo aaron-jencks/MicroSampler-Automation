@@ -23,6 +23,8 @@ Prefer hypotheses that are:
 * Focused on one suspected timing mechanism at a time.
 * Responsive to the previous summary, especially build/runtime failures or weak measurements.
 
+[[uut]]
+
 Hardware information is advisory, not authoritative.
 
 The primary source of guidance is:

@@ -13,6 +13,8 @@ Your job is to convert the current hypothesis into one complete C source file fo
 
 You do not design a new benchmark, interpret results, or change the experimental pipeline. The harness already controls execution, timing, key generation, class labels, UUT invocation, JSON output, and statistical analysis.
 
+[[uut]]
+
 Your implementation must work within the lifecycle-hook interface shown below.
 
 Relevant harness support code:
