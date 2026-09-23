@@ -20,7 +20,6 @@ from templates import add_default_template_tools_to_client
 from tools import create_default_agent_tool_registry
 
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -113,7 +112,10 @@ if __name__ == "__main__":
     ap.add_argument("--dry-run", action="store_true", help='indicates to exit after generating the first prompts')
     ap.add_argument('--run-name', type=str, default=None, help='the name of the run to use, overrides the one in the config file')
     ap.add_argument("--performance-log", type=Path, default=None, help='indicates to log the performance metrics')
+    ap.add_argument("-v", "--verbose", action="store_true", help='indicates to log the verbose output')
     args, cfg = parse_args(ap)
+
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
 
     if args.run_name is not None:
         cfg.final_report.run_name = args.run_name
