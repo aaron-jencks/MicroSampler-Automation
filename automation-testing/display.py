@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, List, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from common import CollatedData
+from common import CollatedData, TokenUsage
 
 logger = logging.getLogger(__name__)
 
@@ -51,14 +51,26 @@ DATA_EXTRACTOR = Callable[[str, str], List[float]]
 def generate_side_stacked_bar_plot(
         ax,
         x_labels: List[str], agent_labels: List[str],
+        has_data: Callable[[str], bool],
         extractor: Callable[[str, str], List[float]],
-        total_width: float = 2.0
+        total_width: float = 2.0,
+        empty_text: str = "No data found"
 ):
+    if not any(map(has_data, x_labels)):
+        ax.text(
+            0.5, 0.5,
+            empty_text,
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
+        return
     bar_width = total_width / len(agent_labels)
     x = np.arange(len(x_labels))
     for ni, name in enumerate(x_labels):
-        values = [extractor(name, agent_name) for agent_name in agent_labels]
-        generate_bar_plot_w_errors(ax, x + ni * bar_width, values, legend_label=name, bar_width=bar_width)
+        if has_data(name):
+            values = [extractor(name, agent_name) for agent_name in agent_labels]
+            generate_bar_plot_w_errors(ax, x + ni * bar_width, values, legend_label=name, bar_width=bar_width)
     ax.set_xticks(x)
     ax.set_xticklabels(agent_labels)
 
@@ -125,19 +137,20 @@ def main():
         values[name] /= collation.candidate_iterations
 
     x = np.arange(iteration_count)
-    total_width = 0.15*len(names)
+    bar_width = 1 / len(names)
     for ni, name in enumerate(names):
-        axes[0, 2].bar(x + ni*0.15, values[name], 0.15, label=name)
+        axes[0, 2].bar(x + ni*bar_width, values[name], bar_width, label=name)
 
     setup_plot(axes[0, 2], "Probability of Success", "Iteration", "Probability")
 
     # Token Usage
     agent_names = list(set(list(stats[names[0]].success_token_usage.keys()) + list(stats[names[0]].failure_token_usage.keys())))
 
-    total_width = 0.33
+    total_width = 1 / len(agent_names)
 
     generate_side_stacked_bar_plot(
         axes[1, 0], names, agent_names,
+        lambda name: len(stats[name].success_token_usage) > 0,
         lambda name, agent_name: stats[name].success_token_usage[agent_name].input_count,
         total_width=total_width
     )
@@ -145,6 +158,7 @@ def main():
 
     generate_side_stacked_bar_plot(
         axes[1, 1], names, agent_names,
+        lambda name: len(stats[name].success_token_usage) > 0,
         lambda name, agent_name: stats[name].success_token_usage[agent_name].output_count,
         total_width=total_width
     )
@@ -152,6 +166,7 @@ def main():
 
     generate_side_stacked_bar_plot(
         axes[1, 2], names, agent_names,
+        lambda name: len(stats[name].success_token_usage) > 0,
         lambda name, agent_name: np.array(stats[name].success_token_usage[agent_name].output_count) + np.array(stats[name].success_token_usage[agent_name].input_count),
         total_width=total_width
     )
@@ -159,6 +174,7 @@ def main():
 
     generate_side_stacked_bar_plot(
         axes[2, 0], names, agent_names,
+        lambda name: len(stats[name].failure_token_usage) > 0,
         lambda name, agent_name: stats[name].failure_token_usage[agent_name].input_count,
         total_width=total_width
     )
@@ -166,6 +182,7 @@ def main():
 
     generate_side_stacked_bar_plot(
         axes[2, 1], names, agent_names,
+        lambda name: len(stats[name].failure_token_usage) > 0,
         lambda name, agent_name: stats[name].failure_token_usage[agent_name].output_count,
         total_width=total_width
     )
@@ -173,6 +190,7 @@ def main():
 
     generate_side_stacked_bar_plot(
         axes[2, 2], names, agent_names,
+        lambda name: len(stats[name].failure_token_usage) > 0,
         lambda name, agent_name: np.array(stats[name].failure_token_usage[agent_name].output_count) + np.array(stats[name].failure_token_usage[agent_name].input_count),
         total_width=total_width
     )
