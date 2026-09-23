@@ -17,7 +17,7 @@ from config import parse_args, AutomationSettings
 logger = logging.getLogger(__name__)
 
 
-def run_configuration_instance(config: AutomationSettings, log_directory: Path) -> Path:
+def run_configuration_instance(config: AutomationSettings, log_directory: Path, local_config: Path | None, verbose: bool) -> Path:
     performance_log = log_directory / "performance.json"
     output_log = log_directory / "output.log"
 
@@ -28,6 +28,12 @@ def run_configuration_instance(config: AutomationSettings, log_directory: Path) 
     if len(config.configs) > 0:
         args.append("--configs")
         args.extend(list(map(str, config.configs)))
+    if local_config is not None:
+        args.append(str(local_config.resolve().absolute()))
+    if verbose:
+        args.append("--verbose")
+
+    logger.debug(f"running configuration: {args}")
 
     with open(output_log, "w+") as fp:
         proc = sp.Popen(
@@ -51,13 +57,13 @@ def run_configuration_instance(config: AutomationSettings, log_directory: Path) 
     return performance_log
 
 
-def run_configuration(config: AutomationSettings, log_directory: Path, iterations: int) -> List[Path]:
+def run_configuration(config: AutomationSettings, log_directory: Path, iterations: int, local_config: Path | None, verbose: bool) -> List[Path]:
     logs = []
     for iteration in tqdm(range(iterations), desc=f"Running candidate {config.name}"):
         instance_log_directory = log_directory / f"iteration_{iteration:06d}"
         instance_log_directory.mkdir(parents=True, exist_ok=True)
 
-        logs.append(run_configuration_instance(config, instance_log_directory))
+        logs.append(run_configuration_instance(config, instance_log_directory, local_config=local_config, verbose=verbose))
     return logs
 
 
@@ -114,6 +120,7 @@ def main():
     )
     parser.add_argument("--run-name", type=str, default=uuid.uuid4().hex, help="Name of the study")
     parser.add_argument("--force-redo", action="store_true", help="Force redo of the study")
+    parser.add_argument("--use-local", type=Path, default=None, help="Use local config in addition to candidate configs")
     parser.add_argument("-o", "--output-file", type=Path, default=Path("./collated.json"), help="The location to store the collated results")
     args, config = parse_args(parser)
 
@@ -124,12 +131,12 @@ def main():
 
         logger.info("running baseline configuration")
         results = {
-            "baseline": run_configuration(config.baseline, parent_log_directory / "baseline", config.candidate_iterations)
+            "baseline": run_configuration(config.baseline, parent_log_directory / "baseline", config.candidate_iterations, local_config=args.use_local, verbose=args.verbose),
         }
 
         for candidate in tqdm(config.candidates, desc="Running candidate configurations"):
             name = candidate.name if candidate.name is not None else uuid.uuid4().hex
-            results[name] = run_configuration(candidate, parent_log_directory / name, config.candidate_iterations)
+            results[name] = run_configuration(candidate, parent_log_directory / name, config.candidate_iterations, local_config=args.use_local, verbose=args.verbose)
     else:
         logger.info("using cached data")
         results = {}
