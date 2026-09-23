@@ -222,11 +222,13 @@ class FinalVerificationSection(ReportSection):
         super().__init__(index, "Final Verification")
 
     def body(self, ctx: BaseConfig, events: List[ReportEvent]) -> Any:
-        stats_event = self._find_final_stats_event(events)
-        if stats_event is None or not isinstance(stats_event.payload, StatisticalAnalysisResults):
+        stats_event = self._find_final_stats_results(events)
+        if stats_event is None:
             return {}
 
         stats = stats_event.payload
+        if isinstance(stats, ConclusionData):
+            stats = stats.stats
 
         result = _format_stats_results_json(stats)
         result["iteration"] = stats_event.iteration
@@ -234,12 +236,14 @@ class FinalVerificationSection(ReportSection):
         return result
 
     def html_body(self, ctx: BaseConfig, events: List[ReportEvent]) -> str:
-        stats_event = self._find_final_stats_event(events)
-        if stats_event is None or not isinstance(stats_event.payload, StatisticalAnalysisResults):
+        stats_event = self._find_final_stats_results(events)
+        if stats_event is None:
             return "No final statistics are available."
 
         iteration = stats_event.iteration
         stats = stats_event.payload
+        if isinstance(stats, ConclusionData):
+            stats = stats.stats
         hypothesis = _latest_payload_before_or_at(events, iteration, Hypothesis)
         implementation = _latest_payload_before_or_at(events, iteration, Implementation)
 
@@ -265,11 +269,10 @@ class FinalVerificationSection(ReportSection):
         ])
         return "\n".join(sections)
 
-    def _find_final_stats_event(self, events: List[ReportEvent]) -> Optional[ReportEvent]:
+    def _find_final_stats_results(self, events: List[ReportEvent]) -> Optional[ReportEvent]:
         for event in reversed(events):
             if isinstance(event, ConclusionEvent):
                 return event
-        for event in reversed(events):
             if isinstance(event, AnalysisEvent):
                 return event
         return None
