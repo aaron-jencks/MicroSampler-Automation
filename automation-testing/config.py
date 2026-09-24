@@ -17,7 +17,7 @@ class AutomationSettings(BaseModel):
 class BaseConfig(BaseModel):
     baseline: AutomationSettings
     candidates: List[AutomationSettings]
-    candidate_iterations: int = 10
+    candidate_iterations: int = 100
     performance_log_directory: Path = Path("./performance_logs")
 
 
