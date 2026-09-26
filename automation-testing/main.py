@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from collections import defaultdict
+import datetime as dt
 import json
 import logging
 from pathlib import Path
@@ -36,6 +37,7 @@ def run_configuration_instance(config: AutomationSettings, log_directory: Path, 
     logger.debug(f"running configuration: {args}")
 
     with open(output_log, "w+") as fp:
+        proc_start = dt.datetime.now()
         proc = sp.Popen(
             args,
             stdout=sp.PIPE,
@@ -53,6 +55,13 @@ def run_configuration_instance(config: AutomationSettings, log_directory: Path, 
 
         if proc.wait() != 0:
             raise RuntimeError("Candidate instance crashed!")
+        proc_end = dt.datetime.now()
+        logger.debug("adding runtime duration to performance log")
+        with open(performance_log, 'r') as fp:
+            performance_data = json.load(fp)
+            performance_data["duration"] = (proc_end - proc_start).total_seconds()
+        with open(performance_log, 'w') as fp:
+            json.dump(performance_data, fp)
 
     return performance_log
 
@@ -83,10 +92,12 @@ def compute_candidate_stats(candidate: List[Path]) -> StatisticalAnalysisResults
         success_iterations=[],
         success_token_usage={},
         failure_token_usage={},
+        runtimes=[]
     )
 
     iteration_scores = defaultdict(list)
     for row in data:
+        result.runtimes.append(row["duration"])
         result.run_scores.append([])
         for event in row["timeline"]:
             if event["name"] == "Analysis":
