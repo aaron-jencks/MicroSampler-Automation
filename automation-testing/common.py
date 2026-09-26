@@ -10,6 +10,7 @@ class TokenUsage(BaseModel):
 
 class StatisticalAnalysisResults(BaseModel):
     iteration_scores: List[List[float]]
+    run_scores: List[List[float]]
     success_iterations: List[int]
     success_token_usage: Dict[str, TokenUsage]
     failure_token_usage: Dict[str, TokenUsage]

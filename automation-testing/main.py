@@ -79,6 +79,7 @@ def compute_candidate_stats(candidate: List[Path]) -> StatisticalAnalysisResults
 
     result = StatisticalAnalysisResults(
         iteration_scores=[],
+        run_scores=[],
         success_iterations=[],
         success_token_usage={},
         failure_token_usage={},
@@ -86,11 +87,13 @@ def compute_candidate_stats(candidate: List[Path]) -> StatisticalAnalysisResults
 
     iteration_scores = defaultdict(list)
     for row in data:
+        result.run_scores.append([])
         for event in row["timeline"]:
             if event["name"] == "Analysis":
                 iteration = event["iteration"] - 1
                 score = event["payload"]["global_data"]["score"]
                 iteration_scores[iteration].append(score)
+                result.run_scores[-1].append(score)
             if event["name"] == "Conclusion":
                 if event["payload"]["is_early"]:
                     result.success_iterations.append(event["iteration"] - 1)

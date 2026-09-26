@@ -14,14 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 def generate_cascading_score_array(arr: List[List[float]], threshold: float = 0.95) -> np.ndarray:
-    previous_size = None
+    mlen = max(list(map(len, arr)))
+    logger.debug(f"padding arrays to {mlen}")
     for ti in range(len(arr)):
-        if previous_size is None:
-            previous_size = len(arr[ti])
-            continue
-        if len(arr[ti]) < previous_size:
-            diff = previous_size - len(arr[ti])
-            padding = [threshold]*diff
+        if len(arr[ti]) < mlen:
+            diff = mlen - len(arr[ti])
+            padding = [arr[ti][-1]]*diff
             arr[ti].extend(padding)
     return np.array(arr)
 
@@ -142,7 +140,7 @@ def main():
     fig, axes = plt.subplots(3, 3, figsize=(20, 15), constrained_layout=True)
 
     for name, stat in stats.items():
-        score_matrix = generate_cascading_score_array(stat.iteration_scores)
+        score_matrix = generate_cascading_score_array(stat.run_scores)
         logger.info(f"score matrix: {score_matrix.shape}")
         means, mins, maxes = map(np.array, generate_array_stats(stat.iteration_scores))
         lower_err = means - mins
