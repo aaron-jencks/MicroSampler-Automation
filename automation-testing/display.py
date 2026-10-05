@@ -21,7 +21,13 @@ def generate_cascading_score_array(arr: List[List[float]], threshold: float = 0.
             diff = mlen - len(arr[ti])
             padding = [arr[ti][-1]]*diff
             arr[ti].extend(padding)
-    return np.array(arr)
+
+    result = [[] for _ in range(mlen)]
+    for run in arr:
+        for i, v in enumerate(run):
+            result[i].append(v)
+
+    return np.array(result)
 
 
 def generate_array_stats(arr: List[List[float]]) -> Tuple[List[float], List[float], List[float]]:
@@ -92,15 +98,15 @@ def generate_token_count_side_stacked_bar_plot(
         agent_labels: List[str],
         total_width: float = 2.0,
 ):
-    bar_width = total_width / len(agent_labels)
-    x = np.arange(len(agent_labels))
+    bar_width = total_width / 3
+    x = np.arange(len(agent_labels)) * (total_width + 0.25)
     input_values = np.array([token_usage[agent_name].input_count for agent_name in agent_labels])
     generate_bar_plot_w_errors(ax, x, input_values, legend_label="Input", bar_width=bar_width)
     output_values = np.array([token_usage[agent_name].output_count for agent_name in agent_labels])
     generate_bar_plot_w_errors(ax, x + bar_width, output_values, legend_label="Output", bar_width=bar_width)
     total_values = input_values + output_values
     generate_bar_plot_w_errors(ax, x + 2 * bar_width, total_values, legend_label="Total", bar_width=bar_width)
-    ax.set_xticks(x)
+    ax.set_xticks(x + bar_width)
     ax.set_xticklabels(agent_labels)
 
 
@@ -122,6 +128,16 @@ def setup_plot(
         ax.legend()
 
 
+def save_plot_svg(fig, ax, name: str, plot_folder: Path) -> Path:
+    fig.canvas.draw()
+    bbox = ax.get_tightbbox(fig.canvas.get_renderer())
+    bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
+    bbox = bbox.expanded(1.02, 1.01)
+    file_path = plot_folder / f"{name}.svg"
+    fig.savefig(file_path, bbox_inches=bbox, format="svg")
+    return file_path
+
+
 def main():
     parser = ArgumentParser(
         description="Runs multiple configurations of the automation governor and evaluates their performance",
@@ -129,6 +145,7 @@ def main():
     )
     parser.add_argument("collation_data", type=Path, help="path to collation_data.json")
     parser.add_argument("-v", "--verbose", action="store_true", help="enable debug logging")
+    parser.add_argument("--plot-directory", type=Path, default=None, help="directory to save plots to")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
@@ -139,16 +156,20 @@ def main():
 
     fig, axes = plt.subplots(3, 3, figsize=(20, 15), constrained_layout=True)
 
+    max_count = 0
     for name, stat in stats.items():
         score_matrix = generate_cascading_score_array(stat.run_scores)
         logger.info(f"score matrix: {score_matrix.shape}")
-        means, mins, maxes = map(np.array, generate_array_stats(stat.iteration_scores))
+        means, mins, maxes = map(np.array, generate_array_stats(score_matrix))
         lower_err = means - mins
         upper_err = maxes - means
+        if len(means) > max_count:
+            max_count = len(means)
         x = np.arange(len(means))
         axes[0, 0].errorbar(x, means, yerr=np.array([lower_err, upper_err]), fmt="o-", capsize=5, label=name)
         axes[0, 0].axhline(y=0.95, linestyle="--", color="r", label="Success Threshold")
-    setup_plot(axes[0, 0], "Implementation Score Over Time", "Iteration", "Score (log)", y_log=True)
+    axes[0, 0].set_xticks(np.arange(max_count))
+    setup_plot(axes[0, 0], "Implementation Score Over Time", "Iteration", "Score (log)", y_log=True, legend=len(stats) > 1)
 
     names = list(stats.keys())
 
@@ -161,8 +182,22 @@ def main():
         generate_bar_plot_w_errors(axes[0, 1], names, values)
     else:
         iterations = stats[names[0]].success_iterations
-        axes[0, 1].hist(iterations, bins=min(20, max(iterations)))
-    setup_plot(axes[0, 1], "Iterations to Success", "Configuration", "Iterations", legend=False)
+        num_bins = min(20, max(iterations))
+
+        _, bin_edges, _ = axes[0, 1].hist(iterations, bins=num_bins)
+
+        # Center ticks on each bar
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+        # Label each bar using its bin range
+        bin_labels = [
+            f"[{left:.1f}-{right:.1f})"
+            for left, right in zip(bin_edges[:-1], bin_edges[1:])
+        ]
+
+        axes[0, 1].set_xticks(bin_centers)
+        axes[0, 1].set_xticklabels(bin_labels)
+    setup_plot(axes[0, 1], "Iterations to Success", "Iterations", "Count", legend=False)
 
     # Probability of success at k
     iteration_count = 0
@@ -181,8 +216,9 @@ def main():
     bar_width = 1 / len(names)
     for ni, name in enumerate(names):
         axes[0, 2].plot(x + ni*bar_width, values[name], linestyle="-", marker='o', label=name)
+    axes[0, 2].set_xticks(x)
 
-    setup_plot(axes[0, 2], "Probability of Success", "Iteration", "Probability")
+    setup_plot(axes[0, 2], "Probability of Success", "Iteration", "Probability", legend=len(stats) > 1)
 
     # Token Usage
     agent_names = list(set(list(stats[names[0]].success_token_usage.keys()) + list(stats[names[0]].failure_token_usage.keys())))
@@ -270,6 +306,19 @@ def main():
             output_tokens.extend(stats["baseline"].failure_token_usage[agent_name].output_count)
         axes[2, 2].hist(output_tokens, bins=min(20, max(output_tokens)))
         setup_plot(axes[2, 2], "Output Token Distribution Upon Failure", "Tokens", "Count (log)", y_log=True, legend=False)
+
+    if args.plot_directory is not None:
+        logger.info(f"saving plots to {args.plot_directory}")
+        args.plot_directory.mkdir(parents=True, exist_ok=True)
+        save_plot_svg(fig, axes[0, 0], "score_over_time", args.plot_directory)
+        save_plot_svg(fig, axes[0, 1], "success_iterations", args.plot_directory)
+        save_plot_svg(fig, axes[0, 2], "success_probabilities", args.plot_directory)
+        save_plot_svg(fig, axes[1, 0], "success_tokens", args.plot_directory)
+        save_plot_svg(fig, axes[1, 1], "success_input_tokens", args.plot_directory)
+        save_plot_svg(fig, axes[1, 2], "success_output_tokens", args.plot_directory)
+        save_plot_svg(fig, axes[2, 0], "failure_tokens", args.plot_directory)
+        save_plot_svg(fig, axes[2, 1], "failure_input_tokens", args.plot_directory)
+        save_plot_svg(fig, axes[2, 2], "failure_output_tokens", args.plot_directory)
 
     plt.show()
 

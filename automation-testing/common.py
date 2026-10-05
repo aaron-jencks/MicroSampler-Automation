@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from pydantic import BaseModel
 
@@ -9,7 +9,7 @@ class TokenUsage(BaseModel):
 
 
 class StatisticalAnalysisResults(BaseModel):
-    runtimes: List[float]
+    runtimes: Optional[List[float]] = None  # For backwards compatibility
     iteration_scores: List[List[float]]
     run_scores: List[List[float]]
     success_iterations: List[int]
