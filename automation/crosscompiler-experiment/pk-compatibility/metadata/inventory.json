@@ -1,0 +1,617 @@
+{
+  "16.2.0": {
+    "status": "REUSABLE_EXISTING_TOOLCHAIN",
+    "version": "16.2.0",
+    "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+    "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d",
+    "tree_sha256": "c15a9dd3a910a66744435e3eaf916b8763dd7f25646334d5738173b379c8e1cc",
+    "tree_kind": "legacy",
+    "origin": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/state.json",
+    "previous": {
+      "active_duration_seconds": 1302.8692532970163,
+      "build": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d",
+      "classification": "BOOM_TIMEOUT",
+      "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+      "ended": "2026-09-20T18:54:53.286407+00:00",
+      "execution": {
+        "classification": "BOOM_TIMEOUT",
+        "command": [
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "cwd": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-16.2.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation",
+        "duration_seconds": 300.10252726700855,
+        "ended": "2026-09-20T18:53:52.942150+00:00",
+        "executed": [
+          "timeout",
+          "--verbose",
+          "--signal=KILL",
+          "300s",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "failure_marker": false,
+        "forced_termination": true,
+        "limit_seconds": 300,
+        "pass_marker": false,
+        "returncode": -9,
+        "started": "2026-09-20T18:48:52.839614+00:00",
+        "stderr": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-16.2.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stderr",
+        "stdout": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-16.2.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stdout",
+        "timed_out": true,
+        "trap_detector": "NOT USED: successful completion is the approved working criterion"
+      },
+      "finished": true,
+      "log": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-16.2.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202",
+      "pk": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/pk/pk",
+      "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d",
+      "reason": "exit -9; elapsed 300.103s; pass marker False",
+      "source": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/sources/gcc-16.2.0/gcc-16.2.0",
+      "source_identity": {
+        "archive_sha256": "e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e",
+        "checksum_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-16.2.0/sha512.sum",
+        "sha512": "c51c30ca7422d0cbecf504b2e0f33c3aca31e0f90a76b65217f465163fa6fa17b3f5de39e145c47e5bab90ac0ce7fff3b03c8d553ae36e01faaea5a50f8648d1",
+        "tree_sha256": "c50682dcc413a71976a885776ba12e94aeca0d785c5674fe288639cf2ee7f058",
+        "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-16.2.0/gcc-16.2.0.tar.xz"
+      },
+      "stages": {
+        "binutils": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-as": "25a0f57b1035c510b5a5c559711a4168bb7f27a710e519db7698421c8b7d94fb",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-ld": "f80ea876a4f7246d560a4956807868b4fdd0bc7970654fa69acd5828a38a96a9"
+          },
+          "complete": true,
+          "ended": "2026-09-20T18:34:46.079632+00:00",
+          "started": "2026-09-20T18:33:43.959198+00:00"
+        },
+        "initial-gcc": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/initial-gcc/gcc/xgcc": "15ac580d038ccb0eb7a2d8355c4f87020c0c043de2bbbb86815b61581be181c7"
+          },
+          "complete": true,
+          "ended": "2026-09-20T18:40:49.895730+00:00",
+          "started": "2026-09-20T18:34:46.104897+00:00"
+        },
+        "newlib": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/crt0.o": "d318da727feb562c0f98ffdd2dfc158cf67a5e0cf0e53f2cf5565924f702ae9c",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/libc.a": "19baf07c51108d2b9d9d3ed1e62aea2ce97ccb76aa2c507b62cd0437466ab129"
+          },
+          "complete": true,
+          "ended": "2026-09-20T18:41:24.521448+00:00",
+          "started": "2026-09-20T18:40:49.923350+00:00"
+        },
+        "pk": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/pk/pk": "da623c0b8f0bd72830ec3e49c67e8626366179c29503f0fa2a97d5af25c54a77"
+          },
+          "complete": true,
+          "ended": "2026-09-20T18:48:50.605800+00:00",
+          "started": "2026-09-20T18:48:47.645802+00:00"
+        },
+        "stub": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/stub.elf": "2bea1a48d054586796b278c8a81a6df848e60f8f792214067d26b3d53dace9b8",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/stub.map": "ecf2c78abdb523295167920a888a9a8948d732a4e5511268b486a6bbf963d390"
+          },
+          "complete": true,
+          "ended": "2026-09-20T18:48:50.868484+00:00",
+          "started": "2026-09-20T18:48:50.608271+00:00"
+        },
+        "toolchain": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-g++": "b4c3f30b20553f593f38795e3d3eee8febc515366305a8f4ae1ad9f3af67296a",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-16.2.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc": "20370c89687a6c04c4b786799ff0849fe313c7c8f788a03cd19e7f7695c41d64"
+          },
+          "complete": true,
+          "ended": "2026-09-20T18:48:45.029321+00:00",
+          "started": "2026-09-20T18:41:24.529639+00:00"
+        }
+      },
+      "started": "2026-09-20T18:33:10.415790+00:00",
+      "stub": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-16.2.0-rv64gc_zifencei-lp64d/stub.elf",
+      "toolchain_tree_sha256": "c15a9dd3a910a66744435e3eaf916b8763dd7f25646334d5738173b379c8e1cc",
+      "version": "16.2.0"
+    }
+  },
+  "15.3.0": {
+    "status": "REUSABLE_EXISTING_TOOLCHAIN",
+    "version": "15.3.0",
+    "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+    "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d",
+    "tree_sha256": "4798d4f2fd1712c206466a1d2cb3c3479a24890b47e424f142f8f063a6f6d12e",
+    "tree_kind": "legacy",
+    "origin": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/state.json",
+    "previous": {
+      "active_duration_seconds": 1190.9238198299718,
+      "build": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d",
+      "classification": "BOOM_TIMEOUT",
+      "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+      "ended": "2026-09-20T19:14:44.240649+00:00",
+      "execution": {
+        "classification": "BOOM_TIMEOUT",
+        "command": [
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "cwd": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-15.3.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation",
+        "duration_seconds": 300.0319410559896,
+        "ended": "2026-09-20T19:13:43.584733+00:00",
+        "executed": [
+          "timeout",
+          "--verbose",
+          "--signal=KILL",
+          "300s",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "failure_marker": false,
+        "forced_termination": false,
+        "limit_seconds": 300,
+        "pass_marker": false,
+        "returncode": -9,
+        "started": "2026-09-20T19:08:43.552600+00:00",
+        "stderr": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-15.3.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stderr",
+        "stdout": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-15.3.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stdout",
+        "timed_out": false,
+        "trap_detector": "NOT USED: successful completion is the approved working criterion"
+      },
+      "finished": true,
+      "log": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-15.3.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202",
+      "pk": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/pk/pk",
+      "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d",
+      "reason": "exit -9; elapsed 300.032s; pass marker False",
+      "source": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/sources/gcc-15.3.0/gcc-15.3.0",
+      "source_identity": {
+        "archive_sha256": "fa59c1beef8995f27c4d71c1df227587189315d3e6faff1bb4306e61b0c530eb",
+        "checksum_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-15.3.0/sha512.sum",
+        "sha512": "0de9e296153b52c021b1c7e63c9c62151d7a0ac03f23ce6e9f772c1b0eb783f6acdd81cc4567bfe4128a6f64968c2cfc8eff40b36229cba7425349f7d637c654",
+        "tree_sha256": "f6da8714cb864b9bf0f3cfaec0ab02cc5a5c6bcc7cc1270a8eba74be05964169",
+        "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-15.3.0/gcc-15.3.0.tar.xz"
+      },
+      "stages": {
+        "binutils": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-as": "296c8bd7aa81ef79fe37e7898979a5cf2a400b8ee40c572e2e402df5277dd5a6",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-ld": "27bf24217d1f1dc42a15064a385d6380f69130ecb39df87af5b3f360dff1f3c1"
+          },
+          "complete": true,
+          "ended": "2026-09-20T18:56:24.064987+00:00",
+          "started": "2026-09-20T18:55:24.180344+00:00"
+        },
+        "initial-gcc": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/initial-gcc/gcc/xgcc": "b6e856e8fa58775ace74e23d5c7b74b7fd10dfa89812fe556db8bbb08127cf11"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:01:36.886201+00:00",
+          "started": "2026-09-20T18:56:24.090025+00:00"
+        },
+        "newlib": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/crt0.o": "d318da727feb562c0f98ffdd2dfc158cf67a5e0cf0e53f2cf5565924f702ae9c",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/libc.a": "03e6db5f29d64d155fcc0ff72372589c65925f3c39bc01b32be52134f27490eb"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:02:11.006499+00:00",
+          "started": "2026-09-20T19:01:36.905310+00:00"
+        },
+        "pk": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/pk/pk": "adfdd41f16833e9ee0d964fd6bdbd531ed8f2791c7713e9f6e185b8a78b2fcf7"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:08:41.559751+00:00",
+          "started": "2026-09-20T19:08:38.751510+00:00"
+        },
+        "stub": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/stub.elf": "365aaae9b11a04c91ad5c920bc3bdb578178c17fc83da2dad8e10b9acd9e8508",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/stub.map": "abe3715080739f1cf59407ab95f63d94056b90720f9c91752cc501ff0732f01c"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:08:41.618537+00:00",
+          "started": "2026-09-20T19:08:41.562809+00:00"
+        },
+        "toolchain": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-g++": "9d32e0d466d3ce26d12282cfde0c166da0279da5e8318174b4bfe42a5a61f0ed",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-15.3.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc": "e0adcedb60c7afeb33a7dcf9cb78dfa8f44204050e072a24ace7f8193c503938"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:08:35.943980+00:00",
+          "started": "2026-09-20T19:02:11.015176+00:00"
+        }
+      },
+      "started": "2026-09-20T18:54:53.315313+00:00",
+      "stub": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-15.3.0-rv64gc_zifencei-lp64d/stub.elf",
+      "toolchain_tree_sha256": "4798d4f2fd1712c206466a1d2cb3c3479a24890b47e424f142f8f063a6f6d12e",
+      "version": "15.3.0"
+    }
+  },
+  "14.4.0": {
+    "status": "REUSABLE_EXISTING_TOOLCHAIN",
+    "version": "14.4.0",
+    "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+    "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d",
+    "tree_sha256": "3fe51a08a35c39bfa7b805551cf66f85fb85e5d7d5328445b4693b18c34ad768",
+    "tree_kind": "legacy",
+    "origin": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/state.json",
+    "previous": {
+      "active_duration_seconds": 1227.791946879006,
+      "build": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d",
+      "classification": "BOOM_TIMEOUT",
+      "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+      "ended": "2026-09-20T19:35:12.056701+00:00",
+      "execution": {
+        "classification": "BOOM_TIMEOUT",
+        "command": [
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "cwd": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-14.4.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation",
+        "duration_seconds": 300.02245965000475,
+        "ended": "2026-09-20T19:34:12.219666+00:00",
+        "executed": [
+          "timeout",
+          "--verbose",
+          "--signal=KILL",
+          "300s",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "failure_marker": false,
+        "forced_termination": false,
+        "limit_seconds": 300,
+        "pass_marker": false,
+        "returncode": -9,
+        "started": "2026-09-20T19:29:12.197018+00:00",
+        "stderr": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-14.4.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stderr",
+        "stdout": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-14.4.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stdout",
+        "timed_out": false,
+        "trap_detector": "NOT USED: successful completion is the approved working criterion"
+      },
+      "finished": true,
+      "log": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-14.4.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202",
+      "pk": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/pk/pk",
+      "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d",
+      "reason": "exit -9; elapsed 300.022s; pass marker False",
+      "source": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/sources/gcc-14.4.0/gcc-14.4.0",
+      "source_identity": {
+        "archive_sha256": "752b6f567beac83159c77a7680b1316bdd784738bff9a9d070112c09da90f6d9",
+        "checksum_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-14.4.0/sha512.sum",
+        "sha512": "725ed8bdd43ef1726ffe8b5e8615a13e247fac9575b7626ae013a2975d000ea213212dc414b2f2631ac4785c1c8beca85555222faf9904d3b2fa6a3807a83a15",
+        "tree_sha256": "5cfd4e35b3278ab65737039cd0eeb921e1b2091600165cbd0245da1cc47dee8d",
+        "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-14.4.0/gcc-14.4.0.tar.xz"
+      },
+      "stages": {
+        "binutils": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-as": "6cac4cdcd5e054e2ebea1fbf39087f3b12d9f211fe46b1261de8a9605f209742",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-ld": "27df6dbc34b11f227be4d5351ecaf78cc4583661604808255fbe07818c0b88d1"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:16:10.116429+00:00",
+          "started": "2026-09-20T19:15:08.807777+00:00"
+        },
+        "initial-gcc": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/initial-gcc/gcc/xgcc": "a173b8eb824e26b8b65e19cb2ca9badb28e1263cf13a67251346c45218bc974c"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:21:47.638689+00:00",
+          "started": "2026-09-20T19:16:10.141463+00:00"
+        },
+        "newlib": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/crt0.o": "d318da727feb562c0f98ffdd2dfc158cf67a5e0cf0e53f2cf5565924f702ae9c",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/libc.a": "3343e5101bc391c1acde82eb424ac495993f8be1f623a344bd6f617d76946289"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:22:20.931653+00:00",
+          "started": "2026-09-20T19:21:47.653653+00:00"
+        },
+        "pk": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/pk/pk": "6e68f0e65bada8985e7ac462eaa9eb562247bbf4cd2371a992226616306577ee"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:29:10.341975+00:00",
+          "started": "2026-09-20T19:29:07.282495+00:00"
+        },
+        "stub": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/stub.elf": "293ec174324e450dbaf2021eac0a5974e6603360060e59e119a666fba4178767",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/stub.map": "129cdc9bacdc1cce0533e1f744aedbb1402f1abc3556e113607c2b7e7ccacc20"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:29:10.398577+00:00",
+          "started": "2026-09-20T19:29:10.344012+00:00"
+        },
+        "toolchain": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-g++": "fc67f0839759c7b872a5c33ad258474d64bd79974b3b2172e23c88c86ff9073c",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-14.4.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc": "0e21592aab74fb82d7707b30120f4375cbbdb01254c94eaf32b5f17863dd9db3"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:29:04.969285+00:00",
+          "started": "2026-09-20T19:22:20.940527+00:00"
+        }
+      },
+      "started": "2026-09-20T19:14:44.263348+00:00",
+      "stub": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-14.4.0-rv64gc_zifencei-lp64d/stub.elf",
+      "toolchain_tree_sha256": "3fe51a08a35c39bfa7b805551cf66f85fb85e5d7d5328445b4693b18c34ad768",
+      "version": "14.4.0"
+    }
+  },
+  "13.5.0": {
+    "status": "REUSABLE_EXISTING_TOOLCHAIN",
+    "version": "13.5.0",
+    "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+    "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d",
+    "tree_sha256": "8e13914d0beff45597154a076b3253bc494838651657a55adf20a398cfee2ed7",
+    "tree_kind": "legacy",
+    "origin": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/state.json",
+    "previous": {
+      "active_duration_seconds": 903.7421585950069,
+      "build": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d",
+      "classification": "BOOM_TIMEOUT",
+      "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+      "ended": "2026-09-20T19:50:15.827850+00:00",
+      "execution": {
+        "classification": "BOOM_TIMEOUT",
+        "command": [
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "cwd": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-13.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation",
+        "duration_seconds": 300.0188871290011,
+        "ended": "2026-09-20T19:49:15.304079+00:00",
+        "executed": [
+          "timeout",
+          "--verbose",
+          "--signal=KILL",
+          "300s",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "failure_marker": false,
+        "forced_termination": false,
+        "limit_seconds": 300,
+        "pass_marker": false,
+        "returncode": -9,
+        "started": "2026-09-20T19:44:15.284999+00:00",
+        "stderr": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-13.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stderr",
+        "stdout": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-13.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stdout",
+        "timed_out": false,
+        "trap_detector": "NOT USED: successful completion is the approved working criterion"
+      },
+      "finished": true,
+      "log": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-13.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202",
+      "pk": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/pk/pk",
+      "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d",
+      "reason": "exit -9; elapsed 300.019s; pass marker False",
+      "source": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/sources/gcc-13.5.0/gcc-13.5.0",
+      "source_identity": {
+        "archive_sha256": "ec3df0015ed01411f91f9a9cd5b4da3070eb1222b02fadf4133c30c090399855",
+        "checksum_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-13.5.0/sha512.sum",
+        "sha512": "709237ff8f10d46eb10cad53a71bdcacbd3d56f4559e9a5bb3323f743fdba78b7e505586135560b27e88320927a065ec4f5e45273d5504b542f67c7326eb683c",
+        "tree_sha256": "7c5c5e728f8d8c8d0524ad0817ed407efcd3f925b2c4f32e6f28d027b959dd97",
+        "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-13.5.0/gcc-13.5.0.tar.xz"
+      },
+      "stages": {
+        "binutils": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-as": "d96f7822e6543b250303a2fd0a1bb5ce1bf74fc1a1fa88cc11a899462a9bcfcc",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-ld": "22a2b1a3724de59b6235a304b0e9cdc05f54adbf8f4ae90a470d6f53dec2b03c"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:36:39.577147+00:00",
+          "started": "2026-09-20T19:35:37.798220+00:00"
+        },
+        "initial-gcc": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/initial-gcc/gcc/xgcc": "5577e520284dd88eeb9b7c470693bf8f898615bc847a381c5178366a67379834"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:39:41.176306+00:00",
+          "started": "2026-09-20T19:36:39.602760+00:00"
+        },
+        "newlib": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/crt0.o": "d318da727feb562c0f98ffdd2dfc158cf67a5e0cf0e53f2cf5565924f702ae9c",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/libc.a": "5a78d6cd8ab2df26b817bc4500c18aa816e5995cdc4e19e6d53d215a3191bc35"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:40:12.499985+00:00",
+          "started": "2026-09-20T19:39:41.190315+00:00"
+        },
+        "pk": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/pk/pk": "211ace80346cc5046fda8ee6bf14b8b8117b072fcd289f7427a12837746c7cce"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:44:13.330554+00:00",
+          "started": "2026-09-20T19:44:10.648411+00:00"
+        },
+        "stub": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/stub.elf": "a60ccb710f7a5ec1ef2c952e9cbc0b9b8dfb37195a028bbd89234573a9cb0144",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/stub.map": "4fc3a109aca12b9c913983c4295636efa0b24b1026dad579cbeb97d1b0ddfb48"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:44:13.376112+00:00",
+          "started": "2026-09-20T19:44:13.334550+00:00"
+        },
+        "toolchain": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-g++": "c334559067ae57a79fd73b75f3bb1c47691f9cbd6ecb5354aad625a83ea98686",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-13.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc": "b55bbaa8b592e751ba48b645be2b2d40e7e7e6205f1f2cb00e7d448980e5ac66"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:44:08.923228+00:00",
+          "started": "2026-09-20T19:40:12.508494+00:00"
+        }
+      },
+      "started": "2026-09-20T19:35:12.083779+00:00",
+      "stub": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-13.5.0-rv64gc_zifencei-lp64d/stub.elf",
+      "toolchain_tree_sha256": "8e13914d0beff45597154a076b3253bc494838651657a55adf20a398cfee2ed7",
+      "version": "13.5.0"
+    }
+  },
+  "12.5.0": {
+    "status": "REUSABLE_EXISTING_TOOLCHAIN",
+    "version": "12.5.0",
+    "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+    "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d",
+    "tree_sha256": "cbda25257d0aac94eebce1124d7cccca141d5278dbf25d1ec7e3fe416aafe673",
+    "tree_kind": "legacy",
+    "origin": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/state.json",
+    "previous": {
+      "active_duration_seconds": 858.1775415000156,
+      "build": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d",
+      "classification": "BOOM_TIMEOUT",
+      "compiler": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc",
+      "ended": "2026-09-20T20:04:34.058344+00:00",
+      "execution": {
+        "classification": "BOOM_TIMEOUT",
+        "command": [
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "cwd": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-12.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation",
+        "duration_seconds": 300.03269956301665,
+        "ended": "2026-09-20T20:03:33.963991+00:00",
+        "executed": [
+          "timeout",
+          "--verbose",
+          "--signal=KILL",
+          "300s",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/BOOM_simulator",
+          "-s",
+          "1",
+          "+verbose",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/pk/pk",
+          "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/stub.elf"
+        ],
+        "failure_marker": false,
+        "forced_termination": false,
+        "limit_seconds": 300,
+        "pass_marker": false,
+        "returncode": -9,
+        "started": "2026-09-20T19:58:33.931055+00:00",
+        "stderr": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-12.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stderr",
+        "stdout": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-12.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202/simulation/boom.stdout",
+        "timed_out": false,
+        "trap_detector": "NOT USED: successful completion is the approved working criterion"
+      },
+      "finished": true,
+      "log": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/logs/gcc-12.5.0-rv64gc_zifencei-lp64d/preflight-20260920T183226-226202",
+      "pk": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/pk/pk",
+      "prefix": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d",
+      "reason": "exit -9; elapsed 300.033s; pass marker False",
+      "source": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/sources/gcc-12.5.0/gcc-12.5.0",
+      "source_identity": {
+        "archive_sha256": "71cd373d0f04615e66c5b5b14d49c1a4c1a08efa7b30625cd240b11bab4062b3",
+        "checksum_url": "https://gcc.gnu.org/pub/gcc/releases/gcc-12.5.0/sha512.sum",
+        "sha512": "c76020e4c844b53485502cb8a4e295221c9d37487d66c9f4559031fb14c85de20602e6387310005386cb0ef25e55067d2cfef141423bb445f3b77e7456a23533",
+        "tree_sha256": "dcb141fd5c5c85e83d265f976207712cbb1c4491173776d0dab9df3c3a797993",
+        "url": "https://gcc.gnu.org/pub/gcc/releases/gcc-12.5.0/gcc-12.5.0.tar.xz"
+      },
+      "stages": {
+        "binutils": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-as": "01d55af0e6e206e786fadcbfe05172f79d33f547d6c1a355d38790f6d494dc0e",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-ld": "8b6ab465c7e7e5b984bd9ee5eda167b52adcf6bbdc790f70c40a78cc62604747"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:51:43.437464+00:00",
+          "started": "2026-09-20T19:50:41.634108+00:00"
+        },
+        "initial-gcc": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/initial-gcc/gcc/xgcc": "5633c9d64ebdb658ca1f88e76b53e07e1a485d34352e6ac8d8f9893591e69b56"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:54:22.784438+00:00",
+          "started": "2026-09-20T19:51:43.463464+00:00"
+        },
+        "newlib": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/crt0.o": "d318da727feb562c0f98ffdd2dfc158cf67a5e0cf0e53f2cf5565924f702ae9c",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/riscv64-unknown-elf/lib/libc.a": "fb17a7d1841810b7f6adf42691bf5f55efbd7a60d5c2a0d97d9a7d67ed464eac"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:54:53.257164+00:00",
+          "started": "2026-09-20T19:54:22.798006+00:00"
+        },
+        "pk": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/pk/pk": "06afdef852f167fbd981e6a0bfd2b4215fea742e51c36d8a46bd7184bd38ca84"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:58:32.279218+00:00",
+          "started": "2026-09-20T19:58:29.672764+00:00"
+        },
+        "stub": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/stub.elf": "b66da4f801f7368af7450a72fc9c024669482ef7dfac83c4b24362ae38f5630c",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/stub.map": "f407578feb5a55d8a6bda5f92b5ef4b0ee8466e398490953d776375baa2eafc1"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:58:32.321122+00:00",
+          "started": "2026-09-20T19:58:32.283511+00:00"
+        },
+        "toolchain": {
+          "artifacts": {
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-g++": "f20e6567017b066ae749648ddd5b87ee9331b891618bcf2622bf882a41996431",
+            "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/toolchains/gcc-12.5.0-rv64gc_zifencei-lp64d/bin/riscv64-unknown-elf-gcc": "417c3553048cb069031cdb711526eab0814ecc8cde006e1455ef9b6854d87723"
+          },
+          "complete": true,
+          "ended": "2026-09-20T19:58:28.360087+00:00",
+          "started": "2026-09-20T19:54:53.265538+00:00"
+        }
+      },
+      "started": "2026-09-20T19:50:15.879057+00:00",
+      "stub": "/local/scratch/vologzhanin.2/MicroSampler-Automation/automation/crosscompiler-experiment/builds/gcc-12.5.0-rv64gc_zifencei-lp64d/stub.elf",
+      "toolchain_tree_sha256": "cbda25257d0aac94eebce1124d7cccca141d5278dbf25d1ec7e3fe416aafe673",
+      "version": "12.5.0"
+    }
+  }
+}

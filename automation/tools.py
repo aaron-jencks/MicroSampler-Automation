@@ -120,11 +120,26 @@ def run_subprocess(
     try:
         sp_out = sp.run(
             args,
-            stdin=stdin, stdout=stdout, stderr=stderr,
-            shell=shell, check=check_output,
-            env=env, cwd=cwd,
+            stdin=stdin,
+            stdout=stdout,
+            stderr=stderr,
+            shell=shell,
+            check=check_output,
+            env=env,
+            cwd=cwd,
             timeout=timeout
         )
+
+    except sp.TimeoutExpired:
+        print("\n=== SUBPROCESS TIMEOUT ===", flush=True)
+        print(f"timeout = {timeout} seconds", flush=True)
+        print(f"args    = {args}", flush=True)
+        print(f"cwd     = {cwd}", flush=True)
+        print(f"RISCV   = {env.get('RISCV')}", flush=True)
+        print(f"SIM_ROOT= {env.get('SIM_ROOT')}", flush=True)
+        print("==========================\n", flush=True)
+        raise
+
     finally:
         if csi:
             stdin.close()
@@ -154,6 +169,15 @@ def run_default_subprocess(
     env_overrides["RISCV"] = get_path(ctx.microsampler.riscv_root)
     if cwd is None:
         cwd = ctx.microsampler.working_directory
+
+    print("\n=== MICROSAMPLER SUBPROCESS ===", flush=True)
+    print(f"args       = {args}", flush=True)
+    print(f"cwd        = {cwd}", flush=True)
+    print(f"SIM_ROOT   = {env_overrides.get('SIM_ROOT')}", flush=True)
+    print(f"RISCV      = {env_overrides.get('RISCV')}", flush=True)
+    print(f"timeout    = {timeout}", flush=True)
+    print("===============================\n", flush=True)
+
     return run_subprocess(
         args,
         stdin, stdout, stderr,

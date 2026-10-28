@@ -12,7 +12,7 @@ class UUTConfig(BaseModel):
 
 
 class HarnessConfig(BaseModel):
-    prefix: Path = Path("bearssl-0.6/ccopy/v2/harness/")
+    prefix: Path = Path("./harness/")
     executable: str = "harness"
     target: str = "attack.c"
     assembly_file: str = "attack.s"
@@ -39,6 +39,12 @@ class MicroSamplerConfig(BaseModel):
     scripts_prefix: Path = Path("../scripts/")
     deployment_prefix: Path = Path("..")
     riscv_root: Path = Path("/local/scratch/riscv")
+    # An explicit proxy-kernel binary for simulation.  When absent, preserve
+    # the historic RISCV/riscv64-unknown-elf/bin/pk lookup.
+    pk_path: Optional[Path] = None
+    # Leave unspecified for the historic simulator default; tests that need
+    # reproducibility can pin BOOM's seed explicitly.
+    boom_seed: Optional[int] = None
     core_deployment_qsm: Path = Path("config/governor/microsampler_deployment_core_qsm.json")
     pc_finder: PCFinderConfig = PCFinderConfig()
     suite: str = "microbench"
@@ -64,9 +70,10 @@ class LLMConfig(BaseModel):
 
 
 class AgentConfig(BaseModel):
-    model: str = "gpt-5.4"
+    model: str = "gpt-5.6-luna"
     templates: Dict[str, Path]
     tools: List[str] = []
+    reasoning_effort: Optional[str] = None
 
 
 class LogConfig(BaseModel):
@@ -82,6 +89,13 @@ class FinalReportConfig(BaseModel):
     clear_report_area: bool = True
 
 
+class InitialAttackConfig(BaseModel):
+    hypothesis: str = "Initial run with a stub implementation for a sanity check to verify that the code is constant time without modification."
+    file: Path = Path("bearssl-0.6/ccopy/v2/initial_attack.c")
+    global_iterations: int = 10
+    inner_iterations: int = 100
+
+
 class BaseConfig(BaseModel):
     microsampler: MicroSamplerConfig = MicroSamplerConfig()
     harness: HarnessConfig = HarnessConfig()
@@ -89,6 +103,7 @@ class BaseConfig(BaseModel):
     llm: LLMConfig = LLMConfig()
     deployment_qsm_path: Path = Path("config/governor/ccopy_deployment_qsm.json")
     governor_qsm_path: Path = Path("config/governor/ccopy_qsm.json")
+    max_loop_iterations: int = 10
     agents: Dict[str, AgentConfig] = {
         "hypothesis": AgentConfig(
             templates={
@@ -100,7 +115,8 @@ class BaseConfig(BaseModel):
             templates={
                 "system": Path("bearssl-0.6/ccopy/v2/prompts/implementation/system-prompt.txt"),
                 "input": Path("bearssl-0.6/ccopy/v2/prompts/implementation/feedback-prompt.txt"),
-            }
+            },
+            model="gpt-5.4",
         ),
         "summarization": AgentConfig(
             templates={
@@ -110,6 +126,7 @@ class BaseConfig(BaseModel):
             tools=["read_attack_assembly"]
         ),
     }
+    initial_attack: InitialAttackConfig = InitialAttackConfig()
     logging: LogConfig = LogConfig()
     final_report: FinalReportConfig = FinalReportConfig()
 

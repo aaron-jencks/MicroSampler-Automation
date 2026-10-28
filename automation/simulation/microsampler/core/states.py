@@ -190,12 +190,44 @@ class MicroSamplerSimulationState(MicroSamplerCoreStepState):
 
     def execute(self, ctx: MicroSamplerLoopContext):
         logger.debug("starting microsampler simulation")
-        self.run_microsampler_checked_subprocess(
-            ctx, MicroSamplerSimulationError, self.next_state,
-            "launch_simulation.log", do_simulation,
-            ctx.context.run_config.executable,
-            ctx.context.run_config.executable_args,
+    
+        print("\n=== MICROSAMPLER SIMULATION STATE ===", flush=True)
+        print(
+            f"executable      = {ctx.context.run_config.executable}",
+            flush=True
         )
+        print(
+            f"executable_args = {ctx.context.run_config.executable_args}",
+            flush=True
+        )
+        print(
+            f"state timeout   = {self.sp_timeout}",
+            flush=True
+        )
+        print(
+            f"working dir     = {self.config.microsampler.working_directory}",
+            flush=True
+        )
+        print(
+            f"riscv root      = {self.config.microsampler.riscv_root}",
+            flush=True
+        )
+        print(
+            f"pk path         = {self.config.microsampler.pk_path}",
+            flush=True
+        )
+        print(
+            f"boom seed       = {self.config.microsampler.boom_seed}",
+            flush=True
+        )
+        print("=====================================\n", flush=True)
+    
+        self.run_microsampler_checked_subprocess(
+                ctx, MicroSamplerSimulationError, self.next_state,
+                "launch_simulation.log", do_simulation,
+                ctx.context.run_config.executable,
+                ctx.context.run_config.executable_args,
+            )
 
 
 class MicroSamplerParseState(MicroSamplerCoreStepState):

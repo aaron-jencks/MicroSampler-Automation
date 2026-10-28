@@ -1,0 +1,116 @@
+[
+  {
+    "release": "1.14.0",
+    "chipyard_commit": "0acc1e1de2d3284bcd4d876956932a013ffe1949",
+    "pk_commit": "abadfdc507d5a75b6272dc360e70a80a510c758a",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.13.0",
+    "chipyard_commit": "69eba860a352343e4ac6b6df0f3638a79a86ec78",
+    "pk_commit": "1a52fa44aba49307137ea2ad5263613da33a877b",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.12.3",
+    "chipyard_commit": "6f0c448ec2e529faf507352a2427a3527e1ca186",
+    "pk_commit": "1f5bcbe4d0ee32ff3bfc3b001a2121628a29ae65",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.12.2",
+    "chipyard_commit": "dccedae00f4dd626425f8f89c93f55ee11e4193e",
+    "pk_commit": "4f3debe4d04f56d31089c1c716a27e2d5245e9a1",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.12.1",
+    "chipyard_commit": "5929221722dff4f9cf2132f0fda42dcb1cab3229",
+    "pk_commit": "4f3debe4d04f56d31089c1c716a27e2d5245e9a1",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.12.0",
+    "chipyard_commit": "404c8d361de98a98967f5d7a9bf51cbe8434d4c9",
+    "pk_commit": "4f3debe4d04f56d31089c1c716a27e2d5245e9a1",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.11.0",
+    "chipyard_commit": "ac58f38d77c99e9d1cafa64dfd6d4b00bdcd43e1",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.10.0",
+    "chipyard_commit": "b7644b2455cc4bae190e811a5d8085f3aad85b87",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.9.1",
+    "chipyard_commit": "968b207ccade6f61d6f9bb2e19a54781d4a96f26",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.9.0",
+    "chipyard_commit": "7475bfb1a05802ac4dfc3990a889f93164b8d798",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.8.1",
+    "chipyard_commit": "004297b6a8c01be1b2110c4cf4f9393ae1ff8805",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.8.0",
+    "chipyard_commit": "2d03d10837fc1a7569d10ae2c91c8132c7fee77d",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.7.1",
+    "chipyard_commit": "992664220d95edf610475031fd8a82d0cd743f7f",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.7.0",
+    "chipyard_commit": "4a1189693d8134973010ac91abf7f085bbf0b49d",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.6.2",
+    "chipyard_commit": "481398b910fa95ec88dd578c67ba358a4d83129d",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.6.1",
+    "chipyard_commit": "83b7b94fef70fa808a5fb75eff2dc78907af6014",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.6.0",
+    "chipyard_commit": "dcf8da4b2d3a4deead95462fce36a6db5693ed45",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.5.0",
+    "chipyard_commit": "b5d013190d637e634113cb5179f8c8885df1945a",
+    "pk_commit": "e8e6b3aaee44d43b48164fbd377864c3a682dbd3",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  },
+  {
+    "release": "1.4.0",
+    "chipyard_commit": "58076cfb260a3be502d6d1c25b577da39277a7fc",
+    "pk_commit": "a3e4ac61d2b1ff37a22b9193b85d3b94273e80cb",
+    "path": "toolchains/riscv-tools/riscv-pk"
+  }
+]

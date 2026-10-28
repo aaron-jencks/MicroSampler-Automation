@@ -64,7 +64,10 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
         cfg.log_prefix.mkdir(parents=True, exist_ok=True)
 
         sim_root = ctx.microsampler.working_directory
-        pk = get_path(ctx.microsampler.riscv_root / "riscv64-unknown-elf" / "bin" / "pk")
+        pk_path = ctx.microsampler.pk_path
+        if pk_path is None:
+            pk_path = ctx.microsampler.riscv_root / "riscv64-unknown-elf" / "bin" / "pk"
+        pk = get_path(pk_path)
         simulator = get_path(sim_root / "BOOM_simulator")
         if not cfg.executable.exists():
             raise FileNotFoundError(f"Executable not found: {cfg.executable}")
@@ -73,9 +76,10 @@ def do_simulation(ctx: BaseConfig, cfg: SubprocessArguments) -> Optional[sp.Comp
         temp_log_path = cfg.log_prefix / "out-all.log"
         stderr_path = temp_log_path
 
-        sim_args = [
-            "time", simulator, "+verbose"
-        ]
+        sim_args = ["time", simulator]
+        if ctx.microsampler.boom_seed is not None:
+            sim_args.extend(["-s", str(ctx.microsampler.boom_seed)])
+        sim_args.append("+verbose")
         if cfg.suite != "microbench":
             sim_args.append(pk)
         sim_args.append(executable_path)
